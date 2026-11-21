@@ -26,7 +26,10 @@
   --f-poem: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", "Batang", "바탕", "Source Han Serif K", "Noto Serif CJK KR", serif;
   --f-ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
   --f-old: "Noto Serif CJK KR", "Source Han Serif K", "Noto Sans CJK KR", "함초롬바탕", "HCR Batang", "Batang", "Noto Serif KR", serif;
-  --r: 0.69rem;
+  --r: 10px;
+  --hint: #6a5848;            /* 안내 문구: 따뜻한 회갈색 */
+  --shadow: 0 1px 2px rgba(42, 37, 33, .04);
+  --card-pad: clamp(14px, 1.4vw, 22px);
   --side: clamp(200px, 17vw, 280px);
   --gap: clamp(10px, 1.3vw, 22px);
   --pad: clamp(12px, 1.5vw, 24px);
@@ -65,7 +68,10 @@ header.site {
 .weight { flex: none; }
 .side-sec { padding: 0 0 0.828rem; margin-bottom: 0.828rem; border-bottom: 1px solid var(--line); }
 .side-title { font-size: 0.82rem; letter-spacing: .08em; color: var(--muted); font-weight: 500; margin: 0 0 0.414rem; }
-#q { width: 100%; padding: 0.414rem 0.621rem; border: 1px solid var(--line-2); border-radius: 0.483rem; background: var(--paper); font-size: 0.897rem; }
+.search { position: relative; }
+.search-ic { position: absolute; left: 0.6rem; top: 50%; width: 1rem; height: 1rem; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+#q { width: 100%; padding: 0.45rem 0.65rem 0.45rem 2rem; border: 1px solid var(--line-2); border-radius: 8px; background: var(--paper); font-size: 0.94rem; }
+#q:focus { border-color: var(--accent); }
 #listCount { display: block; min-height: 0; }
 .poem-list { list-style: none; margin: 0.414rem 0 0; padding: 0 2px 0 0; display: grid; gap: 1px; flex: 1 1 auto; min-height: 8rem; max-height: none; overflow-y: auto; overscroll-behavior: contain; align-content: start; width: 100%; }
 .poem-list button {
@@ -76,7 +82,7 @@ header.site {
 .poem-list .t { font-family: var(--f-poem); font-size: 1rem; font-weight: 600; line-height: 1.35; }
 .poem-list .p { grid-column: 2; font-size: 0.82rem; color: var(--muted); line-height: 1.3; }
 .poem-list button:hover { background: #efe8da; }
-.poem-list button[aria-pressed="true"] { background: var(--paper); border-color: var(--line-2); box-shadow: 0 1px 2px rgba(42,37,33,.06); }
+.poem-list button[aria-pressed="true"] { background: #fbf6ec; border-color: transparent; box-shadow: inset 3px 0 0 var(--accent); }
 .weight label { font-weight: 700; font-size: 0.94rem; }
 .side-mine { margin-top: 0.5rem; }
 .weight output { color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -87,8 +93,8 @@ header.site {
 
 main { display: grid; gap: var(--gap); min-width: 0; }
 main > * { min-width: 0; }
-.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: clamp(12px, 1.3vw, 22px) var(--pad); min-width: 0; }
-.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.276rem 0.828rem; flex-wrap: wrap; margin-bottom: 0.552rem; }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: var(--card-pad) var(--pad); min-width: 0; box-shadow: var(--shadow); }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.3rem 0.9rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
 .sec-title { font-family: var(--f-poem); font-weight: 600; font-size: 1.31rem; margin: 0; }
 .mini-title { font-size: 0.931rem; font-weight: 700; margin: 0.828rem 0 0.414rem; }
 .tbtn { display: inline-block; border: 1px solid var(--line-2); background: transparent; border-radius: 0.483rem; padding: 0.2rem 0.7rem; cursor: pointer; font-size: 0.9rem; min-height: 2rem; text-decoration: none; color: var(--ink); }
@@ -104,11 +110,16 @@ main > * { min-width: 0; }
 .toc ul::-webkit-scrollbar { display: none; }
 .toc li { flex: none; }
 .toc a {
-  display: inline-block; padding: 0.2rem 0.75rem; border-radius: 999px; border: 1px solid var(--line-2); background: var(--paper);
+  display: inline-flex; align-items: center; height: 2.1rem; padding: 0 0.8rem; border-radius: 999px; border: 1px solid transparent; background: transparent;
   font-size: 0.9rem; color: var(--ink-2); text-decoration: none; white-space: nowrap;
 }
-.toc a:hover { border-color: var(--accent); color: var(--accent); }
-.toc a[aria-current="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.toc a:hover { border-color: var(--line-2); background: var(--paper); color: var(--ink); }
+.toc a[aria-current="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 500; }
+.toc::before, .toc::after { content: ""; position: absolute; top: 0; bottom: 0; width: 2.4rem; pointer-events: none; opacity: 0; transition: opacity .2s; }
+.toc::before { left: 0; background: linear-gradient(90deg, rgba(244,239,228,1), rgba(244,239,228,0)); }
+.toc::after { right: 0; background: linear-gradient(270deg, rgba(244,239,228,1) 35%, rgba(244,239,228,0)); }
+.toc.more-left::before, .toc.more-right::after { opacity: 1; }
+.toc.more-right::after { content: "›"; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.25rem; font-size: 1.4rem; color: var(--muted); }
 main > section, main > .pair > section, main > .charts > section { scroll-margin-top: 3.4rem; }
 .to-top {
   position: fixed; right: clamp(12px, 2vw, 28px); bottom: clamp(12px, 2vw, 28px); z-index: 40; width: 2.8rem; height: 2.8rem;
@@ -116,8 +127,9 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 }
 
 /* ---------------------------------------------------------------- 1단: 본문 | 분석 (첫 화면에 F-01~F-05) */
-.reading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.793rem; padding: 1.241rem 1.517rem; }
-.poem-head h2 { font-family: var(--f-poem); font-weight: 600; font-size: 1.724rem; margin: 0; line-height: 1.25; }
+.reading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 2.4rem; padding: 1.3rem 1.6rem; }
+.ana-col { border-left: 1px solid var(--line); padding-left: 2.4rem; margin-left: -1.2rem; }
+.poem-head h2 { font-family: var(--f-poem); font-weight: 600; font-size: 1.95rem; margin: 0; line-height: 1.25; letter-spacing: .01em; }
 .poem-head p { margin: 2px 0 0; }
 .poem-tools { display: flex; gap: 0.414rem; flex-wrap: wrap; margin-top: 0.414rem; }
 .focus-note { margin: 0.414rem 0 0; color: var(--accent); }
@@ -133,8 +145,8 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 }
 .ln:hover { background: #f3ede1; }
 .ln.sel { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
-.ln.dim { opacity: .38; }
-.ln.lit { background: #f5ecd9; }
+.ln.dim { opacity: .62; }
+.ln.lit { background: #f6eedf; box-shadow: inset 3px 0 0 var(--fc, var(--accent)); }
 .ln .no { font-family: var(--f-ui); font-size: 0.78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .ln .tx { overflow-wrap: anywhere; word-break: keep-all; }
 .ln .cnt { font-family: var(--f-ui); font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
@@ -142,7 +154,7 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 .hit sup { font-family: var(--f-ui); font-size: 0.68rem; color: var(--ink-2); margin-left: 1px; vertical-align: super; line-height: 0; }
 .nomarks .hit { text-decoration: none; }
 .nomarks .hit sup, .nomarks .ln .cnt { display: none; }
-.hit.lit { background: #efe1c6; border-radius: 3px; }
+.hit.lit { background: #efe1c6; border-radius: 3px; font-weight: 600; text-decoration-thickness: 3px; }
 .legend { list-style: none; padding: 0; margin: 0.414rem 0 0; display: flex; flex-wrap: wrap; gap: 2px 0.828rem; align-items: center; }
 .legend li { display: inline-flex; align-items: center; gap: 0.345rem; }
 .legend .lab { color: var(--muted); }
@@ -167,23 +179,38 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 .dominant .pill { display: inline-flex; align-items: center; gap: 0.345rem; border: 1px solid var(--line-2); border-radius: 68.897rem; padding: 0 0.621rem; font-size: 0.828rem; font-variant-numeric: tabular-nums; }
 .dominant .tie { font-size: 0.862rem; color: var(--ink-2); width: 100%; }
 .low-ev { color: var(--accent) !important; }
-.ratio-head { margin: 0.552rem 0 0.276rem; }
-.ratios { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
-.ratios li { display: grid; grid-template-columns: 7.4em minmax(0, 1fr) 3.6em; gap: 0.552rem; align-items: center; }
-.ratios button { all: unset; cursor: pointer; display: flex; align-items: center; gap: 0.414rem; font-size: 0.92rem; border-radius: 0.276rem; line-height: 1.6; }
-.ratios button:focus-visible { outline: 3px solid var(--focus); }
-.ratios button[aria-pressed="true"] { font-weight: 700; color: var(--accent); }
+.ratio-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.8rem; margin: 0.9rem 0 0.5rem; }
+.ratio-title { margin: 0; font-size: 1rem; font-weight: 700; }
+.ratio-method { font-weight: 400; font-size: 0.85rem; color: var(--muted); margin-left: 0.2rem; }
+.ratio-hint { margin: 0; font-size: 0.92rem; color: var(--hint); line-height: 1.5; }
+.ratios { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: max-content minmax(3rem, 1fr) 3.6em; gap: 0.3rem 0.7rem; align-items: center; }
+.ratios li { display: contents; }
+.emo-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem; justify-self: start; min-height: 2.1rem; padding: 0.15rem 0.75rem 0.15rem 0.6rem;
+  border: 1px solid var(--line-2); border-radius: 999px; background: #fffdf8; color: var(--ink); cursor: pointer;
+  font-size: 0.92rem; line-height: 1.3; white-space: nowrap; transition: background-color .12s, border-color .12s;
+}
+.emo-btn .chk { font-weight: 700; color: var(--ink); }
+.emo-btn .chk:empty { display: none; }
+.emo-btn:hover { border-color: var(--c); background: var(--cl); }
+.emo-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-color: var(--c); background: var(--cl); }
+.emo-btn[aria-pressed="true"] { border: 2px solid var(--c); padding: calc(0.15rem - 1px) calc(0.75rem - 1px) calc(0.15rem - 1px) calc(0.6rem - 1px); background: var(--cl); font-weight: 700; }
 .bar { height: 0.621rem; background: #eee7da; border-radius: 0.345rem; position: relative; overflow: hidden; }
 .bar i { position: absolute; inset: 0 auto 0 0; background: var(--c); border-radius: 0.345rem; }
 .ratios .v { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.92rem; }
-.ratio-note { margin: 0.3rem 0 0; }
+.ratio-note { margin: 0.5rem 0 0; }
+.emo-note { margin: 0.6rem 0 0; padding: 0.6rem 0.8rem; border: 1px solid var(--line); border-left: 3px solid var(--c, var(--accent)); border-radius: 8px; background: #fffdf8; font-size: 0.95rem; }
+.emo-note p { margin: 0; line-height: 1.55; }
+.emo-note .emo-note-sub { margin-top: 0.25rem; font-size: 0.875rem; color: var(--hint); }
+.emo-note-acts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.45rem; }
+@media (min-width: 1181px) { .only-stacked { display: none !important; } }
 .interp { margin-top: 0.69rem; border-top: 1px solid var(--line); padding-top: 0.552rem; font-size: 1rem; }
 .interp dl { display: grid; grid-template-columns: 3.4em minmax(0, 1fr); gap: 2px 0.69rem; margin: 0 0 0.414rem; }
 .interp dt { color: var(--muted); font-size: 0.875rem; }
 .interp dd { margin: 0; font-weight: 500; }
 .interp .mini-title { margin: 0.552rem 0 2px; font-size: 0.875rem; color: var(--muted); font-weight: 500; }
 .interp p.body { margin: 0; line-height: 1.75; }
-.interp blockquote { margin: 0.69rem 0 0; padding: 2px 0 2px 0.828rem; border-left: 3px solid var(--ink-2); font-family: var(--f-poem); font-size: 1.05rem; }
+.interp blockquote { margin: 0.8rem 0 0; padding: 0.1rem 0 0.1rem 0.9rem; border-left: 1.5px solid var(--line-2); font-family: var(--f-poem); font-size: 1.02rem; color: var(--ink-2); }
 
 /* ---------------------------------------------------------------- 세 가지 결과(사전 · 해석 프로필 · 결합) */
 .trio { border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; }
@@ -191,14 +218,16 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 .trio-row { display: grid; grid-template-columns: 7.6rem minmax(0, 1fr); align-items: baseline; gap: 0.6rem; }
 .trio-row dt { font-size: 0.875rem; color: var(--muted); }
 .trio-row dd { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.5rem; }
-.trio-row .nm { font-family: var(--f-poem); font-weight: 600; font-size: 1.12rem; }
+.trio-row .nm { font-family: var(--f-poem); font-weight: 500; font-size: 1.05rem; color: var(--ink-2); }
 .trio-row .pc { font-variant-numeric: tabular-nums; }
 .trio-row .sub { font-size: 0.85rem; color: var(--muted); }
-.trio-row.main { padding-top: 0.35rem; margin-top: 0.15rem; border-top: 1px dashed var(--line-2); }
-.trio-row.main .nm { font-size: 1.7rem; line-height: 1.2; }
+.trio-row.main { padding: 0.5rem 0.6rem; margin-top: 0.35rem; border: 1px solid var(--line); border-radius: 8px; background: #fffdf8; }
+.trio-row.main dt { color: var(--ink-2); font-weight: 600; }
+.trio-row.main .nm { font-size: 1.5rem; line-height: 1.2; font-weight: 600; color: var(--ink); }
 .trio-row.main .pc { font-size: 1.15rem; }
-.trio-why { margin: 0.5rem 0 0; font-size: 0.97rem; line-height: 1.65; background: #f6efe2; border-radius: 8px; padding: 0.5rem 0.75rem; }
-.trio-why .lead { font-weight: 600; }
+.trio-why { margin: 0.6rem 0 0; font-size: 0.97rem; line-height: 1.7; background: #f6efe2; border-radius: 8px; padding: 0.6rem 0.8rem; color: var(--ink-2); }
+.trio-why .why-label { display: block; font-size: 0.82rem; color: var(--hint); font-weight: 600; margin-bottom: 0.15rem; }
+.trio-why .lead { font-weight: 400; color: var(--ink); }
 .trio .tie { font-size: 0.9rem; color: var(--ink-2); margin: 0.3rem 0 0; }
 
 /* 계산과 해석 사이(요약) */
@@ -308,7 +337,8 @@ footer.site-foot p { margin: 0.276rem 0; }
 
 /* ---------------------------------------------------------------- 좁은 PC·태블릿 */
 @media (max-width: 1180px) {
-  .reading { grid-template-columns: minmax(0, 1fr); gap: 1.103rem; }
+  .reading { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
+  .ana-col { border-left: 0; padding-left: 0; margin-left: 0; border-top: 1px solid var(--line); padding-top: 1rem; }
   .poem-box { max-height: 60vh; }
   .charts, .lab-grid, .img-grid, .between-grid { grid-template-columns: minmax(0, 1fr); }
 }
@@ -332,6 +362,11 @@ footer.site-foot p { margin: 0.276rem 0; }
   .reading { padding: 0.966rem; }
   .poem-box { max-height: 60vh; min-height: 13.793rem; font-size: 1.13rem; }
   .trio-row { grid-template-columns: 6.4rem minmax(0, 1fr); }
+  .emo-btn { min-height: 44px; border-radius: 10px; }
+  .ratios { grid-template-columns: max-content minmax(2rem, 1fr) 3.4em; gap: 0.35rem 0.55rem; }
+  .ratio-head { display: block; }
+  .ratio-hint { margin-top: 0.2rem; }
+  .toc a { height: 2.4rem; }
   .tri-emo { grid-template-columns: 5.6rem minmax(0, 1fr); }
   .miss dl { grid-template-columns: minmax(0, 1fr); }
   .miss dt { margin-top: 0.3rem; }
@@ -372,7 +407,7 @@ footer.site-foot p { margin: 0.276rem 0; }
     <section class="side-sec side-list">
       <h2 class="side-title">시 목록</h2>
       <label for="q" class="sr-label">제목이나 시인으로 찾기</label>
-      <input id="q" type="search" placeholder="제목·시인 찾기" autocomplete="off">
+      <div class="search"><svg class="search-ic" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12.8 12.8 17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="제목·시인 찾기" autocomplete="off"></div>
       <span id="listCount" class="muted small" aria-live="polite"></span>
       <nav aria-label="시 목록"><ul id="poemList" class="poem-list"></ul></nav>
       <p id="listEmpty" class="notice small" hidden>찾는 제목이나 시인이 목록에 없습니다. 검색어를 지우면 전체 목록이 다시 보입니다.</p>
@@ -431,8 +466,12 @@ footer.site-foot p { margin: 0.276rem 0; }
       <div class="ana-col" aria-labelledby="anaTitle">
         <h2 id="anaTitle" class="sr-label">분석 결과</h2>
         <div id="trio" class="trio" aria-live="polite"></div>
-        <p class="ratio-head small"><strong>결합 결과의 감정 비율</strong> <span id="ratioMethod" class="muted"></span></p>
-        <ul id="ratios" class="ratios" aria-label="결합 결과의 감정 비율"></ul>
+        <div class="ratio-head">
+          <h3 class="ratio-title">결합 결과의 감정 비율 <span id="ratioMethod" class="ratio-method"></span></h3>
+          <p class="ratio-hint" id="ratioHint">감정 이름을 눌러 보세요. 시에서 감지된 시어와 해당 행을 확인할 수 있어요.</p>
+        </div>
+        <ul id="ratios" class="ratios" aria-label="결합 결과의 감정 비율" aria-describedby="ratioHint"></ul>
+        <div id="emoNote" class="emo-note" aria-live="polite" hidden></div>
         <p class="small muted ratio-note">비율은 사전이 센 시어와 해석 프로필을 섞은 감정 구성이며, 시가 그 감정일 확률이나 정확도가 아닙니다.</p>
         <div id="interp" class="interp"></div>
       </div>
@@ -3026,6 +3065,16 @@ window.POEM_DATA = [
       }, { rootMargin: "-20% 0px -70% 0px" });
       links.forEach((a) => { const t = document.getElementById(a.getAttribute("href").slice(1)); if (t) io.observe(t); });
     }
+    // 휴대폰 등에서 목차가 옆으로 더 있으면 가장자리에 흐림 표시
+    const tul = document.querySelector("#toc ul");
+    const edge = () => {
+      const more = tul.scrollWidth > tul.clientWidth + 2;
+      $("toc").classList.toggle("more-right", more && tul.scrollLeft + tul.clientWidth < tul.scrollWidth - 2);
+      $("toc").classList.toggle("more-left", more && tul.scrollLeft > 2);
+    };
+    tul.addEventListener("scroll", edge, { passive: true });
+    window.addEventListener("resize", edge);
+    edge();
     const top = $("toTop");
     top.addEventListener("click", () => { window.scrollTo({ top: 0, behavior: smooth() }); $("q").focus({ preventScroll: true }); });
     const onScroll = () => { top.hidden = window.scrollY < 600; };
@@ -3187,7 +3236,7 @@ window.POEM_DATA = [
       if (h.start > pos) out.push(l.text.slice(pos, h.start));
       const e = S.emo.get(h.k);
       out.push(el("span", {
-        class: "hit" + (litWord && h.w === litWord ? " lit" : ""), style: `--c:${e.color}`, "data-w": h.w,
+        class: "hit" + (litWord && h.w === litWord ? " lit" : ""), style: `--c:${e.color}`, "data-w": h.w, "data-k": h.k,
       }, h.shown, el("sup", { "aria-hidden": "true", text: mark(h.k) })));
       pos = h.end;
     }
@@ -3225,8 +3274,10 @@ window.POEM_DATA = [
       b.classList.toggle("lit", !!S.focus && m);
       b.classList.toggle("dim", !!S.focus && !m);
       b.setAttribute("aria-pressed", String(S.line === l.no));
-      for (const h of b.querySelectorAll(".hit")) h.classList.toggle("lit", !!S.focus && S.focus.type === "word" && h.dataset.w === S.focus.w);
+      for (const h of b.querySelectorAll(".hit")) h.classList.toggle("lit", !!S.focus && ((S.focus.type === "word" && h.dataset.w === S.focus.w) || (S.focus.type === "emo" && h.dataset.k === S.focus.k)));
     }
+    const box = $("poemBox");
+    if (S.focus && S.focus.type === "emo") box.style.setProperty("--fc", S.emo.get(S.focus.k).color); else box.style.removeProperty("--fc");
   }
   function scrollLineIntoBox(no) {
     const box = $("poemBox");
@@ -3250,9 +3301,12 @@ window.POEM_DATA = [
     if (S.orig && f) { S.orig = false; renderPoem(); }
     const same = f && S.focus && f.type === S.focus.type && (f.k === S.focus.k && f.w === S.focus.w);
     S.focus = same && !opt.force ? null : f;
+    const ae = document.activeElement;
+    const refocus = ae && ae.closest && ae.closest("#ratios") ? `#ratios button[data-k="${ae.dataset.k}"]` : null;
     updateLineClasses();
     renderLineInfo();
     renderAnalysis();
+    if (refocus) { const b = document.querySelector(refocus); if (b) b.focus({ preventScroll: true }); }
     renderDiagram();
     updateFocusNote();
     if (S.focus) {
@@ -3260,6 +3314,51 @@ window.POEM_DATA = [
       if (first) scrollLineIntoBox(first.no);
     }
   }
+  // 받침 있는 말 뒤 ‘으로’, 받침 없거나 ㄹ 받침 뒤 ‘로’
+  function josaRo(word) {
+    const c = word.charCodeAt(word.length - 1);
+    const t = c >= 0xac00 && c <= 0xd7a3 ? (c - 0xac00) % 28 : 0;
+    return word + (t && t !== 8 ? "으로" : "로");
+  }
+  // 감정 버튼을 누른 결과를 감정 목록 바로 아래에서 설명한다(사전 근거와 해석 프로필 값을 구분)
+  function renderEmoNote() {
+    const box = clear($("emoNote"));
+    if (!S.focus || S.focus.type !== "emo") { box.hidden = true; return; }
+    const p = S.byId.get(S.sel), lx = S.lex.get(p.id);
+    const k = S.focus.k, e = S.emo.get(k), j = S.K.indexOf(k);
+    const fv = finOf(p.id), ph = S.phat.get(p.id);
+    const fp = isZero(fv) ? 0 : pct(fv)[j];
+    const pv = ph ? pct(ph)[j] : 0;
+    const wp = Math.round(S.w * 100);
+    const lines = lx.lines.filter((l) => l.counts[j] > 0);
+    box.style.setProperty("--c", e.color);
+    const acts = el("div", { class: "emo-note-acts" });
+    if (lines.length) {
+      const words = new Map();
+      for (const l of lines) for (const h of l.hits) if (h.k === k) words.set(h.shown, (words.get(h.shown) || 0) + 1);
+      const wl = [...words.entries()].sort((a, b) => b[1] - a[1]);
+      box.appendChild(el("p", { class: "emo-note-main", text: `${josaRo(e.name)} 감지된 시어가 있는 ${lines.length}개 행을 강조했어요.` }));
+      box.appendChild(el("p", { class: "emo-note-sub", text: `감지 시어: ${wl.slice(0, 6).map(([w, n]) => (n > 1 ? `${w} ×${n}` : w)).join(" · ")}${wl.length > 6 ? ` 외 ${wl.length - 6}종` : ""} (${lines.map((l) => l.no).slice(0, 8).join("·")}${lines.length > 8 ? "…" : ""}행)` }));
+      if (wp === 0) box.appendChild(el("p", { class: "emo-note-sub", text: "지금 가중치(사전 0%)에서는 이 사전 값이 결합 비율에 반영되지 않아요." }));
+      else if (ph && pv > 0 && wp < 100) box.appendChild(el("p", { class: "emo-note-sub", text: `결합 비율 ${fmt(fp)}%에는 사전 값과 해석 프로필 값(${fmt(pv)}%)이 함께 반영되어 있어요.` }));
+      acts.appendChild(el("button", { type: "button", class: "tbtn only-stacked", onclick: () => {
+        $("poemBox").scrollIntoView({ behavior: smooth(), block: "start" });
+        scrollLineIntoBox(lines[0].no);
+      } }, "본문에서 보기"));
+    } else if (fp > 0) {
+      box.appendChild(el("p", { class: "emo-note-main", text: "이 감정은 사전에서 감지된 시어가 없어요. 표시된 비율은 해석 프로필에서 반영된 값이에요." }));
+      if (p.profileNote) box.appendChild(el("p", { class: "emo-note-sub", text: `해석 프로필 근거: ${p.profileNote}` }));
+      acts.appendChild(el("button", { type: "button", class: "tbtn", onclick: () => { goTo("lab"); } }, "상세 비교에서 보기"));
+    } else if (pv > 0 && wp >= 100) {
+      box.appendChild(el("p", { class: "emo-note-main", text: `이 감정은 사전에서 감지된 시어가 없어요. 해석 프로필 값(${fmt(pv)}%)은 있지만 지금 가중치(사전 100%)에서는 반영되지 않아 0%예요.` }));
+    } else {
+      box.appendChild(el("p", { class: "emo-note-main", text: "이 감정은 사전에서 감지된 시어도, 해석 프로필 값도 없어서 0%예요. 본문에서 강조할 행이 없어요." }));
+    }
+    acts.appendChild(el("button", { type: "button", class: "tbtn", onclick: () => setFocus(null) }, "강조 해제"));
+    box.appendChild(acts);
+    box.hidden = false;
+  }
+
   function updateFocusNote() {
     const note = $("focusNote");
     $("btnClearFocus").hidden = !S.focus;
@@ -3270,8 +3369,8 @@ window.POEM_DATA = [
       const e = S.emo.get(S.focus.k);
       const j = S.K.indexOf(S.focus.k);
       const v = pct(finOf(S.sel))[j];
-      t = n ? `‘${e.name}’ 시어가 감지된 행 ${n}개를 강조했습니다.`
-            : `사전이 ‘${e.name}’으로 감지한 행은 없습니다.` + (v > 0 ? ` 지금 보이는 ${fmt(v)}%는 해석 프로필에서 온 값입니다.` : "");
+      t = n ? `${josaRo(e.name)} 감지된 시어가 있는 ${n}개 행을 강조했어요.`
+            : `사전에서 ${josaRo(e.name)} 감지된 시어가 없어 강조할 행이 없어요.` + (v > 0 ? ` 지금 보이는 ${fmt(v)}%는 해석 프로필에서 반영된 값이에요.` : "");
     } else {
       t = `시어 ‘${S.focus.label || S.focus.w}’이(가) 나온 행 ${n}개를 강조했습니다.`;
     }
@@ -3397,7 +3496,7 @@ window.POEM_DATA = [
     row("결합 결과", t.fin, "main", `지배 정서 · ${t.prof && t.lx.total > 0 ? `사전 ${wp}% 기준` : methodLabel(p)}`);
     box.appendChild(dl);
     const why = trioWhy(p, t);
-    box.appendChild(el("p", { class: "trio-why" }, el("span", { class: "lead", text: why[0] }), why[1] ? " " + why[1] : ""));
+    box.appendChild(el("p", { class: "trio-why" }, el("span", { class: "why-label", text: "왜 이런 결과가 나왔나요" }), el("span", { class: "lead", text: why[0] }), why[1] ? " " + why[1] : ""));
     if (!t.fin) box.appendChild(el("p", { class: "tie", text: "사전에서 감지한 시어가 없어 비율과 지배 정서를 만들지 않았습니다. 가중치를 100% 아래로 내리면 사람이 정한 해석 프로필로 볼 수 있습니다." }));
     else if (t.fin.ties.length > 1) box.appendChild(el("p", { class: "tie", text: `결합 결과가 ${names(t.fin.ties)} 동률이라 범주 순서상 앞의 ${josa(S.emo.get(t.fin.k).name, "을/를")} 지배 정서로 표시합니다.` }));
     // 근거가 적은 결과 경고(검증 사례 2에서 추가)
@@ -3415,11 +3514,14 @@ window.POEM_DATA = [
     S.EMOS.forEach((e, j) => {
       const on = S.focus && S.focus.type === "emo" && S.focus.k === e.k;
       ul.appendChild(el("li", null,
-        el("button", { type: "button", "aria-pressed": String(!!on), "aria-label": `${e.name} ${dom ? fmt(ps[j]) + "%" : "값 없음"}. 누르면 이 감정이 감지된 행을 강조`, onclick: () => setFocus({ type: "emo", k: e.k }) },
-          el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), e.name),
+        el("button", { type: "button", class: "emo-btn", "data-k": e.k, "aria-pressed": String(!!on), style: `--c:${e.color};--cl:${hexA(e.color, 0.13)}`,
+          "aria-label": `${e.name} ${dom ? fmt(ps[j]) + "%" : "값 없음"}. ${on ? "선택됨. 다시 누르면 강조 해제" : "누르면 이 감정의 시어와 행을 강조"}`, onclick: () => setFocus({ type: "emo", k: e.k }) },
+          el("span", { class: "chk", "aria-hidden": "true", text: on ? "✓" : "" }),
+          el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), el("span", { class: "en", text: e.name })),
         el("div", { class: "bar", "aria-hidden": "true" }, el("i", { style: `--c:${e.color};width:${dom ? ps[j] : 0}%` })),
         el("span", { class: "v", text: dom ? fmt(ps[j]) + "%" : "—" })));
     });
+    renderEmoNote();
     const it = clear($("interp"));
     const dl = el("dl");
     const row = (k, v) => { dl.appendChild(el("dt", { text: k })); dl.appendChild(el("dd", null, v)); };
