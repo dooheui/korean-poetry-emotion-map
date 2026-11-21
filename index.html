@@ -8,169 +8,3517 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23f6f1e7%22/%3E%3Cpath d=%22M6 22 C12 10 20 10 26 22%22 stroke=%22%237c3b2a%22 stroke-width=%223%22 fill=%22none%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- 글꼴을 못 받아도 아래 CSS의 시스템 글꼴로 본문이 그대로 보인다(display=swap) -->
+<!-- 글꼴을 못 받아도 시스템 글꼴로 본문이 그대로 보인다(display=swap) -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap">
-<link rel="stylesheet" href="css/style.css">
+<style>
+/* 시의 결 — 따뜻한 아이보리 바탕, 짙은 먹색 글자, 절제된 강조색 하나 */
+:root {
+  --bg: #f4efe4;
+  --paper: #fbf8f1;
+  --ink: #2a2521;
+  --ink-2: #4a433c;
+  --muted: #6b6359;
+  --line: #e2d9c8;
+  --line-2: #cfc4b0;
+  --accent: #7c3b2a;
+  --accent-soft: #f0e2d6;
+  --focus: #1f5fa8;
+  --f-poem: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", "Batang", "바탕", "Source Han Serif K", "Noto Serif CJK KR", serif;
+  --f-ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+  --f-old: "Noto Serif CJK KR", "Source Han Serif K", "Noto Sans CJK KR", "함초롬바탕", "HCR Batang", "Batang", "Noto Serif KR", serif;
+  --r: 10px;
+  --side: 248px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 14.5px; line-height: 1.6; overflow-x: hidden; }
+a { color: var(--accent); }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.small { font-size: 12.5px; }
+.muted { color: var(--muted); }
+.sr-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; background: var(--ink); color: var(--paper); padding: 8px 12px; z-index: 10; }
+.skip:focus { left: 8px; }
+
+/* ---------------------------------------------------------------- 머리글(큰 히어로 없음) */
+header.site {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 32px; flex-wrap: wrap;
+  padding: 14px 28px 12px; border-bottom: 1px solid var(--line); max-width: 1480px; margin: 0 auto;
+}
+.kicker { margin: 0; font-size: 11.5px; letter-spacing: .06em; color: var(--muted); }
+.brand h1 { font-family: var(--f-poem); font-weight: 600; font-size: 30px; letter-spacing: .03em; margin: 0; line-height: 1.15; }
+.intro { margin: 0; max-width: 470px; font-size: 12.5px; color: var(--ink-2); }
+.notice { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 6px; margin: 8px 0; }
+.load-error { margin: 16px 28px; padding: 14px 16px; border: 1px solid var(--accent); background: var(--accent-soft); border-radius: var(--r); }
+
+/* ---------------------------------------------------------------- 두 단 배치: 왼쪽 목록·설정 | 오른쪽 결과 */
+.layout { display: grid; grid-template-columns: var(--side) minmax(0, 1fr); gap: 18px; padding: 14px 28px 28px; max-width: 1480px; margin: 0 auto; align-items: start; }
+.side { position: sticky; top: 10px; max-height: calc(100vh - 20px); overflow-y: auto; padding-right: 4px; }
+.side-sec { padding: 0 0 12px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+.side-title { font-size: 11.5px; letter-spacing: .08em; color: var(--muted); font-weight: 500; margin: 0 0 6px; }
+#q { width: 100%; padding: 6px 9px; border: 1px solid var(--line-2); border-radius: 7px; background: var(--paper); font-size: 13px; }
+#listCount { display: block; min-height: 0; }
+.poem-list { list-style: none; margin: 6px 0 0; padding: 0 2px 0 0; display: grid; gap: 1px; max-height: max(220px, calc(100vh - 360px)); overflow-y: auto; overscroll-behavior: contain; }
+.poem-list button {
+  width: 100%; text-align: left; border: 1px solid transparent; background: none; border-radius: 8px; padding: 3px 8px;
+  display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 0 8px; align-items: baseline; cursor: pointer;
+}
+.poem-list .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--line-2)); align-self: center; grid-row: 1 / span 2; }
+.poem-list .t { font-family: var(--f-poem); font-size: 14px; font-weight: 600; line-height: 1.35; }
+.poem-list .p { grid-column: 2; font-size: 11.5px; color: var(--muted); line-height: 1.3; }
+.poem-list button:hover { background: #efe8da; }
+.poem-list button[aria-pressed="true"] { background: var(--paper); border-color: var(--line-2); box-shadow: 0 1px 2px rgba(42,37,33,.06); }
+.weight label { font-weight: 700; font-size: 13px; }
+.weight output { color: var(--accent); font-variant-numeric: tabular-nums; }
+.weight input[type=range] { width: 100%; accent-color: var(--accent); margin: 4px 0 0; }
+.range-ends { display: flex; justify-content: space-between; }
+.weight p { margin: 4px 0 0; }
+.side-mine p { margin: 0 0 6px; }
+
+main { display: grid; gap: 16px; min-width: 0; }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 20px; min-width: 0; }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.sec-title { font-family: var(--f-poem); font-weight: 600; font-size: 19px; margin: 0; }
+.mini-title { font-size: 13.5px; font-weight: 700; margin: 12px 0 6px; }
+.tbtn { display: inline-block; border: 1px solid var(--line-2); background: transparent; border-radius: 7px; padding: 3px 10px; cursor: pointer; font-size: 12.5px; text-decoration: none; color: var(--ink); }
+.tbtn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.btn { border: 0; background: var(--ink); color: var(--paper); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 500; }
+
+/* ---------------------------------------------------------------- 1단: 본문 | 분석 (첫 화면에 F-01~F-05) */
+.reading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px; padding: 18px 22px; }
+.poem-head h2 { font-family: var(--f-poem); font-weight: 600; font-size: 25px; margin: 0; line-height: 1.25; }
+.poem-head p { margin: 2px 0 0; }
+.poem-tools { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.focus-note { margin: 6px 0 0; color: var(--accent); }
+.poem-box {
+  margin-top: 10px; max-height: calc(100vh - 290px); min-height: 260px; overflow-y: auto; overflow-x: hidden;
+  padding: 4px 2px; font-family: var(--f-poem); font-size: 15px; line-height: 1.85; overscroll-behavior: contain;
+}
+.poem-box.old { font-family: var(--f-old); }
+.stanza { margin: 0 0 12px; }
+.ln {
+  display: grid; grid-template-columns: 1.8em minmax(0, 1fr) auto; gap: 4px; align-items: baseline;
+  padding: 0 4px; border-radius: 6px; cursor: pointer; border: 0; background: none; width: 100%; text-align: left; font: inherit; color: inherit;
+}
+.ln:hover { background: #f3ede1; }
+.ln.sel { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.ln.dim { opacity: .38; }
+.ln.lit { background: #f5ecd9; }
+.ln .no { font-family: var(--f-ui); font-size: 10.5px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.ln .tx { overflow-wrap: anywhere; word-break: keep-all; }
+.ln .cnt { font-family: var(--f-ui); font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+.hit { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: var(--c, var(--accent)); }
+.hit sup { font-family: var(--f-ui); font-size: 9px; color: var(--ink-2); margin-left: 1px; vertical-align: super; line-height: 0; }
+.nomarks .hit { text-decoration: none; }
+.nomarks .hit sup, .nomarks .ln .cnt { display: none; }
+.hit.lit { background: #efe1c6; border-radius: 3px; }
+.legend { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: center; }
+.legend li { display: inline-flex; align-items: center; gap: 5px; }
+.legend .lab { color: var(--muted); }
+.line-info { margin-top: 6px; font-size: 13px; border-top: 1px solid var(--line); padding-top: 6px; }
+.line-info p { margin: 2px 0; }
+.line-info .q { font-family: var(--f-poem); font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.chip { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 9px; background: var(--paper); font-size: 12.5px; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.sw { width: 10px; height: 10px; border-radius: 2px; background: var(--c); display: inline-block; flex: none; }
+.biblio { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; font-size: 13px; }
+.biblio summary { cursor: pointer; font-weight: 500; }
+.biblio dl { display: grid; grid-template-columns: 7em minmax(0, 1fr); gap: 4px 10px; margin: 8px 0; }
+.biblio dt { color: var(--muted); }
+.biblio dd { margin: 0; overflow-wrap: anywhere; }
+.biblio ul { margin: 4px 0; padding-left: 18px; }
+
+.ana-col { min-width: 0; }
+.dominant { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.dominant .lab { font-size: 11.5px; color: var(--muted); width: 100%; letter-spacing: .04em; }
+.dominant .nm { font-family: var(--f-poem); font-size: 26px; font-weight: 600; line-height: 1.2; }
+.dominant .pill { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line-2); border-radius: 999px; padding: 0 9px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.dominant .tie { font-size: 12.5px; color: var(--ink-2); width: 100%; }
+.low-ev { color: var(--accent) !important; }
+.ratio-head { margin: 8px 0 4px; }
+.ratios { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.ratios li { display: grid; grid-template-columns: 7em minmax(0, 1fr) 3.4em; gap: 8px; align-items: center; }
+.ratios button { all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12.5px; border-radius: 4px; line-height: 1.55; }
+.ratios button:focus-visible { outline: 3px solid var(--focus); }
+.ratios button[aria-pressed="true"] { font-weight: 700; color: var(--accent); }
+.bar { height: 9px; background: #eee7da; border-radius: 5px; position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--c); border-radius: 5px; }
+.ratios .v { text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.interp { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 13.5px; }
+.interp dl { display: grid; grid-template-columns: 3.6em minmax(0, 1fr); gap: 2px 10px; margin: 0 0 6px; }
+.interp dt { color: var(--muted); font-size: 12px; }
+.interp dd { margin: 0; font-weight: 500; }
+.interp .mini-title { margin: 8px 0 2px; font-size: 12px; color: var(--muted); font-weight: 500; }
+.interp p.body { margin: 0; line-height: 1.75; }
+.interp blockquote { margin: 10px 0 0; padding: 2px 0 2px 12px; border-left: 3px solid var(--ink-2); font-family: var(--f-poem); font-size: 14px; }
+
+/* ---------------------------------------------------------------- 차트·이미지·추천·지도·히트맵 */
+.charts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 640px), 1fr)); gap: 16px; }
+.chart-box svg { display: block; max-width: 100%; height: auto; }
+.chart-box text { font-family: var(--f-ui); fill: var(--ink-2); }
+.flow-pick { min-height: 2.2em; margin: 6px 0 0; }
+.flow-bar { cursor: pointer; }
+.flow-bar:focus { outline: none; }
+.flow-bar:focus-visible .hitbox, .flow-bar.sel .hitbox { stroke: var(--focus); stroke-width: 2; }
+.key-solid, .key-dash { display: inline-block; width: 20px; height: 0; border-top: 2px solid var(--ink-2); vertical-align: middle; }
+.key-dash { border-top-style: dashed; }
+.dia-node { cursor: pointer; }
+.dia-node:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
+.img-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
+#emoCanvas { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); background: #f8f3e8; }
+#imgPrompt, .memo textarea, #mineText { width: 100%; border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 10px; background: #fffdf8; resize: vertical; font-size: 13px; }
+.row-btns { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+.rec-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.rec-list button { width: 100%; text-align: left; border: 1px solid var(--line-2); border-radius: var(--r); background: #fffdf8; padding: 10px 12px; cursor: pointer; }
+.rec-list button:hover { border-color: var(--accent); }
+.rec-list .rt { font-family: var(--f-poem); font-size: 16px; display: block; }
+.rec-list .rs { font-size: 21px; font-variant-numeric: tabular-nums; color: var(--accent); }
+.heat-box { overflow: auto; }
+.heat { border-collapse: separate; border-spacing: 2px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.heat th { font-weight: 500; color: var(--ink-2); padding: 2px 3px; white-space: nowrap; position: sticky; top: 0; background: var(--paper); z-index: 1; }
+.heat th.row { position: sticky; left: 0; text-align: left; z-index: 2; }
+.heat thead th.row { z-index: 3; }
+.heat th.row button { all: unset; cursor: pointer; font-family: var(--f-poem); }
+.heat th.row button:focus-visible { outline: 3px solid var(--focus); }
+.heat tr.sel th.row button { font-weight: 700; color: var(--accent); }
+.heat td { min-width: 2.6em; text-align: center; padding: 2px; border-radius: 3px; }
+.heat tr.sel td { outline: 1.5px solid var(--accent); }
+.pca-pt { cursor: pointer; }
+.pca-pt:focus-visible circle { stroke: var(--focus); stroke-width: 3; }
+
+/* 계산과 해석 사이 */
+.lab-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+.data-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.data-table th, .data-table td { border-bottom: 1px solid var(--line); padding: 3px 8px; text-align: right; white-space: nowrap; }
+.data-table th:first-child, .data-table td:first-child { text-align: left; }
+.data-table thead th { font-size: 12px; color: var(--muted); font-weight: 500; }
+.pos { color: #7c3b2a; }
+.neg { color: #2e5f7a; }
+.scroll-x { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+.memo-list { list-style: none; padding: 0; margin: 8px 0 0; font-size: 13px; }
+.memo-list li { border-top: 1px dashed var(--line-2); padding: 4px 0; }
+.memo-list button { all: unset; cursor: pointer; color: var(--accent); text-decoration: underline; }
+
+#mineOut .mine-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 12px; }
+.mine-lines { font-family: var(--f-poem); list-style: none; padding: 0; margin: 0; }
+.mine-lines li { border-bottom: 1px dashed var(--line); padding: 3px 0; overflow-wrap: anywhere; }
+.mine-lines .meta { font-family: var(--f-ui); font-size: 12px; color: var(--muted); display: block; }
+
+.method-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.method-cats article { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fffdf8; }
+.method-cats h3 { margin: 0 0 4px; font-size: 14.5px; display: flex; gap: 6px; align-items: center; }
+.method-cats p { margin: 0 0 6px; font-size: 13px; }
+.method-cats .words { font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
+
+footer.site-foot { border-top: 1px solid var(--line); padding: 16px 28px 28px; color: var(--ink-2); max-width: 1480px; margin: 0 auto; }
+footer.site-foot p { margin: 4px 0; }
+
+/* ---------------------------------------------------------------- 좁은 PC·태블릿 */
+@media (max-width: 1180px) {
+  .reading { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .poem-box { max-height: 60vh; }
+  .charts, .lab-grid, .img-grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* ---------------------------------------------------------------- 휴대폰: 한 열, 시 목록 가로 스크롤 */
+@media (max-width: 768px) {
+  header.site { padding: 12px 14px 10px; }
+  .brand h1 { font-size: 24px; }
+  .layout { grid-template-columns: minmax(0, 1fr); padding: 10px 12px 24px; gap: 12px; }
+  .side { position: static; max-height: none; overflow: visible; padding: 0; }
+  .side-sec { margin-bottom: 8px; padding-bottom: 8px; }
+  .side-mine { display: none; }
+  .poem-list { display: flex; max-height: none; overflow-y: hidden; overflow-x: auto; gap: 6px; padding-bottom: 6px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .poem-list li { flex: none; scroll-snap-align: start; }
+  .poem-list button { width: auto; border-color: var(--line-2); background: var(--paper); white-space: nowrap; border-radius: 999px; padding: 3px 12px; }
+  .poem-list .p { display: none; }
+  .poem-list .dot { grid-row: auto; }
+  .poem-list button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .panel { padding: 14px; }
+  .reading { padding: 14px; }
+  .poem-box { max-height: 58vh; min-height: 200px; font-size: 15px; }
+  .ln { grid-template-columns: 1.6em minmax(0, 1fr); }
+  .ln .cnt { grid-column: 2; }
+  .rec-list { grid-template-columns: minmax(0, 1fr); }
+  #mineOut .mine-grid { grid-template-columns: minmax(0, 1fr); }
+  .heat-box { max-height: 70vh; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  .side, .poem-tools, #mine { display: none; }
+  .layout { grid-template-columns: 1fr; }
+  .poem-box { max-height: none; overflow: visible; }
+}
+</style>
 </head>
 <body>
 <a class="skip" href="#reading">본문으로 건너뛰기</a>
 
 <header class="site">
-  <div class="site-top">
-    <div class="brand">
-      <h1>시의 결</h1>
-      <p>한국 근대시의 감정을 사전으로 세어 보고, 그 숫자를 사람의 해석과 나란히 놓아 봅니다.</p>
-    </div>
-    <div class="browse">
-      <label for="q" class="sr-label">제목이나 시인으로 찾기</label>
-      <input id="q" type="search" placeholder="제목·시인 찾기" autocomplete="off">
-      <span id="listCount" class="muted small" aria-live="polite"></span>
-    </div>
+  <div class="brand">
+    <p class="kicker">감성컴퓨팅 실습 · 한국 근대시 감정 분석</p>
+    <h1>시의 결</h1>
   </div>
-  <nav class="poem-nav" aria-label="시 목록">
-    <ul id="poemList" class="poem-list"></ul>
-    <p id="listEmpty" class="notice" hidden>찾는 제목이나 시인이 목록에 없습니다. 검색어를 지우면 전체 목록이 다시 보입니다.</p>
-  </nav>
-  <nav class="jump small" aria-label="화면 안 바로가기">
-    <a href="#reading">읽기</a><a href="#lab">계산과 해석 사이</a><a href="#charts">차트</a><a href="#diagram">시어 연결</a><a href="#recs">비슷한 시</a><a href="#heat">전체 비교</a><a href="#map">감성 지도</a><a href="#mine">내 시 분석</a><a href="#method">범주와 사전</a>
-  </nav>
+  <p class="intro">한국 근대시의 정서를 감정 사전과 사람의 해석으로 함께 읽습니다. 시를 고르면 감정 비율, 행별 흐름, 시어–감정–주제 연결, 감정 이미지, 비슷한 감성의 시가 나타납니다.</p>
 </header>
 
 <div id="loadError" class="load-error" role="alert" hidden></div>
 
-<main id="app">
-  <!-- 1단: 본문(F-02, F-04)과 지배 정서·비율·해석(F-03, F-05) -->
-  <section id="reading" class="reading" aria-label="시 읽기와 분석 결과">
-    <article class="panel poem-panel" aria-labelledby="poemTitle">
-      <header class="poem-head">
-        <h2 id="poemTitle">불러오는 중…</h2>
-        <p id="poemMeta" class="muted"></p>
-        <div class="poem-tools">
-          <button type="button" id="btnMarks" class="tbtn" aria-pressed="true">감지 표시</button>
-          <button type="button" id="btnOrig" class="tbtn" aria-pressed="false" hidden>원문 표기 보기</button>
-          <button type="button" id="btnClearFocus" class="tbtn" hidden>강조 해제</button>
+<div class="layout">
+  <!-- 왼쪽: 시 목록(F-01) → 분석 가중치(F-14) → 내 시 분석(F-11) -->
+  <aside class="side" aria-label="시 목록과 설정">
+    <section class="side-sec">
+      <h2 class="side-title">시 목록</h2>
+      <label for="q" class="sr-label">제목이나 시인으로 찾기</label>
+      <input id="q" type="search" placeholder="제목·시인 찾기" autocomplete="off">
+      <span id="listCount" class="muted small" aria-live="polite"></span>
+      <nav aria-label="시 목록"><ul id="poemList" class="poem-list"></ul></nav>
+      <p id="listEmpty" class="notice small" hidden>찾는 제목이나 시인이 목록에 없습니다. 검색어를 지우면 전체 목록이 다시 보입니다.</p>
+    </section>
+    <section class="side-sec weight">
+      <h2 class="side-title">분석 가중치</h2>
+      <label for="w">감정 사전 반영 비율 <output id="wOut" for="w">50%</output></label>
+      <input id="w" type="range" min="0" max="100" step="10" value="50" aria-describedby="wHelp">
+      <div class="range-ends small muted"><span>해석 중심</span><span>사전 중심</span></div>
+      <p id="wHelp" class="small muted">최종 = 해석 프로필 × (1 − w) + 감정 사전 × w. 바꾸면 비율·지배 정서·차트·이미지·추천·히트맵·감성 지도가 다시 계산되고, 행별 감지 수는 그대로입니다.</p>
+    </section>
+    <section class="side-sec side-mine">
+      <h2 class="side-title">내 시 분석하기</h2>
+      <p class="small muted">직접 쓴 시를 같은 사전으로 분석합니다.</p>
+      <a class="tbtn" href="#mine" id="goMine">입력하러 가기 ↓</a>
+    </section>
+  </aside>
+
+  <main id="app">
+    <!-- 1단: 본문(F-02, F-04) | 지배 정서·비율·해석(F-03, F-05) -->
+    <section id="reading" class="panel reading" aria-label="시 본문과 분석 결과">
+      <article class="poem-col" aria-labelledby="poemTitle">
+        <header class="poem-head">
+          <h2 id="poemTitle">불러오는 중…</h2>
+          <p id="poemMeta" class="muted small"></p>
+          <div class="poem-tools">
+            <button type="button" id="btnMarks" class="tbtn" aria-pressed="true">감지 표시</button>
+            <button type="button" id="btnOrig" class="tbtn" aria-pressed="false" hidden>원문 표기 보기</button>
+            <button type="button" id="btnClearFocus" class="tbtn" hidden>강조 해제</button>
+          </div>
+          <p id="focusNote" class="focus-note small" aria-live="polite" hidden></p>
+        </header>
+        <div id="poemBox" class="poem-box" tabindex="0" aria-label="시 본문. 행을 누르면 그 행의 감지 결과를 봅니다."></div>
+        <p id="origNote" class="small muted" hidden>원문 표기는 비교용으로만 보여 주며 분석은 현대어 칸으로 합니다.</p>
+        <ul id="hitLegend" class="legend small" aria-label="이 시에서 맞춘 시어의 감정"></ul>
+        <section id="lineInfo" class="line-info" aria-live="polite" aria-label="선택한 행"></section>
+        <details class="biblio" id="biblio">
+          <summary>본문 출처와 판본</summary>
+          <div id="biblioBody"></div>
+        </details>
+      </article>
+
+      <div class="ana-col" aria-labelledby="anaTitle">
+        <h2 id="anaTitle" class="sr-label">감정 분석</h2>
+        <div id="dominant" class="dominant"></div>
+        <p class="ratio-head small"><strong>감정 비율</strong> <span id="ratioMethod" class="muted"></span></p>
+        <ul id="ratios" class="ratios" aria-label="감정 비율"></ul>
+        <div id="interp" class="interp"></div>
+      </div>
+    </section>
+
+    <!-- 2단: 차트(F-06, F-07) -->
+    <section id="charts" class="charts">
+      <section class="panel" aria-labelledby="radarTitle">
+        <div class="sec-head"><h2 id="radarTitle" class="sec-title">감정 프로필</h2><span class="small muted">10개 정서, 비율(%)</span></div>
+        <div id="radar" class="chart-box"></div>
+        <details class="small"><summary>값 표 보기</summary><div class="scroll-x"><table id="radarTable" class="data-table small"></table></div></details>
+      </section>
+      <section class="panel" aria-labelledby="flowTitle">
+        <div class="sec-head"><h2 id="flowTitle" class="sec-title">행별 감정 흐름</h2><span class="small muted">각 행에서 감지된 시어 수</span></div>
+        <div id="flow" class="chart-box scroll-x"></div>
+        <ul id="flowLegend" class="legend small"></ul>
+        <p id="flowPick" class="flow-pick small" aria-live="polite"></p>
+      </section>
+    </section>
+
+    <!-- 3단: F-08 -->
+    <section id="diagram" class="panel" aria-labelledby="diaTitle">
+      <div class="sec-head"><h2 id="diaTitle" class="sec-title">시어 → 감정 → 주제</h2>
+      <span class="small muted"><span class="key-solid"></span> 계산(실제 감지) <span class="key-dash"></span> 해석</span></div>
+      <div id="dia" class="chart-box scroll-x"></div>
+    </section>
+
+    <!-- 4단: F-13 -->
+    <section id="image" class="panel" aria-labelledby="imgTitle">
+      <div class="sec-head"><h2 id="imgTitle" class="sec-title">감정 이미지</h2><span class="small muted">최종 감정 비율로 브라우저가 직접 그림</span></div>
+      <div class="img-grid">
+        <div>
+          <canvas id="emoCanvas" width="720" height="400" role="img" aria-label="감정 이미지"></canvas>
+          <ul id="imgLegend" class="legend small"></ul>
+          <div class="row-btns"><button type="button" id="imgSave" class="tbtn">PNG로 저장</button></div>
         </div>
-        <p id="focusNote" class="focus-note small" aria-live="polite" hidden></p>
-      </header>
-      <div id="poemBox" class="poem-box" tabindex="0" aria-label="시 본문. 행을 누르면 그 행의 감지 결과를 봅니다."></div>
-      <p id="origNote" class="small muted" hidden>원문 표기는 비교용으로만 보여 주며 분석은 현대어 칸으로 합니다.</p>
-      <section id="lineInfo" class="line-info" aria-live="polite" aria-label="선택한 행"></section>
-      <details class="biblio" id="biblio">
-        <summary>본문 출처와 판본</summary>
-        <div id="biblioBody"></div>
-      </details>
-    </article>
-
-    <section class="panel analysis-panel" aria-labelledby="anaTitle">
-      <h2 id="anaTitle" class="sec-title">감정 분석</h2>
-      <div id="dominant" class="dominant"></div>
-      <div class="weight">
-        <label for="w">사전 가중치 <output id="wOut" for="w">50%</output></label>
-        <input id="w" type="range" min="0" max="100" step="10" value="50" aria-describedby="wHelp">
-        <p id="wHelp" class="small muted">100%는 사전만, 0%는 사람이 정한 해석 프로필만 씁니다. 바꾸면 비율·지배 정서·차트·추천·히트맵·감성 지도가 다시 계산됩니다. 행별 감지 수는 바뀌지 않습니다.</p>
+        <div>
+          <h3 class="mini-title">AI 이미지용 프롬프트</h3>
+          <p class="small muted">아래 글을 복사해 이미지 생성 서비스에 직접 붙여 넣어 쓰세요. 이 웹앱은 어떤 서비스도 호출하지 않고 API 키도 쓰지 않습니다.</p>
+          <textarea id="imgPrompt" rows="9" readonly aria-label="AI 이미지용 프롬프트"></textarea>
+          <div class="row-btns"><button type="button" id="imgCopy" class="tbtn">프롬프트 복사</button><span id="imgCopyMsg" class="small muted" aria-live="polite"></span></div>
+        </div>
       </div>
-      <h3 class="mini-title">감정 비율 <span id="ratioMethod" class="small muted"></span></h3>
-      <ul id="ratios" class="ratios" aria-label="감정 비율"></ul>
-      <div id="interp" class="interp"></div>
     </section>
-  </section>
 
-  <!-- 계산과 해석 사이(차별화 기능) -->
-  <section id="lab" class="panel lab" aria-labelledby="labTitle">
-    <h2 id="labTitle" class="sec-title">계산과 해석 사이</h2>
-    <p class="small muted">사전이 센 숫자와 사람이 읽은 해석을 나란히 둡니다. 감정 이름이나 시어를 누르면 해당 행이 강조되고, 행을 누르면 그 행에서 감지된 시어를 봅니다.</p>
-    <div class="lab-grid">
-      <div>
-        <h3 class="mini-title">사전만 vs 결합 결과</h3>
-        <div class="scroll-x"><table id="compare" class="data-table"></table></div>
-        <p class="small muted">차이(%p)는 해석 프로필을 섞어서 생긴 변화량입니다. 차이가 작다고 사전이 더 정확하다는 뜻은 아닙니다. 프로필도 사람의 한 가지 읽기일 뿐입니다.</p>
-        <p id="profileNote" class="small"></p>
+    <!-- 5단: F-09 -->
+    <section id="recs" class="panel" aria-labelledby="recTitle">
+      <div class="sec-head"><h2 id="recTitle" class="sec-title">비슷한 감성의 시</h2><span class="small muted">감정 벡터 코사인 유사도 상위 3편 — 주제가 같다는 뜻은 아닙니다</span></div>
+      <ol id="recList" class="rec-list"></ol>
+    </section>
+
+    <!-- 6단: F-12 | F-10 -->
+    <section class="pair">
+      <section id="map" class="panel" aria-labelledby="mapTitle">
+        <div class="sec-head"><h2 id="mapTitle" class="sec-title">감성 지도</h2><span class="small muted">주성분분석(PCA) 2차원</span></div>
+        <div id="pca" class="chart-box scroll-x"></div>
+        <p id="pcaAxes" class="small"></p>
+      </section>
+      <section id="heat" class="panel" aria-labelledby="heatTitle">
+        <div class="sec-head"><h2 id="heatTitle" class="sec-title">전체 비교</h2><span class="small muted">작품 × 정서 최종 비율(%)</span></div>
+        <div id="heatBox" class="scroll-x heat-box"></div>
+      </section>
+    </section>
+
+    <!-- 차별화: 계산과 해석 사이 -->
+    <section id="lab" class="panel lab" aria-labelledby="labTitle">
+      <div class="sec-head"><h2 id="labTitle" class="sec-title">계산과 해석 사이</h2><span class="small muted">사전이 센 숫자와 사람이 읽은 해석을 나란히</span></div>
+      <p class="small muted">감정 이름이나 시어를 누르면 해당 행이 강조되고, 행을 누르면 그 행에서 감지된 시어를 봅니다.</p>
+      <div class="lab-grid">
+        <div>
+          <h3 class="mini-title">사전만 vs 결합 결과</h3>
+          <div class="scroll-x"><table id="compare" class="data-table"></table></div>
+          <p class="small muted">차이(%p)는 해석 프로필을 섞어서 생긴 변화량입니다. 차이가 작다고 사전이 더 정확하다는 뜻은 아닙니다. 프로필도 사람의 한 가지 읽기일 뿐입니다.</p>
+          <p id="profileNote" class="small"></p>
+        </div>
+        <div>
+          <h3 class="mini-title">독자 메모</h3>
+          <div id="memo" class="memo"></div>
+        </div>
       </div>
-      <div>
-        <h3 class="mini-title">독자 메모</h3>
-        <div id="memo" class="memo"></div>
+    </section>
+
+    <!-- F-11 -->
+    <section id="mine" class="panel" aria-labelledby="mineTitle">
+      <div class="sec-head"><h2 id="mineTitle" class="sec-title">내 시 분석</h2><span class="small muted">같은 사전·엔진, 해석 프로필 없음</span></div>
+      <p class="small muted">입력한 글은 이 브라우저 안에서만 분석합니다. 어디로도 보내지 않고 저장하지 않습니다.</p>
+      <label for="mineText" class="sr-label">분석할 시</label>
+      <textarea id="mineText" rows="6" maxlength="5000" placeholder="한 행에 한 줄씩, 연 사이는 빈 줄로 띄워 입력합니다."></textarea>
+      <div class="row-btns">
+        <button type="button" id="mineRun" class="btn">분석하기</button>
+        <button type="button" id="mineClear" class="tbtn">지우기</button>
       </div>
-    </div>
-  </section>
-
-  <!-- 차트(F-06, F-07) -->
-  <section id="charts" class="charts">
-    <section class="panel" aria-labelledby="radarTitle">
-      <h2 id="radarTitle" class="sec-title">감정 프로필</h2>
-      <div id="radar" class="chart-box"></div>
-      <div class="scroll-x"><table id="radarTable" class="data-table small"></table></div>
+      <div id="mineOut" aria-live="polite"></div>
     </section>
-    <section class="panel" aria-labelledby="flowTitle">
-      <h2 id="flowTitle" class="sec-title">행별 감정 흐름</h2>
-      <p class="small muted">가로축은 분석 행 번호(빈 줄 제외), 세로축은 그 행에서 사전이 감지한 시어 수입니다. 막대를 누르거나 키보드로 고르면 그 행을 봅니다.</p>
-      <div id="flow" class="chart-box scroll-x"></div>
-      <ul id="flowLegend" class="legend small"></ul>
-      <p id="flowPick" class="flow-pick small" aria-live="polite"></p>
+
+    <section id="method" class="panel" aria-labelledby="methodTitle">
+      <h2 id="methodTitle" class="sec-title">범주와 사전</h2>
+      <div id="methodBody"></div>
     </section>
-  </section>
-
-  <!-- F-08 -->
-  <section id="diagram" class="panel" aria-labelledby="diaTitle">
-    <h2 id="diaTitle" class="sec-title">시어 → 감정 → 주제</h2>
-    <p class="small muted"><span class="key-solid"></span> 실선: 사전이 실제로 감지한 시어와 그 범주(계산). <span class="key-dash"></span> 점선: 감정과 주제의 연결(사람의 해석). 장식용 연결은 없습니다.</p>
-    <div id="dia" class="chart-box scroll-x"></div>
-  </section>
-
-  <!-- F-09 -->
-  <section id="recs" class="panel" aria-labelledby="recTitle">
-    <h2 id="recTitle" class="sec-title">감정 결이 비슷한 시</h2>
-    <p class="small muted">최종 감정 벡터끼리의 코사인 유사도입니다. 감정 비율이 닮았다는 뜻이며, 주제나 문학적 의미가 같다는 뜻은 아닙니다.</p>
-    <ol id="recList" class="rec-list"></ol>
-  </section>
-
-  <!-- F-10 -->
-  <section id="heat" class="panel" aria-labelledby="heatTitle">
-    <h2 id="heatTitle" class="sec-title">전체 비교</h2>
-    <p class="small muted">작품마다 최종 감정 비율(%)입니다. 칸의 진하기와 숫자가 같은 값을 나타냅니다. 작품 이름을 누르면 그 시로 이동합니다.</p>
-    <div id="heatBox" class="scroll-x heat-box"></div>
-  </section>
-
-  <!-- F-12 -->
-  <section id="map" class="panel" aria-labelledby="mapTitle">
-    <h2 id="mapTitle" class="sec-title">감성 지도</h2>
-    <p class="small muted">최종 감정 벡터를 주성분분석(PCA)으로 2차원에 놓았습니다. 가까울수록 감정 비율이 닮았습니다. 축 이름은 그 축에 크게 실린 감정입니다.</p>
-    <div id="pca" class="chart-box scroll-x"></div>
-    <p id="pcaAxes" class="small"></p>
-  </section>
-
-  <!-- F-11 -->
-  <section id="mine" class="panel" aria-labelledby="mineTitle">
-    <h2 id="mineTitle" class="sec-title">내 시 분석</h2>
-    <p class="small muted">입력한 글은 이 브라우저 안에서만 같은 사전·엔진으로 분석합니다. 어디로도 보내지 않고 저장하지 않습니다. 해석 프로필은 쓰지 않습니다.</p>
-    <label for="mineText" class="sr-label">분석할 시</label>
-    <textarea id="mineText" rows="7" placeholder="한 행에 한 줄씩, 연 사이는 빈 줄로 띄워 입력합니다."></textarea>
-    <div class="row-btns">
-      <button type="button" id="mineRun" class="btn">분석하기</button>
-      <button type="button" id="mineClear" class="tbtn">지우기</button>
-    </div>
-    <div id="mineOut" aria-live="polite"></div>
-  </section>
-
-  <!-- 범주와 사전 -->
-  <section id="method" class="panel" aria-labelledby="methodTitle">
-    <h2 id="methodTitle" class="sec-title">범주와 사전</h2>
-    <div id="methodBody"></div>
-  </section>
-</main>
+  </main>
+</div>
 
 <footer class="site-foot small">
-  <p><strong>출처 안내.</strong> 수록 작품은 모두 시인이 1962년 이전에 세상을 떠나 저작권 보호기간이 끝난 작품입니다. 본문은 각 작품의 ‘본문 출처와 판본’에 적은 위키문헌 문서(스캔 판독본 포함)에서 옮겼고, 사망 연도·발표 연도의 근거도 같은 곳에 링크했습니다.</p>
+  <p><strong>출처 안내.</strong> 수록 작품은 모두 1963년 이전에 세상을 떠난 시인의 작품으로 저작권 보호기간이 끝났습니다. 본문은 각 작품의 ‘본문 출처와 판본’에 적은 위키문헌 문서(스캔 판독본 포함)에서 옮겼고, 사망 연도·발표 연도의 근거도 같은 곳에 링크했습니다.</p>
   <p>주제·해석·해석 프로필은 사람이 정한 읽기 값이며 정답이 아닙니다. 감정 비율은 사전 일치 횟수로 계산한 값이라 반어·부정·문맥을 읽지 못합니다.</p>
   <p class="muted">이 페이지는 서버 없이 브라우저에서만 동작합니다. 독자 메모는 이 기기 브라우저(localStorage)에만 저장됩니다.</p>
 </footer>
 
-<script>
-  // 데이터 스크립트가 없거나 깨져도 화면에 이유를 알린다.
-  window.__dataScriptFailed = false;
+<!-- 이 파일은 dev/tools/build_single.py가 dev/ 폴더의 소스를 합쳐 만든 것이다. 수정은 dev/에서 하고 다시 만든다. -->
+<script>/* data/poems.js */
+// data/poems.json과 같은 내용. file://로 열어도 동작하도록 스크립트로도 제공한다(tools/build_data.mjs가 생성).
+window.POEM_DATA = [
+ {
+  "id": "wang",
+  "order": 0,
+  "title": "나는 왕이로소이다",
+  "poet": "홍사용",
+  "year": "1923",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『백조』 3호(1923.9)",
+  "collected": null,
+  "poetDeath": 1947,
+  "source": "『백조』 3호(1923.9) 발표작 — 위키문헌 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/나는_왕이로소이다",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "나는 왕이로소이다. 나는 왕이로소이다. 어머님의 가장 어여쁜 아들, 나는 왕이로소이다. 가장 가난한 농군의 아들로서…….\n그러나 시왕전(十王殿)에서도 쫓기어 난 눈물의 왕이로소이다.\n\n“맨 처음으로 내가 너에게 준 것이 무엇이냐?” 이렇게 어머니께서 물으시며는\n“맨 처음으로 어머니께 받은 것은 사랑이었지요마는 그것은 눈물이더이다” 하겠나이다. 다른 것도 많지요마는…….\n“맨 처음으로 네가 나에게 한 말이 무엇이냐?” 이렇게 어머니께서 물으시며는\n“맨 처음으로 어머니께 드린 말씀은 ‘젖 주셔요’ 하는 그 소리였지마는, 그것은 ‘으아!’하는 울음이었나이다” 하겠나이다. 다른 말씀도 많지요마는…….\n\n이것은 노상 왕에게 들리어 주신 어머니의 말씀인데요.\n왕이 처음으로 이 세상에 올 때에는 어머니의 흘리신 피를 몸에다 휘감고 왔더랍니다.\n그 날에 동네의 늙은이와 젊은이들은 모두 “무엇이냐?”고 쓸데없는 물음질로 한창 바쁘게 오고 갈 때에도 어머니께서는 기꺼움보다도 아무 대답도 없이 속 아픈 눈물만 흘리셨답니다. 벌거숭이 어린 왕 나도 어머니의 눈물을 따라서 발버둥질치며 ‘으아!’ 소리쳐 울더랍니다.\n\n그날 밤도 이렇게 달 있는 밤인데요, 으스름달이 무리 서고 뒷동산에 부엉이 울음 울던 밤인데요,\n어머니께서는 구슬픈 옛 이야기를 하시다가요, 일없이 한숨을 길게 쉬시며 웃으시는 듯한 얼굴을 얼른 숙이시더이다.\n왕은 노상 버릇인 눈물이 나와서 그만 끝까지 섧게 울어 버렸소이다.\n울음의 뜻은 도무지 모르면서도요.\n어머니께서 조으실 때에는 왕 만 혼자 울었소이다.\n어머니의 지우시는 눈물이 젖먹는 왕의 빰에 떨어질 때에면, 왕도 따라서 시름없이 울었소이다.\n\n열한 살 먹던 해 정월 열나흗날 밤, 맨 잿더미로 그림자를 보려 갔을 때인데요, 명(命)이나 긴가 짧은가 보랴고.\n왕의 동무 장난꾼 아이들이 심술스러웁게 놀리더이다. 모가지 없는 그림자라고요.\n왕은 소리쳐 울었소이다. 어머니께서 들으시도록, 죽을까 겁이 나서요.\n\n나무꾼의 산타령을 따라가다가 건너 산비탈로 지나가는 상두꾼의 구슬픈 노래를 처음 들었소이다.\n그 길로 옹달 우물로 가자고 지름길로 들어서면은 찔레나무 가시 덤불에서 처량히 우는 한 마리 파랑새를 보았소이다.\n그래 철없는 어린 왕 나는 동무라 하고 쫓아가다가 돌부리에 걸리어 넘어져서 무릎을 비비며 울었소이다.\n\n할머니 산소 앞에 꽃 심으러 가던 한식날 아침에,\n어머니께서는 왕에게 하얀 옷을 입히시더이다. 그리고 귀밑머리를 단단히 땋아 주시며 “오늘부터는 아무쪼록 울지 말아라”\n아아, 그 때부터 눈물의 왕은!\n어머니 몰래 남 모르게 속 깊이 소리 없이 혼자 우는 그것이 버릇이 되었소이다.\n\n누우런 떡갈나무 우거진 산길로 허물어진 봉화 둑 앞으로 쫓긴 이의 노래를 부르며 어슬렁거릴 때에 바위 밑에 돌부처는 모른 체하며 감중연하고 앉았더이다.\n아아, 뒷동산 장군 바위에서 날마다 자고 가는 뜬구름은 얼마나 많이 왕의 눈물을 싣고 갔는지요.\n\n나는 왕이로소이다. 어머니의 외아들, 나는 이렇게 왕이로소이다.\n그러나 그러나 눈물의 왕! 이 세상 어느 곳에든지 설움이 있는 땅은 모두 왕의 나라로소이다.",
+  "orig": null,
+  "fixes": [],
+  "note": "백과사전은 ‘전체 9연 45행’으로 적는다. 위키문헌 본문은 9연 29행으로, 산문시의 긴 줄을 나누는 방식이 다른 것으로 보인다. 원전 스캔은 대조하지 못했다. ‘젖먹는 왕의 빰에’의 ‘빰’은 ‘뺨’의 오자일 수 있으나 원전으로 확인하지 못해 위키문헌 표기대로 두었다.",
+  "notes": [
+   "백과사전은 ‘전체 9연 45행’으로 적는다. 위키문헌 본문은 9연 29행으로, 산문시의 긴 줄을 나누는 방식이 다른 것으로 보인다. 원전 스캔은 대조하지 못했다.",
+   "‘젖먹는 왕의 빰에’의 ‘빰’은 ‘뺨’의 오자일 수 있으나 원전으로 확인하지 못해 위키문헌 표기대로 두었다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「나는 왕이로소이다」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0011306"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「홍사용」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0064122"
+   }
+  ],
+  "inExample": false,
+  "group": "sad",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "어머니의 눈물 속에서 자란 ‘눈물의 왕’이 설움을 자기 존재의 바탕으로 받아들이는 비애",
+  "speaker": "어머니에게 응석하듯 지난 일을 털어놓는 ‘나(눈물의 왕)’",
+  "devices": [
+   "‘나는 왕이로소이다’의 반복",
+   "경어체 산문시",
+   "역설(가난한 농군의 아들이 왕)",
+   "어린 시절 일화의 나열"
+  ],
+  "key": [
+   "그러나 그러나 눈물의 왕! 이 세상 어느 곳에든지 설움이 있는 땅은 모두 왕의 나라로소이다."
+  ],
+  "interp": "화자는 스스로를 ‘왕’이라 부르지만 그 왕국은 권세가 아니라 눈물과 설움으로 이루어져 있다. 태어나던 날 어머니의 눈물, 그림자를 보러 갔다가 받은 놀림, 상두꾼의 노래 같은 일화가 이어지면서 우는 일이 버릇이 되어 가는 과정이 드러난다. 어머니를 향한 경어와 응석 섞인 말투는 슬픔 속에 깃든 사랑과 기댐을 함께 보여 준다. 마지막 행에서 설움이 있는 모든 땅을 자기 나라로 삼으면서, 한 개인의 울음은 세상의 설움 전체를 끌어안는 자리로 넓어진다.",
+  "profile": {
+   "sad": 0.9,
+   "love": 0.5,
+   "long": 0.3,
+   "void": 0.2
+  },
+  "profileNote": "눈물·울음 묘사가 압도적이어서 사전 결과와 방향이 같다. 어머니를 향한 정(사랑)과 어린 시절 회상(그리움), 마지막 행의 체념 섞인 확장(허무)을 해석으로 더했다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "눈물로 이루어진 자아",
+    "emos": [
+     "sad"
+    ]
+   },
+   {
+    "label": "어머니를 향한 정",
+    "emos": [
+     "love",
+     "long"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "jeopdong",
+  "order": 1,
+  "title": "접동새",
+  "poet": "김소월",
+  "year": "1923",
+  "yearBasis": "최초 발표(제목 「졉동」, 뒤에 개작)",
+  "created": null,
+  "firstPub": "『배재』 2호(1923.3)에 「졉동」으로 발표",
+  "collected": "시집 『진달래꽃』(매문사, 1925)",
+  "poetDeath": 1934,
+  "source": "시집 『진달래꽃』(매문사, 1925) 수록본 — 위키문헌 현대어 대역",
+  "sourceUrl": "https://ko.wikisource.org/wiki/진달래꽃_%28시집%29/접동새",
+  "edition": {
+   "type": "ws-parallel",
+   "label": "위키문헌 현대어 대역",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 원문·현대어 대역 문서에서 현대어 칸을 그대로 옮기고, 원문 칸은 orig에 따로 보관했다. 현대어 칸은 위키문헌 편집자가 옮긴 것이다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "접동\n접동\n아우래비 접동\n\n진두강 가람가에 살던 누나는\n진두강 앞마을에\n와서 웁니다\n\n옛날, 우리나라\n먼 뒤쪽의\n진두강 가람가에 살던 누나는\n의붓어미 시샘에 죽었습니다\n\n누나라고 불러보랴\n오오 불설워\n시새움에 몸이 죽은 우리 누나는\n죽어서 접동새가 되었습니다\n\n아웁이나 남아되던 오랩동생을\n죽어서도 못잊어 차마 못잊어\n야삼경 남 다 자는 밤이 깊으면\n이 산 저 산 옮아가며 슬피 웁니다.",
+  "orig": "접동\n접동\n아우래비접동\n\n津頭江가람ᄭᅡ에 살든누나는\n津頭江압마을에\n와서웁니다\n\n옛날, 우리나라\n먼뒤ᄶᅩᆨ의\n津頭江가람ᄭᅡ에 살든누나는\n이붓어미싀샘에 죽엇습니다\n\n누나라고 불너보랴\n오오 불설워\n싀새움에 몸이죽은 우리누나는\n죽어서 접동새가 되엿습니다\n\n아웁이나 납아되든 오랩동생을\n죽어서도 못니저 참아못니저\n夜三更 남다자는 밤이깁프면\n이山 저山 올마가며 슬피웁니다",
+  "fixes": [],
+  "note": "백과사전에 따르면 1925년 시집에 실으며 제목을 바꾸고 4~5연을 일부 고쳤다. 표시 본문은 1925년 시집본 계열이며 1923년 「졉동」과는 다르다. 현대어 대역은 위키문헌 편집자가 원문을 현대 표기로 옮긴 것이다. 원문(옛 표기)은 ‘원문 보기’로 함께 제공한다.",
+  "notes": [
+   "백과사전에 따르면 1925년 시집에 실으며 제목을 바꾸고 4~5연을 일부 고쳤다. 표시 본문은 1925년 시집본 계열이며 1923년 「졉동」과는 다르다.",
+   "현대어 대역은 위키문헌 편집자가 원문을 현대 표기로 옮긴 것이다. 원문(옛 표기)은 ‘원문 보기’로 함께 제공한다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「접동새」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0071333"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "Wikipedia “Kim Sowol”",
+    "url": "https://en.wikipedia.org/wiki/Kim_Sowol"
+   }
+  ],
+  "inExample": false,
+  "group": "sad",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "의붓어미의 시샘으로 죽은 누나가 접동새가 되어 동생들을 잊지 못해 운다는 설화에 담긴 한과 혈육의 정",
+  "speaker": "누나를 잃은 동생으로 보이는 화자(‘우리 누나’)",
+  "devices": [
+   "의성어 ‘접동’",
+   "설화의 차용",
+   "반복(‘못잊어 차마 못잊어’)",
+   "민요조 운율"
+  ],
+  "key": [
+   "죽어서도 못잊어 차마 못잊어"
+  ],
+  "interp": "첫 연의 새 울음소리가 곧 누나의 울음으로 바뀌면서 자연의 소리에 사람의 사연이 실린다. 누나는 의붓어미의 시샘이라는 부당한 일로 죽었지만, 시는 원망보다 남은 동생들을 잊지 못하는 마음을 앞세운다. 남들이 다 잠든 깊은 밤에 이 산 저 산 옮겨 다니며 우는 모습은 죽은 뒤에도 끝나지 않는 한을 보여 준다. ‘오오 불설워’라는 탄식은 이 사연을 전하는 화자 역시 같은 슬픔에 묶여 있음을 드러낸다.",
+  "profile": {
+   "sad": 0.9,
+   "long": 0.6,
+   "love": 0.5,
+   "anger": 0.2
+  },
+  "profileNote": "사전은 ‘죽-’ 활용형을 슬픔으로 여러 번 센다. 해석의 중심은 죽음 자체보다 ‘못잊어’에 담긴 혈육의 정이라 그리움·사랑을 높였다. ‘시샘’은 의붓어미의 감정이지 화자의 감정이 아니므로 분노는 낮게 두었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "누나의 원통한 죽음",
+    "emos": [
+     "sad",
+     "anger"
+    ]
+   },
+   {
+    "label": "죽어서도 잊지 못하는 혈육",
+    "emos": [
+     "long",
+     "love"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "geunal",
+  "order": 2,
+  "title": "그날이 오면",
+  "poet": "심훈",
+  "year": "1949",
+  "yearBasis": "시집 간행(최초 지면 발표는 미확인)",
+  "created": "1930",
+  "firstPub": "유고 시집 『그날이 오면』(한성도서, 1949)",
+  "collected": null,
+  "poetDeath": 1936,
+  "source": "유고 시집 『그날이 오면』(한성도서, 1949) 수록작 — 위키문헌 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/그날이_오면/그날이_오면",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다. 오자 1가지는 근거를 두고 고쳤다(fixes).",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "그날이 오면 그날이 오면은\n삼각산(三角山)이 일어나 더덩실 춤이라도 추고\n한강(漢江)물이 뒤집혀 용솟음칠 그날이,\n이 목숨이 끊지기 전에 와 주기만 하량이면,\n나는 밤하늘에 날으는 까마귀와 같이\n종로(鍾路)의 인경(人磬)을 머리로 드리받아 울리오리다,\n두개골(頭蓋骨)은 깨어져 산산(散散)조각이 나도\n기뻐서 죽사오매 오히려 무슨 한(恨)이 남으오리까.\n\n그날이 와서 오오 그날이 와서\n육조(六曹) 앞 넓은 길을 울며 뛰며 딩굴어도\n그래도 넘치는 기쁨에 가슴이 미어질 듯 하거든\n드는 칼로 이 몸의 가죽이라도 벗겨서\n커다란 북(鼓)을 만들어 둘처메고는\n여러분의 행렬(行列)에 앞장을 서오리다,\n우렁찬 그 소리를 한 번이라도 듣기만 하면\n그 자리에 꺼꾸러져도 눈을 감겠소이다",
+  "orig": null,
+  "fixes": [
+   {
+    "from": "하거던든",
+    "to": "하거든",
+    "count": 1,
+    "why": "중복 음절 오자로 판단. 재수록본 두 곳이 모두 ‘하거든’",
+    "evidence": [
+     {
+      "label": "더위키 「심훈」 문서의 「그날이 오면」 인용",
+      "url": "https://thewiki.kr/w/심훈"
+     },
+     {
+      "label": "다음 카페 ‘빈들의소리’ 심대섭 게시글의 「그날이 오면」 인용",
+      "url": "https://m.cafe.daum.net/woorinart/6VKm/1396"
+     }
+    ]
+   }
+  ],
+  "note": "본문 끝 날짜 ‘1930.3.1’로 창작 연도를 적었다. 위키문헌 설명은 1932년 5월 『신생』에 「단장2수」라는 제목으로 실렸다고 하지만 다른 출처로 확인하지 못해 발표 연도로 쓰지 않았다. ‘이 목숨이 끊지기 전에’의 ‘끊지기’는 오자로 보이나, 확인 근거를 확보하지 못해 위키문헌 표기대로 두었다(학생 확인 필요).",
+  "notes": [
+   "본문 끝 날짜 ‘1930.3.1’로 창작 연도를 적었다.",
+   "위키문헌 설명은 1932년 5월 『신생』에 「단장2수」라는 제목으로 실렸다고 하지만 다른 출처로 확인하지 못해 발표 연도로 쓰지 않았다.",
+   "‘이 목숨이 끊지기 전에’의 ‘끊지기’는 오자로 보이나, 확인 근거를 확보하지 못해 위키문헌 표기대로 두었다(학생 확인 필요)."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「그날이 오면」(시집)",
+    "url": "https://encykorea.aks.ac.kr/Article/E0007317"
+   },
+   {
+    "label": "주간경향 「그날이 오면-짧은 생애 ‘상록수’로 산 의인을 기리며」",
+    "url": "https://weekly.khan.co.kr/article/201901211453351"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「심훈」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0033979"
+   }
+  ],
+  "inExample": false,
+  "group": "joy",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "광복의 날이 오면 목숨까지 바치겠다는 간절한 열망과 의지",
+  "speaker": "‘그날’을 기다리는 ‘나’",
+  "devices": [
+   "가정법(‘그날이 오면’)",
+   "과장(삼각산의 춤, 두개골이 깨어져도)",
+   "반복",
+   "희생의 이미지"
+  ],
+  "key": [
+   "기뻐서 죽사오매 오히려 무슨 한(恨)이 남으오리까."
+  ],
+  "interp": "시 전체가 ‘그날이 오면’이라는 가정 위에 서 있어서, 표면의 기쁨은 아직 오지 않은 미래의 기쁨이다. 화자는 그날을 맞으면 머리로 인경을 들이받고 살가죽으로 북을 만들겠다고 말하며 죽음조차 기쁨의 표현으로 바꾼다. 이 극단적인 과장은 지금이 그만큼 억눌려 있고 그날이 그만큼 간절하다는 것을 거꾸로 보여 준다. 그래서 이 시의 중심 정서는 기쁨 그 자체보다 그날을 기다리며 몸을 바치겠다는 의지에 가깝다.",
+  "profile": {
+   "hope": 0.9,
+   "joy": 0.6,
+   "love": 0.4,
+   "sad": 0.2
+  },
+  "profileNote": "사전은 ‘기뻐·기쁨·춤’을 기쁨으로, ‘죽사·울며’를 슬픔으로 센다. 이 기쁨은 가정된 미래이고 죽음은 헌신의 표현이므로 희망·의지를 가장 높게, 조국을 향한 헌신을 사랑으로 넣었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "아직 오지 않은 해방의 날",
+    "emos": [
+     "hope",
+     "joy"
+    ]
+   },
+   {
+    "label": "목숨을 건 헌신",
+    "emos": [
+     "love",
+     "hope"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "doldam",
+  "order": 3,
+  "title": "돌담에 속삭이는 햇발",
+  "poet": "김영랑",
+  "year": "1935",
+  "yearBasis": "시집 수록(최초 지면 발표는 미확인)",
+  "created": null,
+  "firstPub": "『영랑시집』(시문학사, 1935)",
+  "collected": null,
+  "poetDeath": 1950,
+  "source": "『영랑시집』(시문학사, 1935) 초판 — 위키문헌 스캔 판독본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/영랑시집/돌담에_속삭이는_햇발",
+  "edition": {
+   "type": "scan",
+   "label": "스캔 판독본",
+   "scan": "김윤식(김영랑) 영랑시집 (1935).pdf, 7쪽",
+   "proofreadLevel": 3,
+   "scanChecked": true
+  },
+  "textMethod": "위키문헌 스캔 판독문(Page: 이름공간)을 API로 내려받아 옮기고, 같은 쪽의 스캔 이미지(김윤식(김영랑) 영랑시집 (1935).pdf, 7쪽)를 열어 한 줄씩 대조했다. 판독문은 위키문헌에서 ‘교정 완료(level 3)’ 상태. 대조 결과 판독문과 스캔이 일치해 고친 곳이 없다.",
+  "titleInEdition": null,
+  "titleNote": "시집에는 제목 없이 번호 ‘2’로 실렸다. 제목은 첫 행에서 딴 통칭이다.",
+  "epigraph": null,
+  "afterword": null,
+  "text": "돌담에 소색이는 햇발가치\n풀아래 우슴짓는 샘물가치\n내마음 고요히 고흔봄 길우에\n오날하로 하날을 우러르고십다\n\n새악시볼에 떠오는 붓그럼가치\n詩의가슴을 살프시 젓는 물결가치\n보드레한 에메랄드 얄게 흐르는\n실비단 하날을 바라보고십다",
+  "orig": null,
+  "fixes": [],
+  "note": "1930년 『시문학』 창간호에 처음 실렸다는 서술이 있으나 신뢰할 출처로 확인하지 못해 발표 연도로 쓰지 않았다.",
+  "notes": [
+   "1930년 『시문학』 창간호에 처음 실렸다는 서술이 있으나 신뢰할 출처로 확인하지 못해 발표 연도로 쓰지 않았다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국문학번역원 전자도서관 「김영랑」",
+    "url": "https://library.ltikorea.or.kr/node/74"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「김영랑」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0009839"
+   }
+  ],
+  "inExample": false,
+  "group": "joy",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "봄 하늘을 우러르고 싶은 맑고 고요한 마음",
+  "speaker": "봄날 하늘을 바라보는 ‘내 마음’",
+  "devices": [
+   "직유의 반복(‘~가치’)",
+   "음악적 운율",
+   "섬세한 감각어",
+   "‘-고십다’의 반복"
+  ],
+  "key": [
+   "내마음 고요히 고흔봄 길우에"
+  ],
+  "interp": "햇발, 샘물, 새악시의 볼, 물결이 모두 ‘~가치(같이)’로 이어져 화자의 마음을 비유한다. 화자는 무엇을 이루겠다는 것이 아니라 오늘 하루 하늘을 우러르고 바라보고 싶다는 소박한 바람을 말한다. ‘붓그럼’은 잘못을 뉘우치는 부끄러움이 아니라 볼에 살짝 떠오르는 수줍음으로, 마음이 은근히 설레는 모습을 그린다. 전체적으로 들뜬 기쁨보다 고요하고 부드러운 평온이 중심이다.",
+  "profile": {
+   "calm": 0.9,
+   "joy": 0.4,
+   "hope": 0.3
+  },
+  "profileNote": "사전은 ‘붓그럼’을 부끄러움·성찰로 세지만 여기서는 수줍음이라 성찰과 거리가 멀어 0으로 두었다. ‘-고십다’의 소망은 희망·의지로 조금 넣었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "고요한 봄 마음",
+    "emos": [
+     "calm"
+    ]
+   },
+   {
+    "label": "하늘을 우러르고 싶은 바람",
+    "emos": [
+     "hope",
+     "joy"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "nameuro",
+  "order": 4,
+  "title": "남으로 창을 내겠소",
+  "poet": "김상용",
+  "year": "1934",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『문학』 2호(1934.2)",
+  "collected": "시집 『망향』(문장사, 1939)",
+  "poetDeath": 1951,
+  "source": "『문학』 2호(1934.2) 발표작 — 위키문헌 현대 표기본(『망향』 수록면)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/망향_%28시집%29/남으로_창을_내겠소",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "남(南)으로\n창(窓)을 내겠소.\n\n밭이 한참갈이\n괭이로 파고\n호미론 김을 매지요.\n\n구름이 꼬인다\n갈 리 있소.\n\n새 노래는 공으로 들으랴오.\n\n강냉이가 익걸랑\n함께 와 자셔도 좋소\n\n왜 사냐건\n웃지요.",
+  "orig": null,
+  "fixes": [],
+  "note": "백과사전은 ‘3연 10행’이라고 적지만 위키문헌 본문은 6연 12행이다. 어느 판본의 행 나눔인지 원전으로 확인하지 못해, 내려받은 위키문헌 본문을 그대로 썼다. 시집 『망향』 간행 연도는 백과사전 「김상용」 항목이 1938년, 「망향」 항목이 1939년으로 서로 다르다.",
+  "notes": [
+   "백과사전은 ‘3연 10행’이라고 적지만 위키문헌 본문은 6연 12행이다. 어느 판본의 행 나눔인지 원전으로 확인하지 못해, 내려받은 위키문헌 본문을 그대로 썼다.",
+   "시집 『망향』 간행 연도는 백과사전 「김상용」 항목이 1938년, 「망향」 항목이 1939년으로 서로 다르다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「남으로 창을 내겠소」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0012085"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「김상용」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0009362"
+   }
+  ],
+  "inExample": false,
+  "group": "calm",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "자연 속에서 욕심 없이 살아가는 전원의 삶과 달관",
+  "speaker": "시골에서 밭을 일구며 사는 ‘나’",
+  "devices": [
+   "대화체 ‘-소’",
+   "문답",
+   "여백과 생략",
+   "마지막 행의 함축"
+  ],
+  "key": [
+   "왜 사냐건",
+   "웃지요."
+  ],
+  "interp": "화자는 남쪽으로 창을 내고 괭이와 호미로 밭을 가꾸는 단순한 삶을 담담하게 말한다. 구름이 꼬여도 ‘갈 리 있소’라고 답하고 새 노래는 공으로 듣겠다고 하여, 자연이 주는 것에 만족하는 태도를 보인다. 강냉이가 익거든 함께 와서 먹자는 말에는 이웃을 향한 소박한 정이 담겨 있다. 마지막의 ‘웃지요’는 즐거워서 웃는 웃음이라기보다 삶의 이유를 말로 따지지 않는 달관의 웃음으로 읽힌다.",
+  "profile": {
+   "calm": 0.9,
+   "joy": 0.3,
+   "love": 0.2
+  },
+  "profileNote": "사전에서 잡히는 시어는 ‘웃지’ 하나뿐이라 기쁨 100%가 된다. 해석상 이 웃음은 달관이므로 평온을 가장 높게 두었다(검증 사례 2).",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "욕심 없는 전원의 삶",
+    "emos": [
+     "calm"
+    ]
+   },
+   {
+    "label": "말 대신 웃음으로 답하는 달관",
+    "emos": [
+     "calm",
+     "joy"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "goyangi",
+  "order": 5,
+  "title": "봄은 고양이로다",
+  "poet": "이장희",
+  "year": "1924",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『금성』 3호(1924.5)",
+  "collected": null,
+  "poetDeath": 1929,
+  "source": "『금성』 3호(1924.5) 발표작 — 위키문헌 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/봄은_고양이로다",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "꽃가루와 같이 부드러운 고양이의 털에\n고운 봄의 향기가 어리우도다\n\n금방울과 같이 호동그란 고양이의 눈에\n미친 봄의 불길이 흐르도다\n\n고요히 다물은 고양이의 입술에\n포근한 봄의 졸음이 떠돌아라\n\n날카롭게 쭉 뻗은 고양이의 수염에\n푸른 봄의 생기가 뛰놀아라",
+  "orig": null,
+  "fixes": [],
+  "note": "위키문헌 설명은 ‘『금성』 1호’라고 적었으나 백과사전에 따라 3호로 바로잡았다(본문과 무관한 서지 정보).",
+  "notes": [
+   "위키문헌 설명은 ‘『금성』 1호’라고 적었으나 백과사전에 따라 3호로 바로잡았다(본문과 무관한 서지 정보)."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「봄은 고양이로다」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0023782"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「이장희」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0045714"
+   }
+  ],
+  "inExample": false,
+  "group": "calm",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "고양이의 털·눈·입술·수염에서 봄의 여러 모습을 감각적으로 발견함",
+  "speaker": "고양이를 바라보는 관찰자(겉으로 드러나지 않음)",
+  "devices": [
+   "은유(‘봄은 고양이로다’)",
+   "4연의 병렬 구조",
+   "감각적 이미지"
+  ],
+  "key": [
+   "고요히 다물은 고양이의 입술에"
+  ],
+  "interp": "시는 고양이의 몸 네 부분과 봄의 네 가지 모습을 하나씩 짝지어 같은 틀로 되풀이한다. 부드러운 털에는 향기를, 둥근 눈에는 불길을, 다문 입술에는 졸음을, 뻗은 수염에는 생기를 겹쳐 봄이 나른하면서도 생동하는 계절임을 보여 준다. 시인은 감정을 직접 말하지 않고 감각적인 이미지만으로 봄의 분위기를 전한다. 그래서 이 시의 정서는 고백이라기보다 평온함과 생기가 섞인 감각의 즐거움이다.",
+  "profile": {
+   "calm": 0.7,
+   "joy": 0.6
+  },
+  "profileNote": "사전은 ‘부드러·고요·포근·졸음’을 모두 평온으로 세어 평온 100%다. 2연 ‘미친 봄의 불길’과 4연 ‘생기’의 생동감은 사전에 잡히지 않아 기쁨으로 더했다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "나른한 봄",
+    "emos": [
+     "calm"
+    ]
+   },
+   {
+    "label": "생동하는 봄",
+    "emos": [
+     "joy"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "jeoljeong",
+  "order": 6,
+  "title": "절정",
+  "poet": "이육사",
+  "year": "1940",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『문장』(1940.1)",
+  "collected": null,
+  "poetDeath": 1944,
+  "source": "『문장』(1940.1) 발표작 — 위키문헌 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/절정",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "매운 계절(季節)의 채찍에 갈겨\n마침내 북방(北方)으로 휩쓸려오다\n\n하늘도 그만 지쳐 끝난 고원(高原)\n서릿발 칼날진 그 위에 서다\n\n어데다 무릎을 꿇어야 하나?\n한발 재겨 디딜 곳조차 없다\n\n이러매 눈감아 생각해볼밖에\n겨울은 강철로 된 무지갠가보다.",
+  "orig": null,
+  "fixes": [],
+  "note": "",
+  "notes": [],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「절정」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0049814"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「이육사」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0045444"
+   }
+  ],
+  "inExample": false,
+  "group": "hope",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "극한의 상황에서 절망을 넘어서려는 의지",
+  "speaker": "북방의 고원 끝까지 내몰린 ‘나’",
+  "devices": [
+   "역설(‘겨울은 강철로 된 무지개’)",
+   "단정적 종결",
+   "공간의 점층(북방→고원→칼날)",
+   "기승전결 구성"
+  ],
+  "key": [
+   "겨울은 강철로 된 무지갠가보다."
+  ],
+  "interp": "1·2연은 매운 계절의 채찍에 쫓겨 북방의 고원, 서릿발 칼날 위까지 밀려간 극한 상황을 보여 준다. 3연에서 화자는 무릎 꿇을 곳도 한 발 디딜 곳도 없다고 말하며 절망의 끝에 선다. 4연에서 눈을 감고 생각한 끝에 겨울을 ‘강철로 된 무지개’로 바꾸어 보는데, 차갑고 단단한 고통 속에서 희망의 가능성을 읽어 내는 역설이다. 감정을 나타내는 말이 거의 없이 상황과 이미지만으로 비장한 의지를 전한다.",
+  "profile": {
+   "hope": 0.8,
+   "fear": 0.4,
+   "sad": 0.3
+  },
+  "profileNote": "사전에서는 감지 시어가 0개다(검증 사례 1). 프로필은 고난의 긴장(불안·슬픔)과 이를 넘어서려는 의지를 해석으로 넣은 값이며, 사전 결과와 비교할 근거가 없다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "발 디딜 곳 없는 극한",
+    "emos": [
+     "fear",
+     "sad"
+    ]
+   },
+   {
+    "label": "강철 무지개라는 역설적 희망",
+    "emos": [
+     "hope"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "cheongpodo",
+  "order": 7,
+  "title": "청포도",
+  "poet": "이육사",
+  "year": "1939",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『문장』(1939.8)",
+  "collected": "『육사시집』(1946)",
+  "poetDeath": 1944,
+  "source": "『문장』(1939.8) 발표작 — 위키문헌 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/청포도",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "내 고장 칠월은\n청포도가 익어가는 시절\n\n이 마을 전설이 주절이주절이 열리고\n먼데 하늘이 꿈꾸며 알알이 들어와 박혀\n\n하늘 밑 푸른 바다가 가슴을 열고\n흰 돛단배가 곱게 밀려서 오면\n\n내가 바라는 손님은 고달픈 몸으로\n청포(靑袍)를 입고 찾아온다고 했으니\n\n내 그를 맞아 이 포도를 따먹으면\n두 손은 함뿍 적셔도 좋으련\n\n아이야 우리 식탁엔 은쟁반에\n하이얀 모시 수건을 마련해두렴",
+  "orig": null,
+  "fixes": [],
+  "note": "",
+  "notes": [],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「청포도」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0056822"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「이육사」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0045444"
+   }
+  ],
+  "inExample": false,
+  "group": "hope",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "풍요로운 고향의 칠월에 손님을 기다리는 소망",
+  "speaker": "고향에서 손님을 기다리는 ‘나’",
+  "devices": [
+   "색채 대비(청포도·푸른 바다·흰 돛단배·하이얀 모시 수건)",
+   "상징(손님)",
+   "청유형 마무리"
+  ],
+  "key": [
+   "내가 바라는 손님은 고달픈 몸으로"
+  ],
+  "interp": "청포도가 익는 고향의 칠월에 마을의 전설과 먼 하늘의 꿈이 포도알처럼 맺힌다. 화자는 고달픈 몸으로 청포를 입고 찾아올 손님을 기다리며, 그를 맞아 함께 포도를 따 먹는 날을 그린다. 손님은 광복이나 평화로운 미래로 읽히기도 하지만, 시는 그것을 직접 말하지 않고 기다리는 정성만 보여 준다. 은쟁반에 모시 수건을 마련해 두라는 마지막 당부는 기다림을 구체적인 준비로 옮기는 희망의 표현이다.",
+  "profile": {
+   "hope": 0.8,
+   "long": 0.5,
+   "calm": 0.4,
+   "love": 0.3
+  },
+  "profileNote": "사전은 ‘꿈꾸·바라’ 두 개로 희망 100%다. 고향의 정경과 손님을 향한 정성은 사전에 없어 그리움·평온·사랑을 더했다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "손님을 기다리는 마음",
+    "emos": [
+     "hope",
+     "love"
+    ]
+   },
+   {
+    "label": "풍요로운 고향",
+    "emos": [
+     "long",
+     "calm"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "chimsil",
+  "order": 8,
+  "title": "나의 침실로",
+  "poet": "이상화",
+  "year": "1923",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『백조』 3호(1923.9)",
+  "collected": null,
+  "poetDeath": 1943,
+  "source": "『백조』 3호(1923.9) 발표 원문 — 위키문헌 원문(옛 표기)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/나의_침실로",
+  "edition": {
+   "type": "ws-orig",
+   "label": "위키문헌 원문(옛 표기)",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 원문(옛 표기) 문서를 그대로 옮겼다. 현대어로 바꾸지 않았다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": "―『가장 아름답고 오-랜 것은 오직 ᄭᅮᆷ 속에만 잇서라』― 『내 말』",
+  "afterword": "―『비음(緋音) 가온대서』―",
+  "text": "「마돈나」 지금은 밤도, 모든 목거지에, 다니로라 피곤(疲困)하야 돌아겨려는도다,\n아, 너도, 먼동이 트기 전으로, 수밀도(水蜜桃)의 네 가슴에, 이슬이 맷도록 달려 오느라.\n\n「마돈나」 오렴으나, 네 집에서 눈으로 유전(遺傳)하든 진주(眞珠)는, 다 두고 몸만 오느라,\nᄲᅡᆯ리 가자, 우리는 밝음이 오면, 어댄지도 모르게 숨는 두 별이어라.\n\n「마돈나」 구석지고도 어둔 마음의 거리에서, 나는 두려워 ᄯᅥᆯ며 기다리노라,\n아, 어느듯 첫닭이 울고― 뭇 개가 짖도다, 나의 아씨여, 너도 듯느냐.\n\n「마돈나」 지난 밤이 새도록, 내 손수 닥가둔 침실(寢室)로 가자, 침실(寢室)로!\n낡은 달은 ᄲᅡ지려는데, 내 귀가 듯는 발자욱― 오, 너의 것이냐?\n\n「마돈나」 ᄶᅡᆲ은 심지를 더우잡고, 눈물도 업시 하소연하는 내 맘의 촉(燭)불을 봐라,\n양(羊)털 가튼 바람결에도 질식(窒息)이 되어, 얄푸른 연긔로 ᄭᅥ지려는도다.\n\n「마돈나」 오느라 가자, 압산 그름애가, 독갑이처럼, 발도 업시 이곳 갓가이 오도다,\n아, 행여나, 누가 볼는지― 가슴이 ᄯᅱ누나, 나의 아씨여, 너를 부른다.\n\n「마돈나」 날이 새련다, ᄲᅡᆯ리 오렴으나, 사원(寺院)의 쇠북이, 우리를 비웃기 전에\n네 손이 내 목을 안어라, 우리도 이 밤과 가티, 오랜 나라로 가고 말자.\n\n「마돈나」 뉘우침과 두려움의 외나무다리 건너 잇는 내 침실(寢室) 열 이도 업느니!\n아, 바람이 불도다, 그와 가티 가볍게 오렴으나, 나의 아씨여, 네가 오느냐?\n\n「마돈나」 가엽서라, 나는 미치고 말앗는가, 업는 소리를 내 귀가 들음은,\n내 몸에 피란 피― 가슴의 샘이, 말라버린 듯, 마음과 목이 타려는도다.\n\n「마돈나」 언젠들 안 갈 수 잇스랴, 갈 테면, 우리가 가자, ᄭᅳ을려 가지 말고!\n너는 내 말을 밋는 「마돈나」― 내 침실(寢室)이 부활(復活)의 동굴(洞窟)임을 네야 알년만……….\n\n「마돈나」 밤이 주는 ᄭᅮᆷ, 우리가 얽는 ᄭᅮᆷ, 사람이 안고 궁그는 목숨의 ᄭᅮᆷ이 다르지 안흐니,\n아, 어린애 가슴처럼 세월(歲月) 모르는 나의 침실(寢室)로 가자, 아름답고 오랜 거긔로.\n\n「마돈나」 별들의 웃음도 흐려지려 하고, 어둔 밤 물결도 자지러는도다,\n아, 안개가 살아지기 전으로, 네가 와야지, 나의 아씨여, 너를 부를다.",
+  "orig": null,
+  "fixes": [],
+  "note": "위키문헌에 현대어본이 없어 원문 표기를 그대로 쓴다. 옛한글(ᄲᅡᆯ리, ᄭᅮᆷ 등)은 글꼴에 따라 풀어져 보일 수 있다. 제목 아래 부제와 작품 끝의 부기는 본문이 아니므로 분석에서 빼고 판본 정보에만 적었다. 위키문헌 원문이 어느 지면을 판독했는지(스캔 연결)는 확인하지 못했다.",
+  "notes": [
+   "위키문헌에 현대어본이 없어 원문 표기를 그대로 쓴다. 옛한글(ᄲᅡᆯ리, ᄭᅮᆷ 등)은 글꼴에 따라 풀어져 보일 수 있다.",
+   "제목 아래 부제와 작품 끝의 부기는 본문이 아니므로 분석에서 빼고 판본 정보에만 적었다.",
+   "위키문헌 원문이 어느 지면을 판독했는지(스캔 연결)는 확인하지 못했다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「나의 침실로」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0011428"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "서울신문 「이상화 시·수필, 이광수 단편소설 발굴」(이상화 1901-1943)",
+    "url": "https://m.seoul.co.kr/news/2013/02/06/20130206800034"
+   }
+  ],
+  "inExample": false,
+  "group": "love",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "밤의 현실을 벗어나 사랑하는 이와 영원한 안식처로 가고자 하는 열망과 불안",
+  "speaker": "‘마돈나’를 부르며 기다리는 ‘나’",
+  "devices": [
+   "돈호법(‘마돈나’)의 반복",
+   "영탄",
+   "상징(침실=부활의 동굴)",
+   "시간의 흐름(밤→새벽)"
+  ],
+  "key": [
+   "너는 내 말을 밋는 「마돈나」― 내 침실(寢室)이 부활(復活)의 동굴(洞窟)임을 네야 알년만………."
+  ],
+  "interp": "매 연이 ‘마돈나’를 부르며 시작해 사랑하는 이를 향한 간절한 호소가 되풀이된다. 화자는 날이 새기 전에 오라고 재촉하지만 첫닭이 울고 달이 지는 동안 마돈나는 오지 않고, 화자는 두려움에 떨며 없는 발소리까지 듣는다. 침실은 단순한 사랑의 공간을 넘어 ‘부활의 동굴’, ‘오랜 나라’로 불리며 현실 너머의 안식처가 된다. 그래서 이 시의 사랑은 열정과 현실을 벗어나려는 초월의 욕구, 그리고 오지 않는 이에 대한 불안이 뒤섞인 상태다.",
+  "profile": {
+   "love": 0.9,
+   "fear": 0.6,
+   "hope": 0.4,
+   "long": 0.4,
+   "void": 0.2
+  },
+  "profileNote": "사전은 ‘아씨여·안어’로 사랑을, ‘두려·ᄯᅥᆯ며’로 불안을 잘 잡는다. ‘첫닭이 울고’의 ‘울고’는 닭 울음이라 슬픔이 아니므로 프로필에서 슬픔을 0으로 두었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "마돈나를 향한 열망",
+    "emos": [
+     "love",
+     "hope"
+    ]
+   },
+   {
+    "label": "오지 않는 이를 기다리는 불안",
+    "emos": [
+     "fear",
+     "long"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "alsu",
+  "order": 9,
+  "title": "알 수 없어요",
+  "poet": "한용운",
+  "year": "1926",
+  "yearBasis": "최초 발표(시집)",
+  "created": null,
+  "firstPub": "시집 『님의 침묵』(회동서관, 1926)",
+  "collected": null,
+  "poetDeath": 1944,
+  "source": "시집 『님의 침묵』(회동서관, 1926) — 위키문헌 현대어 대역",
+  "sourceUrl": "https://ko.wikisource.org/wiki/님의_침묵/알_수_없어요",
+  "edition": {
+   "type": "ws-parallel",
+   "label": "위키문헌 현대어 대역",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 원문·현대어 대역 문서에서 현대어 칸을 그대로 옮기고, 원문 칸은 orig에 따로 보관했다. 현대어 칸은 위키문헌 편집자가 옮긴 것이다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "바람도 없는 공중에 수직의 파문을 내이며 고요히 떨어지는 오동잎은 누구의 발자취입니까\n지리한 장마 끝에 서풍에 몰려가는 무서운 검은 구름의 터진 틈으로 언뜻언뜻 보이는 푸른 하늘은 누구의 얼굴입니까\n꽃도 없는 깊은 나무에 푸른 이끼를 거쳐서 옛 탑 위의 고요한 하늘을 스치는 알 수 없는 향기는 누구의 입김입니까\n근원은 알지도 못할 곳에서 나서 돌뿌리를 울리고 가늘게 흐르는 작은 시내는 구비구비 누구의 노래입니까\n연꽃 같은 발꿈치로 가이 없는 바다를 밟고 옥 같은 손으로 끝없는 하늘을 만지면서 떨어지는 날을 곱게 단장하는 저녁놀은 누구의 시입니까\n타고 남은 재가 다시 기름이 됩니다 그칠 줄을 모르고 타는 나의 가슴은 누구의 밤을 지키는 약한 등불입니까",
+  "orig": "바람도업는공중에 垂直의波紋을내이며 고요히ᄯᅥ러지는 오동닙은 누구의발자최임닛가\n지리한장마ᄭᅳᆺ헤 서풍에몰녀가는 무서은검은구름의 터진틈으로 언ᄯᅳᆺ々々보이는 푸른하늘은 누구의얼골임닛가\nᄭᅩᆺ도업는 깁흔나무에 푸른이ᄭᅵ를거처서 옛塔위의 고요한하늘을 슬치는 알ㅅ수업는향긔는 누구의입김임닛가\n근원은 알지도못할곳에서나서 돍ᄲᅮ리를울니고 가늘게흐르는 적은시내는 구븨々々 누구의노래임닛가\n련ᄭᅩᆺ가튼발ᄭᅮᆷ치로 갓이업는바다를밟고 옥가튼손으로 ᄭᅳᆺ업는하늘을만지면서 ᄯᅥ러지는날을 곱게단장하는 저녁놀은 누구의詩임닛가\n타고남은재가 다시기름이됨니다 그칠줄을모르고타는 나의가슴은 누구의밤을지키는 약한등ㅅ불임닛가",
+  "fixes": [],
+  "note": "현대어 대역의 ‘돌뿌리’, ‘구비구비’는 위키문헌 표기 그대로다. 원문은 ‘원문 보기’로 함께 제공한다.",
+  "notes": [
+   "현대어 대역의 ‘돌뿌리’, ‘구비구비’는 위키문헌 표기 그대로다. 원문은 ‘원문 보기’로 함께 제공한다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「알 수 없어요」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0035136"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국문학번역원 KLWAVE “Han Yong-un”",
+    "url": "https://klwave.or.kr/klw/directories/200657/authorsView.do"
+   }
+  ],
+  "inExample": false,
+  "group": "love",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "자연 현상에서 절대적 존재의 자취를 발견하고 그를 향해 꺼지지 않고 타오르는 구도의 마음",
+  "speaker": "자연을 바라보며 묻는 ‘나’",
+  "devices": [
+   "설의법의 반복(‘누구의 ~입니까’)",
+   "역설(‘타고 남은 재가 다시 기름이 됩니다’)",
+   "은유"
+  ],
+  "key": [
+   "타고 남은 재가 다시 기름이 됩니다 그칠 줄을 모르고 타는 나의 가슴은 누구의 밤을 지키는 약한 등불입니까"
+  ],
+  "interp": "앞의 다섯 행은 오동잎, 푸른 하늘, 향기, 시내, 저녁놀을 차례로 ‘누구’의 발자취·얼굴·입김·노래·시냐고 묻는다. 묻는 형식이지만 화자는 이미 자연 너머의 어떤 존재를 느끼고 있으며, 그 존재가 보이지 않기에 ‘알 수 없다’고 말한다. 마지막 행에서 질문은 화자 자신에게 돌아와, 재가 다시 기름이 되듯 그치지 않고 타는 가슴을 ‘약한 등불’로 그린다. 고요한 경외와 그치지 않는 그리움, 그 존재를 위해 밤을 지키는 헌신이 함께 놓여 있다.",
+  "profile": {
+   "long": 0.7,
+   "calm": 0.6,
+   "love": 0.6,
+   "hope": 0.4
+  },
+  "profileNote": "사전은 ‘고요’ 2회와 ‘무서운 검은 구름’의 ‘무서’를 잡는다. ‘무서운’은 구름을 꾸미는 말이지 화자의 공포가 아니라서 프로필에서 불안을 0으로 두었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "자연에 깃든 님의 자취",
+    "emos": [
+     "calm",
+     "long"
+    ]
+   },
+   {
+    "label": "꺼지지 않는 구도의 등불",
+    "emos": [
+     "love",
+     "hope"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "swipge",
+  "order": 10,
+  "title": "쉽게 씌어진 시",
+  "poet": "윤동주",
+  "year": "1947",
+  "yearBasis": "최초 발표",
+  "created": "1942",
+  "firstPub": "『경향신문』(1947.2.13)",
+  "collected": "유고 시집 『하늘과 바람과 별과 시』(정음사, 1948)",
+  "poetDeath": 1945,
+  "source": "『하늘과 바람과 별과 시』(정음사, 1948) 초판 — 위키문헌 스캔 판독본(스캔 대조 교정)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/하늘과_바람과_별과_시_%281948년%29/쉽게_씨워진_시",
+  "edition": {
+   "type": "scan",
+   "label": "스캔 판독본",
+   "scan": "윤동주 하늘과 바람과 별과 시 (초판본, 1948).pdf, 50–51쪽",
+   "proofreadLevel": 1,
+   "scanChecked": true
+  },
+  "textMethod": "위키문헌 스캔 판독문(Page: 이름공간)을 API로 내려받아 옮기고, 같은 쪽의 스캔 이미지(윤동주 하늘과 바람과 별과 시 (초판본, 1948).pdf, 50–51쪽)를 열어 한 줄씩 대조했다. 판독문은 위키문헌에서 ‘교정 전(level 1)’ 상태. 대조에서 판독 오류 2가지를 찾아 스캔대로 고쳤다(fixes).",
+  "titleInEdition": "쉽게 씨워진 詩",
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "窓밖에 밤비가 속살거려\n六疊房은 남의 나라,\n\n詩人이란 슬픈 天命인줄 알면서도\n한줄 詩를 적어볼까,\n\n땀내와 사랑내 포그니 품긴\n보내주신 學費封套를 받어\n\n大學노—트를 끼고\n늙은 敎授의 講義 들으려 간다.\n\n생각해 보면 어린 때 동무를\n하나, 둘, 죄다 잃어 버리고\n\n나는 무얼 바라\n나는 다만, 홀로 沈澱하는 것일까?\n\n人生은 살기 어렵다는데\n詩가 이렇게 쉽게 씨워지는것은\n부끄러운 일이다.\n\n六疊房은 남의 나라\n窓밖에 밤비가 속살거리는데,\n\n등불을 밝혀 어둠을 조곰 내몰고,\n時代처럼 올 아츰을 기다리는 最後의나,\n\n나는 나에게 적은 손을 내밀어\n눈물과 慰安으로 잡는 最初의 握手.",
+  "orig": null,
+  "fixes": [
+   {
+    "from": "적어 볼가,",
+    "to": "적어볼까,",
+    "count": 1,
+    "why": "초판 50쪽 스캔에 ‘적어볼까,’로 인쇄됨(판독문 오류)",
+    "evidence": []
+   },
+   {
+    "from": "것일가?",
+    "to": "것일까?",
+    "count": 1,
+    "why": "초판 51쪽 스캔에 ‘것일까?’로 인쇄됨(판독문 오류)",
+    "evidence": []
+   }
+  ],
+  "note": "이전 데이터는 출처 표시가 없는 위키문헌 현대어 문서를 썼다. 같은 시집의 「참회록」·「별 헤는 밤」과 판본을 맞추려고 1948년 초판 판독본으로 바꿨다. 위키문헌 판독문은 ‘교정 전(level 1)’ 상태여서 스캔 이미지와 한 줄씩 대조했다. 백과사전 기준 10연 21행이며 표시 본문도 10연 21행이다.",
+  "notes": [
+   "이전 데이터는 출처 표시가 없는 위키문헌 현대어 문서를 썼다. 같은 시집의 「참회록」·「별 헤는 밤」과 판본을 맞추려고 1948년 초판 판독본으로 바꿨다.",
+   "위키문헌 판독문은 ‘교정 전(level 1)’ 상태여서 스캔 이미지와 한 줄씩 대조했다.",
+   "백과사전 기준 10연 21행이며 표시 본문도 10연 21행이다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「쉽게 씌여진 시」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0071398"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「윤동주」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0042294"
+   }
+  ],
+  "inExample": false,
+  "group": "shame",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "식민지 현실 속 무력한 자신에 대한 부끄러움과 그것을 넘어서려는 성찰",
+  "speaker": "남의 나라에서 공부하는 시인 ‘나’",
+  "devices": [
+   "수미상관에 가까운 반복(‘六疊房은 남의 나라’)",
+   "자아의 분열과 화해(나에게 손을 내밀어)",
+   "대조(어둠/등불)"
+  ],
+  "key": [
+   "나는 나에게 적은 손을 내밀어"
+  ],
+  "interp": "남의 나라 육첩방에서 부모가 보내 준 학비로 강의를 들으러 가는 화자는 자신의 처지를 담담히 돌아본다. 어린 동무들을 다 잃고 홀로 침전하는 자신, 인생은 살기 어렵다는데 시가 쉽게 쓰이는 것을 부끄러워하는 모습에서 성찰이 깊어진다. 그러나 등불을 밝혀 어둠을 조금 내몰고 시대처럼 올 아침을 기다리는 대목에서 부끄러움은 견디려는 의지로 바뀐다. 마지막에 ‘나’가 ‘나’에게 손을 내미는 악수는 갈라진 자아가 눈물과 위안으로 화해하는 순간이다.",
+  "profile": {
+   "shame": 0.9,
+   "hope": 0.6,
+   "sad": 0.5,
+   "void": 0.3,
+   "calm": 0.2
+  },
+  "profileNote": "사전 감지 8개가 여러 범주로 흩어져 슬픔과 희망·의지가 25%로 동률이다(지배 정서는 범주 순서상 슬픔). 해석의 핵심인 ‘부끄러운 일이다’는 한 번만 잡히므로 부끄러움·성찰을 가장 높게 두었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "쉽게 쓰이는 시에 대한 부끄러움",
+    "emos": [
+     "shame"
+    ]
+   },
+   {
+    "label": "아침을 기다리는 최후의 나",
+    "emos": [
+     "hope",
+     "sad"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "chamhoe",
+  "order": 11,
+  "title": "참회록",
+  "poet": "윤동주",
+  "year": "1948",
+  "yearBasis": "시집 수록(이전 지면 발표는 확인 못 함)",
+  "created": "1942",
+  "firstPub": "유고 시집 『하늘과 바람과 별과 시』(정음사, 1948)",
+  "collected": null,
+  "poetDeath": 1945,
+  "source": "『하늘과 바람과 별과 시』(정음사, 1948) 초판 — 위키문헌 스캔 판독본(스캔 대조 교정)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/하늘과_바람과_별과_시_%281948년%29/참회록",
+  "edition": {
+   "type": "scan",
+   "label": "스캔 판독본",
+   "scan": "윤동주 하늘과 바람과 별과 시 (초판본, 1948).pdf, 62–63쪽",
+   "proofreadLevel": 1,
+   "scanChecked": true
+  },
+  "textMethod": "위키문헌 스캔 판독문(Page: 이름공간)을 API로 내려받아 옮기고, 같은 쪽의 스캔 이미지(윤동주 하늘과 바람과 별과 시 (초판본, 1948).pdf, 62–63쪽)를 열어 한 줄씩 대조했다. 판독문은 위키문헌에서 ‘교정 전(level 1)’ 상태. 대조에서 판독 오류 2가지를 찾아 스캔대로 고쳤다(fixes).",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "파란 녹이 낀 구리거울 속에\n내 얼골이 남어있는것은\n어느 王朝의 遺物이기에\n이다지도 욕될까\n\n나는 나의 참회의 글을 한줄에 줄이자\n——滿二十四年 一個月을\n무슨 기쁨을 바라 살아왔는가\n\n내일이나 모레나 그 어느 즐거운 날에\n나는 또 한줄의 참회록을 써야한다.\n——그때 그 젊은 나이에\n웨 그런 부끄런 告白을 했든가\n\n밤이면 밤마다 나의 거울을\n손바닥으로 발바닥으로 닦어보자\n\n그러면 어느 隕石밑으로 홀로 걸어가는\n슬픈 사람의 뒷모양이\n거울 속에 나타나 온다.",
+  "orig": null,
+  "fixes": [
+   {
+    "from": "욕될가",
+    "to": "욕될까",
+    "count": 1,
+    "why": "초판 62쪽 스캔에 ‘욕될까’로 인쇄됨(판독문 오류)",
+    "evidence": []
+   },
+   {
+    "from": "흘로",
+    "to": "홀로",
+    "count": 1,
+    "why": "초판 63쪽 스캔에 ‘홀로’로 인쇄됨(판독문 오류)",
+    "evidence": []
+   }
+  ],
+  "note": "초판 끝의 창작 날짜는 ‘(1924)’로 잘못 인쇄되어 있다(위키문헌은 1942의 오식으로 표시). 날짜 줄은 본문에서 뺐다. 62→63쪽 경계는 판독자의 {{nop}} 표시에 따라 연 구분으로 처리했다.",
+  "notes": [
+   "초판 끝의 창작 날짜는 ‘(1924)’로 잘못 인쇄되어 있다(위키문헌은 1942의 오식으로 표시). 날짜 줄은 본문에서 뺐다.",
+   "62→63쪽 경계는 판독자의 {{nop}} 표시에 따라 연 구분으로 처리했다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「하늘과 바람과 별과 시」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0060561"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「윤동주」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0042294"
+   }
+  ],
+  "inExample": false,
+  "group": "shame",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "욕된 자신을 거울에 비추어 참회하고 고독한 앞날을 받아들이는 성찰",
+  "speaker": "구리거울을 들여다보는 ‘나’",
+  "devices": [
+   "거울(성찰의 매개)",
+   "시간의 교차(과거·현재·미래)",
+   "상징(구리거울·운석)",
+   "설의"
+  ],
+  "key": [
+   "밤이면 밤마다 나의 거울을"
+  ],
+  "interp": "녹 낀 구리거울에 비친 얼굴을 망한 왕조의 유물처럼 보며, 화자는 자기 존재를 욕되다고 느낀다. 스물네 해 한 달을 무슨 기쁨을 바라 살아왔느냐는 물음은 기쁨이 있었다는 말이 아니라 기쁨 없이 살아온 삶에 대한 반문이다. 화자는 앞날의 즐거운 날에 지금의 참회를 다시 참회하게 되리라 말하며 성찰이 한 번으로 끝나지 않음을 보여 준다. 손바닥 발바닥으로 거울을 닦은 끝에 운석 밑을 홀로 걷는 슬픈 뒷모습이 나타나, 고독한 길을 감당하겠다는 결의로 읽힌다.",
+  "profile": {
+   "shame": 1,
+   "sad": 0.6,
+   "hope": 0.3,
+   "void": 0.2
+  },
+  "profileNote": "사전은 ‘기쁨·즐거·바라’를 기쁨·희망으로 세지만 이들은 반문과 가정 속에 있다. 프로필에서 기쁨은 0으로 두었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "욕된 얼굴에 대한 참회",
+    "emos": [
+     "shame"
+    ]
+   },
+   {
+    "label": "홀로 걸어가는 슬픈 뒷모습",
+    "emos": [
+     "sad",
+     "hope"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "byeol",
+  "order": 12,
+  "title": "별 헤는 밤",
+  "poet": "윤동주",
+  "year": "1948",
+  "yearBasis": "시집 수록(유작)",
+  "created": "1941",
+  "firstPub": "유고 시집 『하늘과 바람과 별과 시』(정음사, 1948)",
+  "collected": null,
+  "poetDeath": 1945,
+  "source": "『하늘과 바람과 별과 시』(정음사, 1948) 초판 — 위키문헌 스캔 판독본(스캔 대조 교정)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/하늘과_바람과_별과_시_%281948년%29/별_헤는_밤",
+  "edition": {
+   "type": "scan",
+   "label": "스캔 판독본",
+   "scan": "윤동주 하늘과 바람과 별과 시 (초판본, 1948).pdf, 40–42쪽",
+   "proofreadLevel": 1,
+   "scanChecked": true
+  },
+  "textMethod": "위키문헌 스캔 판독문(Page: 이름공간)을 API로 내려받아 옮기고, 같은 쪽의 스캔 이미지(윤동주 하늘과 바람과 별과 시 (초판본, 1948).pdf, 40–42쪽)를 열어 한 줄씩 대조했다. 판독문은 위키문헌에서 ‘교정 전(level 1)’ 상태. 대조에서 판독 오류 2가지를 찾아 스캔대로 고쳤다(fixes).",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "季節이 지나가는 하늘에는\n가을로 가득 차있읍니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일듯합니다.\n\n가슴속에 하나 둘 새겨지는 별을\n이제 다 못헤는것은\n쉬이 아츰이 오는 까닭이오,\n來日 밤이 남은 까닭이오,\n아직 나의 靑春이 다하지 않은 까닭입니다.\n\n별 하나에 追憶과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 憧憬과\n별 하나에 詩와\n별 하나에 어머니, 어머니,\n\n어머님, 나는 별 하나에 아름다운 말 한마디씩 불러 봅니다. 小學校 때 冊床을 같이 했든 아이들의 이름과 佩, 鏡, 玉 이런 異國少女들의 이름과 벌써 애기 어머니 된 계집애들의 이름과, 가난한 이웃사람들의 이름과, 비둘기, 강아지, 토끼, 노새, 노루, “푸랑시스 • 쨤” “라이넬 • 마리아 • 릴케” 이런 詩人의 이름을 불러봅니다.\n\n이네들은 너무나 멀리 있습니다.\n별이 아슬이 멀듯이,\n\n어머님,\n그리고 당신은 멀리 北間島에 계십니다.\n\n나는 무엇인지 그리워\n이 많은 별빛이 나린 언덕우에\n내 이름자를 써보고,\n흙으로 덮어 버리었습니다.\n\n따는 밤을 새워 우는 버레는\n부끄러운 이름을 슬퍼하는 까닭입니다.\n\n그러나 겨울이 지나고 나의 별에도 봄이 오면\n무덤 우에 파란 잔디가 피어나듯이\n내 이름자 묻힌 언덕우에도\n자랑처럼 풀이 무성할게외다.",
+  "orig": null,
+  "fixes": [
+   {
+    "from": "이름과, 佩",
+    "to": "이름과 佩",
+    "count": 1,
+    "why": "초판 41쪽 스캔에 쉼표 없음(판독문에 쉼표가 더해짐)",
+    "evidence": []
+   },
+   {
+    "from": "쨤”, “라이넬",
+    "to": "쨤” “라이넬",
+    "count": 1,
+    "why": "초판 41쪽 스캔에 쉼표 없음(판독문에 쉼표가 더해짐)",
+    "evidence": []
+   }
+  ],
+  "note": "40→41쪽, 41→42쪽 경계에는 {{nop}} 표시가 없어 행이 이어지는 것으로 처리했다. 백과사전의 ‘10연 30행’과 일치한다.",
+  "notes": [
+   "40→41쪽, 41→42쪽 경계에는 {{nop}} 표시가 없어 행이 이어지는 것으로 처리했다. 백과사전의 ‘10연 30행’과 일치한다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「별 헤는 밤」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0071330"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「윤동주」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0042294"
+   }
+  ],
+  "inExample": false,
+  "group": "long",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "별을 헤며 떠오르는 추억과 그리움, 부끄러움을 넘어선 부활의 희망",
+  "speaker": "가을밤 별을 헤는 ‘나’",
+  "devices": [
+   "열거(‘별 하나에 ~과’)",
+   "반복",
+   "시간의 흐름(현재→과거→미래)",
+   "상징(별·이름·봄)"
+  ],
+  "key": [
+   "별 하나에 追憶과"
+  ],
+  "interp": "화자는 가을 하늘의 별을 하나씩 세며 추억, 사랑, 쓸쓸함, 동경, 시, 어머니를 차례로 불러낸다. 어릴 적 동무, 이국 소녀, 가난한 이웃, 시인들의 이름은 모두 멀리 있어 그리움이 깊어지고, 어머니는 먼 북간도에 계신다. 화자는 언덕 위에 자기 이름을 썼다가 흙으로 덮고, 밤새 우는 벌레가 그 부끄러운 이름을 슬퍼한다고 말한다. 마지막 연에서 겨울이 지나 무덤 위에 잔디가 피듯 이름 묻힌 언덕에도 풀이 무성하리라 하여, 부끄러움을 넘어선 희망을 보여 준다.",
+  "profile": {
+   "long": 0.9,
+   "shame": 0.5,
+   "hope": 0.5,
+   "sad": 0.4,
+   "love": 0.3
+  },
+  "profileNote": "사전도 그리움을 가장 높게 잡아 해석과 방향이 같다. ‘아무 걱정도 없이’의 ‘걱정’은 부정된 말이라 불안이 아니며(검증 사례 6), 마지막 연의 희망은 시어로 잡히지 않아 프로필로 더했다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "멀리 있는 이름들에 대한 그리움",
+    "emos": [
+     "long",
+     "love"
+    ]
+   },
+   {
+    "label": "부끄러운 이름과 봄의 부활",
+    "emos": [
+     "shame",
+     "hope"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "saseum",
+  "order": 13,
+  "title": "사슴",
+  "poet": "노천명",
+  "year": "1938",
+  "yearBasis": "시집 수록(이전 지면 발표는 확인 못 함)",
+  "created": null,
+  "firstPub": "시집 『산호림』(한성도서, 1938)",
+  "collected": null,
+  "poetDeath": 1957,
+  "source": "시집 『산호림』(한성도서, 1938) 초판 — 위키문헌 스캔 판독본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/산호림/사슴",
+  "edition": {
+   "type": "scan",
+   "label": "스캔 판독본",
+   "scan": "노천명 시집 산호림 (1938).pdf, 85–86쪽(인쇄 쪽수 79–80)",
+   "proofreadLevel": 3,
+   "scanChecked": true
+  },
+  "textMethod": "위키문헌 스캔 판독문(Page: 이름공간)을 API로 내려받아 옮기고, 같은 쪽의 스캔 이미지(노천명 시집 산호림 (1938).pdf, 85–86쪽(인쇄 쪽수 79–80))를 열어 한 줄씩 대조했다. 판독문은 위키문헌에서 ‘교정 완료(level 3)’ 상태. 대조 결과 판독문과 스캔이 일치해 고친 곳이 없다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "목아지가 길어서 슬푼 짐승이여\n언제나 점잔은편 말이 없구나\n冠이 香그러운 너는\n무척 높은 族屬 이였나 부다\n\n물속의 제 그림자를 듸려다 보고\n일헛든 傳說을 생각해 내곤\n어찌 할수 없는 鄕愁에\n슬푼목아지를하고 먼데山을 처다본다",
+  "orig": null,
+  "fixes": [],
+  "note": "세로쓰기 판본이다. 판독문과 스캔이 일치했다.",
+  "notes": [
+   "세로쓰기 판본이다. 판독문과 스캔이 일치했다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「사슴」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0025764"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「노천명」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0012918"
+   }
+  ],
+  "inExample": false,
+  "group": "long",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "고고하지만 잃어버린 과거를 그리워하는 사슴에 비친 고독과 향수",
+  "speaker": "사슴을 바라보며 말을 건네는 화자",
+  "devices": [
+   "돈호법(‘짐승이여’)",
+   "감정 이입",
+   "영탄"
+  ],
+  "key": [
+   "어찌 할수 없는 鄕愁에"
+  ],
+  "interp": "화자는 목이 긴 사슴을 ‘슬푼 짐승’이라 부르며 그 모습에서 말 없는 품위와 높은 혈통을 읽어 낸다. 물속 제 그림자를 들여다보고 잃었던 전설을 떠올린 사슴은 어찌할 수 없는 향수에 젖어 먼 산을 쳐다본다. 사슴의 슬픔은 지금 무엇을 겪어서라기보다 돌아갈 수 없는 과거에 대한 그리움에서 나온다. 사슴에게 감정을 옮겨 놓은 방식이어서, 그 고독하고 자존심 강한 모습에 화자 자신의 자의식이 겹쳐 있다고 볼 수 있다.",
+  "profile": {
+   "long": 0.8,
+   "sad": 0.7,
+   "void": 0.3,
+   "calm": 0.2
+  },
+  "profileNote": "사전 결과(슬픔·그리움·허무)와 방향이 같다. ‘슬푼’이 두 번 세어져 슬픔이 그리움보다 높게 나오지만 해석상 중심은 향수라서 그리움을 조금 더 높게 두었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "돌아갈 수 없는 과거에 대한 향수",
+    "emos": [
+     "long",
+     "void"
+    ]
+   },
+   {
+    "label": "말 없는 고독",
+    "emos": [
+     "sad",
+     "calm"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "nongae",
+  "order": 14,
+  "title": "논개",
+  "poet": "변영로",
+  "year": "1922",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『신생활』 4월호(1922)",
+  "collected": "시집 『조선의 마음』(평문관, 1924)",
+  "poetDeath": 1961,
+  "source": "『신생활』(1922) 발표작 — 위키문헌 현대어 대역",
+  "sourceUrl": "https://ko.wikisource.org/wiki/논개",
+  "edition": {
+   "type": "ws-parallel",
+   "label": "위키문헌 현대어 대역",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 원문·현대어 대역 문서에서 현대어 칸을 그대로 옮기고, 원문 칸은 orig에 따로 보관했다. 현대어 칸은 위키문헌 편집자가 옮긴 것이다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "거룩한 분노는\n종교보다도 깊고\n불붙는 정열은\n사랑보다도 강하다.\n아, 강낭콩 꽃보다도 더 푸른\n그 물결 위에\n양귀비 꽃보다도 더 붉은\n그 마음 흘러라.\n\n아리땁던 그 아미(娥眉)\n높게 들리우며\n그 석류 속 같은 입술\n죽음을 입맞추었네.\n아, 강낭콩 꽃보다도 더 푸른\n그 물결 위에\n양귀비 꽃보다도 더 붉은\n그 마음 흘러라.\n\n흐르는 강물은\n길이길이 푸르리니\n그대의 꽃다운 혼(魂)\n어이 아니 붉으랴.\n아, 강낭콩 꽃보다도 더 푸른\n그 물결 위에\n양귀비 꽃보다도 더 붉은\n그 마음 흘러라.",
+  "orig": "거륵한분로는\n宗敎보다도깁고\n불붓는情熱은\n사랑보다도强하다.\n아!강낭콩ᄭᅩᆺ보다도더푸른\n그물결우에\n양귀비ᄭᅩᆺ(罌粟花)보다도더불근\n그「마음」흘녀라!\n\n아릿답든그蛾眉\n놉게들니우며\n그石榴속갓튼입설\n「죽음」을입맛췃네!\n아!강낭콩ᄭᅩᆺ보다도더푸른\n그물결우에\n양귀비ᄭᅩᆺ보다도더불근\n그「마음」흘녀라!\n\n흐르는江물은\n기리기리푸르리니\n그대의ᄭᅩᆺ다운魂\n어이아니불그랴?\n아!강낭콩ᄭᅩᆺ보다도더푸른\n그물결우에\n양귀비ᄭᅩᆺ보다도더불근\n그「마음」흘녀라! (舊稿)",
+  "fixes": [],
+  "note": "위키문헌 설명은 ‘1923년 3월 『신생활』 3호’로 적었으나 백과사전 작품 항목의 1922년 4월호를 따랐다. 시집 『조선의 마음』 간행 연도는 백과사전 「변영로」 항목(1924)과 「논개」 항목(1923)이 서로 다르다.",
+  "notes": [
+   "위키문헌 설명은 ‘1923년 3월 『신생활』 3호’로 적었으나 백과사전 작품 항목의 1922년 4월호를 따랐다.",
+   "시집 『조선의 마음』 간행 연도는 백과사전 「변영로」 항목(1924)과 「논개」 항목(1923)이 서로 다르다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「논개」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0013010"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「변영로」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0022940"
+   }
+  ],
+  "inExample": false,
+  "group": "anger",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "왜장을 안고 강물에 몸을 던진 논개의 의로운 죽음과 붉은 마음에 대한 찬양",
+  "speaker": "논개를 기리는 화자",
+  "devices": [
+   "색채 대비(푸른 물결/붉은 마음)",
+   "비교(‘~보다도’)",
+   "후렴의 반복",
+   "영탄"
+  ],
+  "key": [
+   "양귀비 꽃보다도 더 붉은"
+  ],
+  "interp": "1연은 논개의 분노를 종교보다 깊고 정열을 사랑보다 강하다고 말하여 그 마음의 크기를 비교로 드러낸다. 2연은 논개가 ‘죽음을 입맞추었네’라고 하여 죽음을 두려운 끝이 아니라 스스로 택한 사랑의 행위처럼 그린다. 매 연의 후렴은 푸른 강물과 붉은 마음을 대비해, 강물이 길이 푸르듯 그 마음도 길이 붉으리라는 찬탄을 되풀이한다. 이 시의 분노는 개인의 원한이 아니라 나라를 해친 자를 향한 의분이고, 사랑은 민족을 향한 헌신이다.",
+  "profile": {
+   "love": 0.8,
+   "anger": 0.6,
+   "hope": 0.4,
+   "sad": 0.3
+  },
+  "profileNote": "사전은 ‘정열·사랑·입맞·그대’를 사랑으로 센다. 다만 3~4행의 ‘사랑’은 ‘사랑보다도 강하다’는 비교 속에 있다. 1연 ‘거룩한 분노’의 의분과 희생의 의지(희망·의지)를 해석으로 높였다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "거룩한 분노",
+    "emos": [
+     "anger"
+    ]
+   },
+   {
+    "label": "죽음을 입맞춘 헌신",
+    "emos": [
+     "love",
+     "hope",
+     "sad"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "ppaeat",
+  "order": 15,
+  "title": "빼앗긴 들에도 봄은 오는가",
+  "poet": "이상화",
+  "year": "1926",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『개벽』 70호(1926.6)",
+  "collected": null,
+  "poetDeath": 1943,
+  "source": "『개벽』 70호(1926.6) 발표 원문 — 위키문헌 원문(옛 표기)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/빼앗긴_들에도_봄은_오는가",
+  "edition": {
+   "type": "ws-orig",
+   "label": "위키문헌 원문(옛 표기)",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 원문(옛 표기) 문서를 그대로 옮겼다. 현대어로 바꾸지 않았다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "지금은 남의ᄯᅡᆼ―ᄲᅢ앗긴들에도 봄은오는가?\n\n나는 온몸에 해살을 밧고\n푸른한울 푸른들이 맛부튼 곳으로\n가름아가튼 논길을ᄯᅡ라 ᄭᅮᆷ속을가듯 거러만간다.\n\n입슐을 다문 한울아 들아\n내맘에는 내혼자온것 갓지를 안쿠나\n네가ᄭᅳᆯ엇느냐 누가부르드냐 답답워라 말을해다오.\n\n바람은 내귀에 속삭이며\n한자욱도 섯지마라 옷자락을 흔들고\n종조리는 울타리넘의 아씨가티 구름뒤에서 반갑다웃네.\n\n고맙게 잘자란 보리밧아\n간밤 자정이넘어 나리는 곱은비로\n너는 삼단가튼머리를 ᄭᅡᆷ앗구나 내머리조차 갑븐하다.\n\n혼자라도 갓부게나 가자\n마른논을 안고도는 착한도랑이\n젓먹이 달래는 노래를하고 제혼자 엇게춤만 추고가네.\n\n나비 제비야 ᄭᅡᆸ치지마라\n맨드램이 들마ᄭᅩᆺ에도 인사를해야지\n아주ᄭᅡ리 기름을바른이가 지심매든 그들이라 다보고십다.\n\n내손에 호미를 쥐여다오\n살ᄶᅵᆫ 젓가슴과가튼 부드러운 이흙을\n발목이 시도록 밟어도보고 조흔ᄯᅡᆷ조차 흘리고십다.\n\n강가에 나온 아해와가티\nᄶᅡᆷ도모르고 ᄭᅳᆺ도업시 닷는 내혼아\n무엇을찻느냐 어데로가느냐 웃어웁다 답을하려무나.\n\n나는 온몸에 풋내를 ᄯᅴ고\n푸른웃슴 푸른설음이 어우러진사이로\n다리를절며 하로를것는다 아마도 봄신령이 접혓나보다.\n그러나 지금은―들을 ᄲᅢ앗겨 봄조차 ᄲᅢ앗기것네",
+  "orig": null,
+  "fixes": [],
+  "note": "위키문헌 현대어 대역은 ‘맨드램이 들마ᄭᅩᆺ’을 ‘민들레 제비꽃’으로, ‘지심매든 그들이라’를 ‘김을 매는 그 들이라’로 낱말 자체를 바꾸어 쓰지 않았다. 옛한글(ᄯᅡᆼ, ᄲᅢ앗긴 등)은 글꼴에 따라 풀어져 보일 수 있다.",
+  "notes": [
+   "위키문헌 현대어 대역은 ‘맨드램이 들마ᄭᅩᆺ’을 ‘민들레 제비꽃’으로, ‘지심매든 그들이라’를 ‘김을 매는 그 들이라’로 낱말 자체를 바꾸어 쓰지 않았다.",
+   "옛한글(ᄯᅡᆼ, ᄲᅢ앗긴 등)은 글꼴에 따라 풀어져 보일 수 있다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「빼앗긴 들에도 봄은 오는가」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0025323"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "서울신문 「이상화 시·수필, 이광수 단편소설 발굴」(이상화 1901-1943)",
+    "url": "https://m.seoul.co.kr/news/2013/02/06/20130206800034"
+   }
+  ],
+  "inExample": false,
+  "group": "anger",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "빼앗긴 국토에 찾아온 봄의 아름다움 속에서 느끼는 국토 상실의 비애와 땅에 대한 사랑",
+  "speaker": "봄 들판을 걷는 ‘나’",
+  "devices": [
+   "의인화(한울아 들아, 종조리)",
+   "첫 행의 물음과 마지막 행의 답",
+   "대조(봄의 생명/빼앗김)",
+   "감각적 묘사"
+  ],
+  "key": [
+   "그러나 지금은―들을 ᄲᅢ앗겨 봄조차 ᄲᅢ앗기것네"
+  ],
+  "interp": "화자는 봄 햇살을 받으며 들판을 꿈속처럼 걷고, 바람·종다리·보리밭·도랑에게 말을 건네며 땅과 하나가 되는 기쁨을 느낀다. 호미를 쥐고 흙을 밟으며 땀을 흘리고 싶다는 바람은 이 땅에 대한 깊은 애정에서 나온다. 그러나 ‘푸른웃슴 푸른설음이 어우러진사이’를 절며 걷는다는 고백처럼 그 기쁨에는 처음부터 설움이 섞여 있다. 마지막 행에서 들을 빼앗겨 봄조차 빼앗기겠다는 깨달음이 첫 행의 물음에 답하며, 앞의 밝은 정경 전체를 상실의 비애로 다시 읽게 만든다.",
+  "profile": {
+   "sad": 0.8,
+   "love": 0.7,
+   "joy": 0.5,
+   "anger": 0.4,
+   "void": 0.3
+  },
+  "profileNote": "사전은 들판의 밝은 정경에서 기쁨을 71.4%로 센다. 마지막 행의 ‘ᄲᅢ앗기’는 사전에 없어 감지되지 않는다(검증 사례 3). 해석상 중심은 상실의 비애이므로 슬픔과 땅을 향한 사랑을 높였다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "봄 들판과 하나 되는 기쁨",
+    "emos": [
+     "joy",
+     "love"
+    ]
+   },
+   {
+    "label": "빼앗긴 땅의 비애",
+    "emos": [
+     "sad",
+     "anger",
+     "void"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "ogamdo",
+  "order": 16,
+  "title": "오감도 시제1호",
+  "poet": "이상",
+  "year": "1934",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『조선중앙일보』(1934.7.24)",
+  "collected": null,
+  "poetDeath": 1937,
+  "source": "『조선중앙일보』(1934.7.24) 지면 — 위키문헌 스캔 판독본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/오감도",
+  "edition": {
+   "type": "scan",
+   "label": "스캔 판독본",
+   "scan": "이상 오감도 조선중앙일보(1934).pdf, 1쪽",
+   "proofreadLevel": 3,
+   "scanChecked": true
+  },
+  "textMethod": "위키문헌 스캔 판독문(Page: 이름공간)을 API로 내려받아 옮기고, 같은 쪽의 스캔 이미지(이상 오감도 조선중앙일보(1934).pdf, 1쪽)를 열어 한 줄씩 대조했다. 판독문은 위키문헌에서 ‘교정 완료(level 3)’ 상태. 대조에서 판독 오류 1가지를 찾아 스캔대로 고쳤다(fixes).",
+  "titleInEdition": "烏瞰圖 詩第一號",
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "十三人의兒孩가道路로疾走하오。\n(길은막달은골목이適當하오。)\n\n第一의兒孩가무섭다고그리오。\n第二의兒孩도무섭다고그리오。\n第三의兒孩도무섭다고그리오。\n第四의兒孩도무섭다고그리오。\n第五의兒孩도무섭다고그리오。\n第六의兒孩도무섭다고그리오。\n第七의兒孩도무섭다고그리오。\n第八의兒孩도무섭다고그리오。\n第九의兒孩도무섭다고그리오。\n第十의兒孩도무섭다고그리오。\n\n第十一의兒孩가무섭다고그리오。\n第十二의兒孩도무섭다고그리오。\n第十三의兒孩도무섭다고그리오。\n十三人의兒孩는무서운兒孩와무서워하는兒孩와그러케뿐이모혓소。(다른事情은업는것이차라리나앗소)\n\n그中에一人의兒孩가무서운兒孩라도좃소。\n그中에二人의兒孩가무서운兒孩라도좃소。\n그中에二人의兒孩가무서워하는兒孩라도좃소。\n그中에一人의兒孩가무서워하는兒孩라도좃소。\n\n(길은뚤닌골목이라도適當하오。)\n十三人의兒孩가道路로疾走하지아니하야도좃소。",
+  "orig": null,
+  "fixes": [
+   {
+    "from": ".",
+    "to": "。",
+    "count": 22,
+    "why": "신문 지면 스캔에는 고리점(。)으로 인쇄됨. 판독문은 마침표(.)로 적었다",
+    "evidence": []
+   }
+  ],
+  "note": "붙여쓰기와 한자는 지면 그대로 둔다. 제10과 제11 사이의 빈 줄은 지면의 행간에서도 확인된다.",
+  "notes": [
+   "붙여쓰기와 한자는 지면 그대로 둔다. 제10과 제11 사이의 빈 줄은 지면의 행간에서도 확인된다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「오감도」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0038074"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「이상」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0044568"
+   }
+  ],
+  "inExample": false,
+  "group": "fear",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "막다른 골목을 질주하는 열세 아이를 통해 드러난 이유도 출구도 없는 불안",
+  "speaker": "상황을 보고하듯 말하는 관찰자",
+  "devices": [
+   "기계적 반복과 나열",
+   "띄어쓰기를 하지 않은 표기",
+   "한자 혼용",
+   "모순된 진술(막달은골목/뚤닌골목)"
+  ],
+  "key": [
+   "十三人의兒孩는무서운兒孩와무서워하는兒孩와그러케뿐이모혓소。(다른事情은업는것이차라리나앗소)"
+  ],
+  "interp": "열세 명의 아이가 도로를 질주하며 차례로 ‘무섭다’고 말하는 장면이 기계적으로 반복된다. 아이들은 무서운 아이와 무서워하는 아이로만 나뉘어, 두려움이 누구에게서 오는지조차 분명하지 않은 상태가 된다. 마지막에 길이 뚫린 골목이라도 좋고 질주하지 않아도 좋다고 말하면서 앞에서 세운 상황 자체를 뒤집는다. 이 시의 불안은 특정한 대상에 대한 두려움이라기보다 출구도 이유도 없는 상황이 주는 부조리한 불안으로 읽힌다.",
+  "profile": {
+   "fear": 0.9,
+   "void": 0.5
+  },
+  "profileNote": "사전 결과(불안·공포 100%)와 방향은 같다. 다만 같은 문장이 13번 반복되어 생긴 수치이며(검증 사례 4), 마지막 연의 상황 부정이 주는 부조리는 시어로 잡히지 않아 허무로 더했다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "무서운 아이와 무서워하는 아이",
+    "emos": [
+     "fear"
+    ]
+   },
+   {
+    "label": "출구 없는 질주의 부조리",
+    "emos": [
+     "void",
+     "fear"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "geoul",
+  "order": 17,
+  "title": "거울",
+  "poet": "이상",
+  "year": "1933",
+  "yearBasis": "최초 발표",
+  "created": null,
+  "firstPub": "『가톨닉청년』 통권 5호(1933.10)",
+  "collected": null,
+  "poetDeath": 1937,
+  "source": "『가톨닉청년』(1933.10) 발표 원문 — 위키문헌 원문(옛 표기)",
+  "sourceUrl": "https://ko.wikisource.org/wiki/거울",
+  "edition": {
+   "type": "ws-orig",
+   "label": "위키문헌 원문(옛 표기)",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 원문(옛 표기) 문서를 그대로 옮겼다. 현대어로 바꾸지 않았다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "거울속에는소리가업소\n저럿케ᄭᅡ지조용한세상은참업슬것이오\n\n거울속에도 내게 귀가잇소\n내말을못아라듯는ᄯᅡᆨ한귀가두개나잇소\n\n거울속의나는왼손잡이오\n내握手를바들줄몰으는―握手를몰으는왼손잡이오\n\n거울ᄯᅢ문에나는거울속의나를만저보지를못하는구료만은\n거울아니엿든들내가엇지거울속의나를맛나보기만이라도햇겟소\n\n나는至今거울을안가젓소마는거울속에는늘거울속의내가잇소\n잘은모르지만외로된事業에골몰할ᄭᅦ요\n\n거울속의나는참나와는反對요만은\nᄯᅩᄭᅫ닮앗소\n나는거울속의나를근심하고診察할수업스니퍽섭々하오",
+  "orig": null,
+  "fixes": [],
+  "note": "백과사전의 ‘6연 13행’과 일치한다. 붙여쓰기는 원문 그대로다. 위키문헌 원문이 어느 지면을 판독했는지(스캔 연결)는 확인하지 못했다.",
+  "notes": [
+   "백과사전의 ‘6연 13행’과 일치한다. 붙여쓰기는 원문 그대로다.",
+   "위키문헌 원문이 어느 지면을 판독했는지(스캔 연결)는 확인하지 못했다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「거울」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0001861"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「이상」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0044568"
+   }
+  ],
+  "inExample": false,
+  "group": "fear",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "거울 속의 나와 현실의 나 사이의 단절로 드러난 자아 분열",
+  "speaker": "거울을 들여다보는 ‘나’",
+  "devices": [
+   "띄어쓰기를 하지 않은 표기",
+   "대칭(왼손잡이)",
+   "역설",
+   "반복"
+  ],
+  "key": [
+   "거울속의나는왼손잡이오"
+  ],
+  "interp": "거울 속 세상은 소리가 없고 조용하지만, 그 고요는 평화가 아니라 말이 통하지 않는 단절의 고요다. 거울 속 나에게도 귀가 있지만 내 말을 알아듣지 못하고, 악수를 청해도 받을 줄 모르는 왼손잡이다. 화자는 거울 때문에 거울 속 나를 만질 수 없지만 거울이 아니었다면 만나 보지도 못했으리라 말해, 단절과 만남이 함께 있는 역설을 드러낸다. 끝에서 화자는 자신과 반대이면서 꽤 닮은 거울 속 나를 근심하고 진찰할 수 없어 섭섭하다고 하여, 갈라진 자아를 끝내 하나로 잇지 못하는 불안을 남긴다.",
+  "profile": {
+   "fear": 0.6,
+   "void": 0.5,
+   "sad": 0.4,
+   "shame": 0.3
+  },
+  "profileNote": "사전은 ‘조용’을 평온으로 세지만 여기서는 단절의 고요라 평온을 0으로 두었다. ‘섭々하오’는 사전에 없어 잡히지 않는다. 자기 자신을 들여다보는 시선은 성찰로 조금 넣었다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "말이 통하지 않는 거울 속 나",
+    "emos": [
+     "fear",
+     "void"
+    ]
+   },
+   {
+    "label": "만질 수 없는 나에 대한 섭섭함",
+    "emos": [
+     "sad",
+     "shame"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "mokma",
+  "order": 18,
+  "title": "목마와 숙녀",
+  "poet": "박인환",
+  "year": "1955",
+  "yearBasis": "시집 수록(이전 지면 발표는 확인 못 함)",
+  "created": null,
+  "firstPub": "『박인환 선시집』(산호장, 1955)",
+  "collected": null,
+  "poetDeath": 1956,
+  "source": "위키문헌 「목마와 숙녀」(시집 『목마와 숙녀』(근역서재, 1976) 수록면) 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/목마와_숙녀/목마와_숙녀",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "한 잔의 술을 마시고\n우리는 버지니아 울프의 생애와\n목마를 타고 떠난 숙녀의 옷자락을 이야기한다\n목마는 주인을 버리고 거저 방울 소리만 울리며\n가을 속으로 떠났다 술병에서 별이 떨어진다\n상심한 별은 내 가슴에 가벼웁게 부서진다\n그러한 잠시 내가 알던 소녀는\n정원의 초목 옆에서 자라고\n문학이 죽고 인생이 죽고\n사랑의 진리마저 애증의 그림자를 버릴 때\n목마를 탄 사랑의 사람은 보이지 않는다\n세월은 가고 오는 것\n한때는 고립을 피하여 시들어가고\n이제 우리는 작별하여야 한다\n술병이 바람에 쓰러지는 소리를 들으며\n늙은 여류작가의 눈을 바라다보아야 한다\n……등대에……\n불이 보이지 않아도\n거저 간직한 페시미즘의 미래를 위하여\n우리는 처량한 목마 소리를 기억하여야 한다\n모든 것이 떠나든 죽든\n거저 가슴에 남은 희미한 의식을 붙잡고\n우리는 버지니아 울프의 서러운 이야기를 들어야 한다\n두 개의 바위 틈을 지나 청춘을 찾은 뱀과 같이\n눈을 뜨고 한 잔의 술을 마셔야 한다.\n인생은 외롭지도 않고\n거저 잡지의 표지처럼 통속하거늘\n한탄할 그 무엇이 무서워서 우리는 떠나는 것일까\n목마는 하늘에 있고\n방울 소리는 귓전에 철렁거리는데\n가을 바람소리는\n내 쓰러진 술병 속에서 목 메어 우는데",
+  "orig": null,
+  "fixes": [],
+  "note": "위키문헌 본문은 연 구분 없는 32행이다. 재수록본 가운데에는 연을 나누거나 ‘거저’를 ‘그저’로 바꾼 것이 있으나 내려받은 본문을 그대로 썼다. 위키문헌 문서에 판본 설명이 없어, 같은 묶음의 「세월이 가면」 출전(1976 근역서재)으로 추정했다. 원전 스캔은 대조하지 못했다.",
+  "notes": [
+   "위키문헌 본문은 연 구분 없는 32행이다. 재수록본 가운데에는 연을 나누거나 ‘거저’를 ‘그저’로 바꾼 것이 있으나 내려받은 본문을 그대로 썼다.",
+   "위키문헌 문서에 판본 설명이 없어, 같은 묶음의 「세월이 가면」 출전(1976 근역서재)으로 추정했다. 원전 스캔은 대조하지 못했다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국민족문화대백과사전 「박인환 선시집」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0021081"
+   },
+   {
+    "label": "한국민족문화대백과사전 「목마와 숙녀」(시집)",
+    "url": "https://encykorea.aks.ac.kr/Article/E0018624"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「박인환」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0021080"
+   }
+  ],
+  "inExample": false,
+  "group": "void",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "모든 것이 떠나가는 세계에서 느끼는 상실과 허무, 그 속에서 삶을 견디려는 태도",
+  "speaker": "술을 마시며 떠나간 것들을 이야기하는 ‘우리/나’",
+  "devices": [
+   "감상적 이미지의 나열",
+   "고유명사와 외래어(버지니아 울프, 페시미즘)",
+   "‘-야 한다’의 반복",
+   "상징(목마·숙녀·등대)"
+  ],
+  "key": [
+   "우리는 처량한 목마 소리를 기억하여야 한다"
+  ],
+  "interp": "화자는 술을 마시며 버지니아 울프와 떠나 버린 목마와 숙녀를 이야기하고, 별이 떨어지고 술병이 쓰러지는 이미지를 이어 간다. 문학도 인생도 사랑의 진리도 사라지는 세계에서 화자는 고립과 작별, 페시미즘을 숨기지 않는다. 그러나 ‘-야 한다’가 거듭되듯 화자는 기억하고 들어야 하고 눈을 뜨고 마셔야 한다고 말하며, 허무 속에서도 버티는 태도를 보인다. ‘인생은 외롭지도 않고 / 거저 잡지의 표지처럼 통속하거늘’은 슬픔조차 통속적이라는 냉소로, 감상과 냉소가 함께 있는 것이 이 시의 정조다.",
+  "profile": {
+   "void": 0.9,
+   "sad": 0.6,
+   "long": 0.4,
+   "fear": 0.2
+  },
+  "profileNote": "사전은 슬픔과 허무를 각 36.8%로 세어 해석과 가깝다. ‘외롭지도 않고’처럼 부정된 감정어는 사전이 우연히 잡지 않았고(‘외로’≠‘외롭’), 냉소적 어조는 반영하지 못한다.",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "떠나고 부서지는 모든 것",
+    "emos": [
+     "void",
+     "sad"
+    ]
+   },
+   {
+    "label": "기억하며 견디는 태도",
+    "emos": [
+     "long"
+    ]
+   }
+  ],
+  "interpRefs": []
+ },
+ {
+  "id": "sewol",
+  "order": 19,
+  "title": "세월이 가면",
+  "poet": "박인환",
+  "year": "1976",
+  "yearBasis": "시집 수록(최초 지면 발표는 미확인)",
+  "created": "1956",
+  "firstPub": "시집 『목마와 숙녀』(근역서재, 1976)",
+  "collected": null,
+  "poetDeath": 1956,
+  "source": "시집 『목마와 숙녀』(근역서재, 1976) — 위키문헌 현대 표기본",
+  "sourceUrl": "https://ko.wikisource.org/wiki/목마와_숙녀/세월이_가면",
+  "edition": {
+   "type": "ws-modern",
+   "label": "위키문헌 현대 표기본",
+   "scan": null,
+   "proofreadLevel": null,
+   "scanChecked": false
+  },
+  "textMethod": "위키문헌 현대 표기본 문서의 본문을 API로 내려받아 글자·문장부호·행·연을 바꾸지 않고 옮겼다. 원전 스캔과는 대조하지 못했다.",
+  "titleInEdition": null,
+  "titleNote": null,
+  "epigraph": null,
+  "afterword": null,
+  "text": "지금 그 사람의 이름은 잊었지만\n그의 눈동자 입술은\n내 가슴에 있어.\n\n바람이 불고\n비가 올 때도\n나는 저 유리창 밖\n가로등 그늘의 밤을 잊지 못하지\n\n사랑은 가고\n과거는 남는 것\n여름날의 호숫가\n가을의 공원\n그 벤치 위에\n나뭇잎은 떨어지고\n나뭇잎은 흙이 되고\n나뭇잎에 덮여서\n우리들 사랑이 사라진다 해도\n\n지금 그 사람 이름은 잊었지만\n그의 눈동자 입술은\n내 가슴에 있어\n내 서늘한 가슴에 있건만",
+  "orig": null,
+  "fixes": [],
+  "note": "1956년 작고 직전에 쓰여 노래로 먼저 알려졌고, 1955년 『선시집』에는 없으며 1976년 시집에 실렸다. 그 사이의 지면 발표는 확인하지 못했다.",
+  "notes": [
+   "1956년 작고 직전에 쓰여 노래로 먼저 알려졌고, 1955년 『선시집』에는 없으며 1976년 시집에 실렸다. 그 사이의 지면 발표는 확인하지 못했다."
+  ],
+  "pubSources": [
+   {
+    "label": "한국경제 고두현의 아침 시편 「‘세월이 가면’에서 ‘목마와 숙녀’까지」",
+    "url": "https://sgsg.hankyung.com/article/2023110315701"
+   },
+   {
+    "label": "한국민족문화대백과사전 「박인환」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0021080"
+   }
+  ],
+  "deathSources": [
+   {
+    "label": "한국민족문화대백과사전 「박인환」",
+    "url": "https://encykorea.aks.ac.kr/Article/E0021080"
+   }
+  ],
+  "inExample": false,
+  "group": "void",
+  "groupNote": "작품을 고를 때 염두에 둔 정서(편집용 라벨). 분석 결과나 해석 프로필에 쓰지 않는다.",
+  "theme": "이름은 잊었어도 가슴에 남은 지난 사랑에 대한 그리움",
+  "speaker": "지난 사랑을 떠올리는 ‘나’",
+  "devices": [
+   "수미상관",
+   "반복",
+   "계절 이미지",
+   "대조(잊었지만/가슴에 있어)"
+  ],
+  "key": [
+   "내 서늘한 가슴에 있건만"
+  ],
+  "interp": "화자는 그 사람의 이름은 잊었지만 눈동자와 입술은 가슴에 남아 있다고 말하며 시를 연다. 바람이 불고 비가 올 때 유리창 밖 가로등 그늘의 밤을 잊지 못한다는 고백에서 기억은 구체적인 장면으로 남는다. 사랑은 가고 과거는 남는다는 진술과 나뭇잎이 흙이 되는 이미지는 시간 속에서 사랑이 사라져 가는 과정을 보여 준다. 마지막 행의 ‘서늘한 가슴’과 ‘있건만’은 기억이 남아 있어도 다시 이어질 수 없다는 쓸쓸함을 남긴다.",
+  "profile": {
+   "long": 0.9,
+   "sad": 0.5,
+   "love": 0.4,
+   "void": 0.4
+  },
+  "profileNote": "사전은 ‘사랑’ 2회로 사랑을 가장 높게(50%) 센다. 그러나 ‘사랑은 가고’, ‘사랑이 사라진다 해도’에서 사랑은 이미 떠난 것이라 해석상 중심은 그리움이다(검증 사례 7).",
+  "profileBy": "사람이 정한 해석 값(초안: AI 작성, 학생 검토 필요). 모델 출력이 아니다.",
+  "themeLinks": [
+   {
+    "label": "잊지 못하는 눈동자와 입술",
+    "emos": [
+     "long",
+     "love"
+    ]
+   },
+   {
+    "label": "사라져 가는 사랑",
+    "emos": [
+     "void",
+     "sad"
+    ]
+   }
+  ],
+  "interpRefs": []
+ }
+];
 </script>
-<script src="data/poems.js" onerror="window.__dataScriptFailed=true"></script>
-<script src="js/lexicon.js"></script>
-<script src="js/engine.js"></script>
-<script src="js/app.js"></script>
+<script>/* js/lexicon.js */
+/*
+ * 감정 범주(EMOS)와 감정 사전(LEX)
+ * ------------------------------------------------------------
+ * - 범주 순서는 모든 결과·차트·추천에서 이 배열 순서를 그대로 쓴다.
+ * - 한 시어는 한 범주에만 넣는다(중복 등록 금지, tests/engine.test.mjs가 검사).
+ * - 원전 표기 작품을 위해 옛 표기 이형태(슬푼, 우슴, 붓그럼 등)와 한자어(追憶, 鄕愁 등)를 함께 넣었다.
+ * - 어간(예: 무서, 바라)은 여러 활용형을 잡지만 다른 낱말 속에서도 일치할 수 있다.
+ *   알려진 부분 문자열 오탐은 BLOCK에 ‘차단어’로 넣는다. 차단어도 같은 정규식에서 긴 것부터 일치하므로,
+ *   차단어가 먼저 일치한 자리에서는 감정 시어가 세어지지 않는다(README 검증 사례 5 참고).
+ */
+(function (root) {
+  const EMOS = [
+    { k: "sad",   name: "슬픔",          color: "#3E6A8A", def: "잃음·헤어짐·고통을 지금 겪으며 마음이 아프고 서러운 상태." },
+    { k: "joy",   name: "기쁨",          color: "#C9852B", def: "바라던 일이 이루어지거나 좋은 것을 만나 마음이 들뜨고 즐거운 상태." },
+    { k: "calm",  name: "평온",          color: "#6E9071", def: "들뜨거나 흔들림 없이 고요하고 편안하며, 세상일에 초연한 상태." },
+    { k: "hope",  name: "희망·의지",     color: "#2E8B83", def: "아직 오지 않은 좋은 때를 기다리거나, 어려움을 견디고 맞서려는 마음." },
+    { k: "love",  name: "사랑",          color: "#B4475E", def: "특정한 대상을 아끼고 그에게 다가가거나 자신을 바치려는 마음." },
+    { k: "shame", name: "부끄러움·성찰", color: "#9A6A9E", def: "자기 자신을 돌아보며 부끄러워하거나 뉘우치는 마음." },
+    { k: "long",  name: "그리움",        color: "#5B7DB8", def: "떨어져 있거나 지나간 사람·곳·때를 다시 만나고 싶어 하는 마음." },
+    { k: "anger", name: "분노",          color: "#B0442F", def: "부당함이나 해침을 당해 격하게 맞서거나 미워하는 마음." },
+    { k: "fear",  name: "불안·공포",     color: "#6B4E3D", def: "위협이나 알 수 없는 것 앞에서 두려워하고 마음이 흔들리는 상태." },
+    { k: "void",  name: "허무",          color: "#8C8778", def: "삶이나 가치가 덧없고 사라져 의미를 잃었다고 느끼는 상태." },
+  ];
+
+  // 인접 범주를 가르는 기준(README와 화면 ‘범주 정의’에 함께 표시)
+  const BOUNDARIES = [
+    "슬픔 ↔ 그리움: 아픔 자체가 중심이면 슬픔, 떨어진 대상을 향해 다가가려는 마음이 중심이면 그리움.",
+    "슬픔 ↔ 허무: 무엇을 잃어 아픈 것이면 슬픔, 의미 자체가 사라졌다고 느끼면 허무.",
+    "기쁨 ↔ 평온: 들뜨고 솟구치면 기쁨, 가라앉아 고요하면 평온.",
+    "기쁨 ↔ 희망·의지: 이미 이루어진 좋은 일이면 기쁨, 아직 오지 않은 것을 기다리거나 버티는 마음이면 희망·의지.",
+    "사랑 ↔ 그리움: 대상에게 지금 다가가는 마음이면 사랑, 대상이 없거나 멀어서 생기는 마음이면 그리움.",
+    "부끄러움·성찰 ↔ 불안·공포: 자기 잘못을 돌아보면 부끄러움·성찰, 바깥의 위협이나 정체 모를 것을 두려워하면 불안·공포.",
+    "분노 ↔ 슬픔: 해친 대상을 향해 맞서는 힘이 있으면 분노, 당한 일을 아파하는 데 머물면 슬픔.",
+  ];
+
+  const LEX = {
+    sad: ["슬프", "슬픔", "슬픈", "슬피", "슬퍼", "슬푼", "서러", "서럽", "설움", "설음", "설워", "섧게", "눈물",
+          "울음", "울며", "울었", "울어", "울고", "울더", "울던", "울지", "웁니다", "우는",
+          "구슬픈", "처량", "시름", "한숨", "아픈", "쓸쓸", "괴로", "외로", "고독", "이별", "작별", "상심",
+          "죽음", "죽어", "죽은", "죽었", "죽을", "죽고", "죽사"],
+    joy: ["기쁨", "기쁘", "기뻐", "기쁜", "기꺼", "즐거", "반갑", "반가", "웃음", "웃으", "우슴", "웃슴", "웃지", "웃네",
+          "춤", "환희", "용솟음", "더덩실", "고맙", "행복", "흥겨"],
+    calm: ["고요", "조용", "잔잔", "평화", "편안", "한가", "포근", "포그니", "졸음", "살포시", "살프시",
+           "보드레", "부드러", "아늑", "그윽", "은은", "느긋", "고즈넉"],
+    hope: ["희망", "소망", "바라", "기다리", "기다림", "기다려", "꿈꾸", "새날", "이루", "견디", "이겨",
+           "맞서", "굳세", "앞장", "의지", "다짐", "버티"],
+    love: ["사랑", "그대", "연인", "입맞", "안아", "안어", "정열", "아씨여", "애정", "연모", "사모하",
+           "헌신", "바치", "섬기", "어여쁜"],
+    shame: ["부끄러", "부끄럼", "부끄런", "붓그럼", "참회", "뉘우", "욕될", "욕되", "告白", "고백",
+            "반성", "성찰", "자책", "후회", "돌이켜"],
+    long: ["그리워", "그리운", "그립", "그리움", "향수", "鄕愁", "추억", "追憶", "동경", "憧憬", "고향",
+           "옛날", "못잊", "못 잊", "잊지 못", "아스라", "아슬이", "기억하", "회상", "사무치"],
+    anger: ["분노", "분로", "노여", "성난", "성내", "원망", "원수", "미워", "미움", "증오", "울분", "분하",
+            "분통", "시샘", "시새움", "애증", "저주", "짓밟"],
+    fear: ["무섭", "무서", "두려", "겁이", "겁나", "떨며", "떨리", "떨고", "불안", "공포", "근심", "걱정",
+           "섬뜩", "오싹", "위태", "조마조마"],
+    void: ["허무", "덧없", "공허", "헛되", "무의미", "사라지", "사라진", "잃어", "잃었", "일헛", "상실",
+           "페시미즘", "고립", "시들", "통속", "허전", "부질없", "꺼지", "부서지", "부서진", "쓰러지", "쓰러진", "흩어"],
+  };
+
+  // 차단어: 감정 시어를 품고 있지만 그 감정이 아닌 더 긴 낱말. 일치해도 세지 않는다.
+  // 버전 기록: v1(첫 실행)에는 없었고, 검증 사례 5의 실행 결과를 보고 v2에서 넣었다.
+  const BLOCK = ["바라보", "바라다보"];
+
+  // v3: 예시 사전과 비교하다가 기본형 ‘슬픔’, ‘기쁘(다)’, ‘괴로(움)’이 빠진 것을 찾아 넣었다(수록 20편의 결과는 바뀌지 않음 — README 사전 변경 기록).
+  const LEX_VERSION = "v3 (2026-11-21)";
+
+  const api = { EMOS, LEX, BLOCK, BOUNDARIES, LEX_VERSION };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.LEXICON = api;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>/* js/engine.js */
+/*
+ * 분석 엔진 — 기술명세서 5장(5.1~5.5)을 따른다.
+ * 브라우저(window.PoemEngine)와 Node(tests) 양쪽에서 같은 코드를 쓴다.
+ */
+(function (root) {
+  "use strict";
+
+  // ---------------------------------------------------------------- 표기 정규화(분석용 사본만)
+  // 원전의 옛한글 합용병서(ᄭ ᄯ ᄲ ᄶ)를 된소리로 바꾸고 첫·가·끝소리 조합을 한 글자로 합친다.
+  // 반복 부호 々는 앞 글자로 편다. 화면 본문은 바꾸지 않고, 일치 위치는 원래 본문 위치로 되돌린다.
+  const SIOS = { "ᄭ": "ᄁ", "ᄯ": "ᄄ", "ᄲ": "ᄈ", "ᄶ": "ᄍ" };
+  const isL = (c) => (c >= 0x1100 && c <= 0x115f) || (c >= 0xa960 && c <= 0xa97f);
+  const isV = (c) => (c >= 0x1160 && c <= 0x11a7) || (c >= 0xd7b0 && c <= 0xd7c6);
+  const isT = (c) => (c >= 0x11a8 && c <= 0x11ff) || (c >= 0xd7cb && c <= 0xd7fb);
+
+  function normalizeLine(s) {
+    let a = "";
+    const map = []; // map[i] = [start, end) : 분석용 i번째 글자가 원래 줄에서 차지하는 범위
+    let i = 0;
+    while (i < s.length) {
+      const c = s.charCodeAt(i);
+      if (isL(c)) {
+        let j = i + 1;
+        while (j < s.length && isL(s.charCodeAt(j))) j++;
+        while (j < s.length && isV(s.charCodeAt(j))) j++;
+        while (j < s.length && isT(s.charCodeAt(j))) j++;
+        let cluster = s.slice(i, j).split("").map((ch) => SIOS[ch] || ch).join("").normalize("NFC");
+        for (const ch of cluster) { a += ch; map.push([i, j]); }
+        i = j;
+        continue;
+      }
+      if (s[i] === "々" && a.length) {
+        a += a[a.length - 1];
+        map.push([i, i + 1]);
+        i++;
+        continue;
+      }
+      a += s[i];
+      map.push([i, i + 1]);
+      i++;
+    }
+    return { a, map };
+  }
+
+  // ---------------------------------------------------------------- 매처(5.2)
+  const escapeRe = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  function buildMatcher(EMOS, LEX, BLOCK) {
+    const lookup = new Map();
+    for (const e of EMOS) for (const w of LEX[e.k] || []) {
+      if (lookup.has(w) && lookup.get(w) !== e.k) throw new Error(`시어 중복: ${w}`);
+      lookup.set(w, e.k);
+    }
+    for (const w of BLOCK || []) lookup.set(w, null);
+    const words = [...lookup.keys()].sort((x, y) => y.length - x.length || (x < y ? -1 : x > y ? 1 : 0));
+    const re = new RegExp(words.map(escapeRe).join("|"), "gu");
+    return { re, lookup, words };
+  }
+
+  // ---------------------------------------------------------------- 시 한 편 분석(5.1~5.3)
+  function analyzeText(text, ctx, id = null) {
+    const { EMOS, matcher } = ctx;
+    const K = EMOS.map((e) => e.k);
+    const raw = String(text || "").replace(/\r\n?/g, "\n").split("\n");
+    const lines = [];
+    const blocked = [];
+    let stanza = 1, prevBlank = false, no = 0;
+    for (const rawLine of raw) {
+      const line = rawLine.trim();
+      if (!line) { if (no > 0) prevBlank = true; continue; }
+      if (prevBlank) { stanza++; prevBlank = false; }
+      no++;
+      const { a, map } = normalizeLine(line);
+      const counts = new Array(K.length).fill(0);
+      const hits = [];
+      matcher.re.lastIndex = 0;
+      let m;
+      while ((m = matcher.re.exec(a)) !== null) {
+        const w = m[0];
+        const k = matcher.lookup.get(w);
+        const start = map[m.index][0];
+        const end = map[m.index + w.length - 1][1];
+        if (k == null) { blocked.push({ no, w, start, end }); continue; }
+        counts[K.indexOf(k)]++;
+        hits.push({ w, k, start, end, shown: line.slice(start, end) });
+      }
+      lines.push({ no, stanza, text: line, counts, hits });
+    }
+    const totals = K.map((_, j) => lines.reduce((s, l) => s + l.counts[j], 0));
+    const total = totals.reduce((s, x) => s + x, 0);
+    const vec = total ? totals.map((x) => x / total) : totals.map(() => 0);
+    return {
+      id, vec, dominant: dominantOf(vec, K), lines, method: "lexicon",
+      totals, total, blocked, stanzas: lines.length ? lines[lines.length - 1].stanza : 0,
+    };
+  }
+
+  // ---------------------------------------------------------------- 해석 프로필 결합(5.4)
+  function profileVector(profile, K) {
+    if (!profile) return null;
+    const p = K.map((k) => Math.max(0, Number(profile[k]) || 0));
+    const s = p.reduce((a, b) => a + b, 0);
+    return s > 0 ? p.map((x) => x / s) : null;
+  }
+
+  function combine(vLex, pHat, w) {
+    if (!pHat) return { vec: vLex.slice(), method: "lexicon" };
+    if (w >= 1) return { vec: vLex.slice(), method: "lexicon" }; // 사전 100%: 프로필이 덮어쓰지 않는다
+    const mix = vLex.map((x, j) => (1 - w) * pHat[j] + w * x);
+    const s = mix.reduce((a, b) => a + b, 0);
+    return { vec: s > 0 ? mix.map((x) => x / s) : mix.map(() => 0), method: w <= 0 ? "profile" : "hybrid" };
+  }
+
+  // ---------------------------------------------------------------- 지배 정서
+  // 모두 0이면 null. 최댓값이 같은 범주가 여럿이면 범주 순서상 앞의 것을 고르고 ties에 모두 남긴다.
+  function dominantOf(vec, K) {
+    const max = Math.max(...vec);
+    if (!(max > 0)) return null;
+    return K[vec.findIndex((x) => Math.abs(x - max) < 1e-12)];
+  }
+  function tiesOf(vec, K) {
+    const max = Math.max(...vec);
+    if (!(max > 0)) return [];
+    return K.filter((_, j) => Math.abs(vec[j] - max) < 1e-12);
+  }
+
+  // ---------------------------------------------------------------- 유사도·추천(5.5)
+  function cosine(a, b) {
+    let dot = 0, na = 0, nb = 0;
+    for (let j = 0; j < a.length; j++) { dot += a[j] * b[j]; na += a[j] * a[j]; nb += b[j] * b[j]; }
+    if (na === 0 || nb === 0) return null; // 영벡터: 정의하지 않는다
+    return dot / (Math.sqrt(na) * Math.sqrt(nb));
+  }
+
+  // items: [{id, vec, order}] — order는 수록 순서. 동률이면 수록 순서가 앞선 작품을 먼저 둔다.
+  function recommend(vec, items, excludeId, n = 3) {
+    if (!vec.some((x) => x > 0)) return { list: [], reason: "zero" };
+    const scored = [];
+    for (const it of items) {
+      if (it.id === excludeId) continue;
+      const s = cosine(vec, it.vec);
+      if (s === null) continue;
+      scored.push({ id: it.id, sim: s, order: it.order });
+    }
+    scored.sort((x, y) => (y.sim - x.sim) || (x.order - y.order));
+    const list = scored.slice(0, n);
+    const tieAtCut = scored.length > n && Math.abs(scored[n - 1].sim - scored[n].sim) < 1e-9;
+    return { list, reason: list.length ? null : "none", tieAtCut };
+  }
+
+  // ---------------------------------------------------------------- 표시용 백분율(최대 나머지 방식: 표시 합계가 정확히 100.0)
+  function percents(vec, digits = 1) {
+    const total = vec.reduce((a, b) => a + b, 0);
+    if (!(total > 0)) return vec.map(() => 0);
+    const unit = Math.pow(10, digits);
+    const scaled = vec.map((x) => (x / total) * 100 * unit);
+    const floor = scaled.map(Math.floor);
+    let rest = 100 * unit - floor.reduce((a, b) => a + b, 0);
+    const order = scaled.map((x, j) => [x - Math.floor(x), j]).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+    for (let r = 0; r < rest; r++) floor[order[r % order.length][1]]++;
+    return floor.map((x) => x / unit);
+  }
+
+  // ---------------------------------------------------------------- 감성 지도(5.6, 확장)
+  function pca2(vectors) {
+    const n = vectors.length, d = vectors[0].length;
+    const mean = new Array(d).fill(0);
+    vectors.forEach((v) => v.forEach((x, j) => (mean[j] += x / n)));
+    const X = vectors.map((v) => v.map((x, j) => x - mean[j]));
+    const C = Array.from({ length: d }, () => new Array(d).fill(0));
+    for (const r of X) for (let i = 0; i < d; i++) for (let j = 0; j < d; j++) C[i][j] += (r[i] * r[j]) / (n - 1 || 1);
+    const comps = [], vals = [];
+    let M = C.map((r) => r.slice());
+    for (let c = 0; c < 2; c++) {
+      let v = new Array(d).fill(0).map((_, j) => 1 + j * 0.01);
+      let lambda = 0;
+      for (let it = 0; it < 500; it++) {
+        const w = M.map((row) => row.reduce((s, x, j) => s + x * v[j], 0));
+        const norm = Math.sqrt(w.reduce((s, x) => s + x * x, 0)) || 1;
+        v = w.map((x) => x / norm);
+        lambda = norm;
+      }
+      // 부호 고정: 절댓값이 가장 큰 적재값이 양수가 되게
+      const big = v.reduce((bi, x, j) => (Math.abs(x) > Math.abs(v[bi]) ? j : bi), 0);
+      if (v[big] < 0) v = v.map((x) => -x);
+      comps.push(v); vals.push(lambda);
+      M = M.map((row, i) => row.map((x, j) => x - lambda * v[i] * v[j]));
+    }
+    const traceC = C.reduce((s, row, i) => s + row[i], 0) || 1;
+    const coords = X.map((r) => comps.map((v) => r.reduce((s, x, j) => s + x * v[j], 0)));
+    return { coords, comps, explained: vals.map((l) => l / traceC), mean };
+  }
+
+  const api = { normalizeLine, buildMatcher, analyzeText, profileVector, combine, dominantOf, tiesOf, cosine, recommend, percents, pca2 };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.PoemEngine = api;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>/* js/app.js */
+/*
+ * 시의 결 — 화면 로직
+ * 데이터: window.POEM_DATA(data/poems.js) → 없으면 data/poems.json을 fetch
+ * 분석:   window.LEXICON(js/lexicon.js) + window.PoemEngine(js/engine.js)
+ * 모든 글은 textContent로 넣는다(입력한 시도 HTML로 해석하지 않음).
+ */
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------- 작은 도우미
+  const $ = (id) => document.getElementById(id);
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    setAttrs(n, attrs);
+    append(n, kids);
+    return n;
+  }
+  const SVGNS = "http://www.w3.org/2000/svg";
+  function sv(tag, attrs, ...kids) {
+    const n = document.createElementNS(SVGNS, tag);
+    setAttrs(n, attrs);
+    append(n, kids);
+    return n;
+  }
+  function setAttrs(n, attrs) {
+    if (!attrs) return;
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "text") n.textContent = v;
+      else if (k === "class") n.setAttribute("class", v);
+      else if (k === "style") n.setAttribute("style", v);
+      else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : String(v));
+    }
+  }
+  function append(n, kids) {
+    for (const c of kids.flat(Infinity)) {
+      if (c == null || c === false) continue;
+      n.appendChild(typeof c === "string" || typeof c === "number" ? document.createTextNode(String(c)) : c);
+    }
+  }
+  const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); return n; };
+  const fmt = (x) => (Number.isFinite(x) ? x.toFixed(1) : "—");
+  const OLD_HANGUL = /[ᄀ-ᇿꥠ-꥿ힰ-퟿]/;
+  const link = (href, text) => el("a", { href, target: "_blank", rel: "noopener noreferrer", text });
+  // 키보드로도 누를 수 있는 SVG 요소
+  function pressable(node, label, fn) {
+    node.setAttribute("tabindex", "0");
+    node.setAttribute("role", "button");
+    node.setAttribute("aria-label", label);
+    node.addEventListener("click", fn);
+    node.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(e); } });
+    return node;
+  }
+
+  // ---------------------------------------------------------------- 상태
+  const S = {
+    poems: [], byId: new Map(), EMOS: [], K: [], emo: new Map(), matcher: null,
+    lex: new Map(), phat: new Map(), fin: new Map(),
+    w: 0.5, sel: null, line: null, focus: null, marks: true, orig: false, query: "", mine: null,
+  };
+
+  function fail(msg) {
+    const box = $("loadError");
+    clear(box);
+    append(box, [
+      el("strong", { text: "시 데이터를 불러오지 못했습니다. " }), msg,
+      el("br"),
+      el("span", { class: "small", text: "data/poems.js와 data/poems.json이 저장소에 있는지, 파일 이름의 대소문자가 맞는지 확인해 주세요. 새로 고침하면 다시 시도합니다." }),
+    ]);
+    box.hidden = false;
+    $("poemTitle").textContent = "불러오기 실패";
+  }
+
+  function boot() {
+    if (!window.LEXICON || !window.PoemEngine) { fail("분석 스크립트(js/lexicon.js, js/engine.js)가 없습니다."); return; }
+    if (Array.isArray(window.POEM_DATA) && window.POEM_DATA.length) { start(window.POEM_DATA); return; }
+    // 스크립트가 없으면 JSON을 직접 읽어 본다(http로 열었을 때만 가능)
+    fetch("data/poems.json", { cache: "no-store" })
+      .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then((d) => { if (!Array.isArray(d) || !d.length) throw new Error("형식 오류"); start(d); })
+      .catch((e) => fail(`(${window.__dataScriptFailed ? "poems.js 없음, " : ""}poems.json: ${e.message})`));
+  }
+
+  function start(poems) {
+    const L = window.LEXICON, E = window.PoemEngine;
+    try {
+      S.EMOS = L.EMOS; S.K = L.EMOS.map((e) => e.k);
+      S.EMOS.forEach((e) => S.emo.set(e.k, e));
+      S.matcher = E.buildMatcher(L.EMOS, L.LEX, L.BLOCK);
+      S.poems = poems.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      for (const p of S.poems) {
+        S.byId.set(p.id, p);
+        S.lex.set(p.id, E.analyzeText(p.text, { EMOS: S.EMOS, matcher: S.matcher }, p.id));
+        S.phat.set(p.id, E.profileVector(p.profile, S.K));
+      }
+    } catch (e) { fail("분석 준비 중 오류: " + e.message); return; }
+    S.memoOK = storageOK();
+    recompute();
+    bindStatic();
+    renderMethod();
+    const q = new URLSearchParams(location.search).get("p");
+    selectPoem(S.byId.has(q) ? q : S.poems[0].id, { fromLoad: true });
+  }
+
+  function recompute() {
+    const E = window.PoemEngine;
+    for (const p of S.poems) S.fin.set(p.id, E.combine(S.lex.get(p.id).vec, S.phat.get(p.id), S.w));
+  }
+  const finOf = (id) => S.fin.get(id).vec;
+  const pct = (vec) => window.PoemEngine.percents(vec, 1);
+  const isZero = (vec) => !vec.some((x) => x > 0);
+  const dominantOf = (vec) => window.PoemEngine.dominantOf(vec, S.K);
+  const LOW_EVIDENCE = 3;
+  const mark = (k) => S.emo.get(k).name[0];   // 이름 첫 글자(슬·기·평·희·사·부·그·분·불·허)는 서로 다르다
+
+  function methodLabel(p) {
+    const lx = S.lex.get(p.id);
+    if (!S.phat.get(p.id)) return "사전만(이 작품에는 해석 프로필이 없음)";
+    const wp = Math.round(S.w * 100);
+    if (wp >= 100) return "사전 100%";
+    if (lx.total === 0) return `사전 감지 0건이라 해석 프로필만 반영(사전 ${wp}%)`;
+    if (wp <= 0) return "해석 프로필 100%";
+    return `사전 ${wp}% + 해석 프로필 ${100 - wp}%`;
+  }
+
+  // ---------------------------------------------------------------- 고정 이벤트
+  function bindStatic() {
+    $("q").addEventListener("input", (e) => { S.query = e.target.value; renderList(); });
+    $("w").addEventListener("input", (e) => {
+      S.w = Number(e.target.value) / 100;
+      $("wOut").textContent = e.target.value + "%";
+      recompute();
+      renderWeightViews();
+    });
+    $("btnMarks").addEventListener("click", () => {
+      S.marks = !S.marks;
+      $("btnMarks").setAttribute("aria-pressed", String(S.marks));
+      $("poemBox").classList.toggle("nomarks", !S.marks);
+    });
+    $("btnOrig").addEventListener("click", () => { S.orig = !S.orig; renderPoem(); });
+    $("btnClearFocus").addEventListener("click", () => setFocus(null));
+    $("mineRun").addEventListener("click", runMine);
+    $("goMine").addEventListener("click", (e) => { e.preventDefault(); $("mine").scrollIntoView({ block: "start" }); $("mineText").focus({ preventScroll: true }); });
+    $("imgSave").addEventListener("click", () => {
+      try {
+        const a = el("a", { href: $("emoCanvas").toDataURL("image/png"), download: `sigyeol-${S.sel}.png` });
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch (e) { $("imgCopyMsg").textContent = "이 브라우저에서는 저장할 수 없습니다."; }
+    });
+    $("imgCopy").addEventListener("click", async () => {
+      const ta = $("imgPrompt");
+      let ok = false;
+      try { await navigator.clipboard.writeText(ta.value); ok = true; } catch (e) {
+        try { ta.select(); ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      }
+      $("imgCopyMsg").textContent = ok ? "복사했습니다." : "복사하지 못했습니다. 글을 직접 선택해 복사해 주세요.";
+    });
+    $("mineClear").addEventListener("click", () => { $("mineText").value = ""; S.mine = null; clear($("mineOut")); $("mineText").focus(); });
+    window.addEventListener("popstate", () => {
+      const q = new URLSearchParams(location.search).get("p");
+      if (q && S.byId.has(q) && q !== S.sel) selectPoem(q, { fromLoad: true });
+    });
+  }
+
+  // ---------------------------------------------------------------- 작품 선택
+  function selectPoem(id, opt = {}) {
+    const t0 = performance.now();
+    S.sel = id; S.line = null; S.focus = null; S.orig = false;
+    if (!opt.fromLoad) {
+      const u = new URL(location.href);
+      u.searchParams.set("p", id);
+      u.hash = "";
+      try { history.pushState(null, "", u); } catch (e) { /* file:// 등에서 주소를 못 바꿔도 화면은 그대로 동작 */ }
+    }
+    renderList();
+    renderPoem();
+    renderBiblio();
+    renderFlow();
+    renderWeightViews();
+    renderLineInfo();
+    renderMemo();
+    document.title = `${S.byId.get(id).title} — 시의 결`;
+    document.body.dataset.renderMs = String(Math.round(performance.now() - t0));
+    if (opt.scrollTop) document.getElementById("reading").scrollIntoView({ block: "start" });
+    // 휴대폰 가로 목록에서 선택한 시가 보이게(세로 스크롤은 건드리지 않음)
+    const btn = document.querySelector(`#poemList button[data-id="${id}"]`);
+    if (btn && btn.parentElement) {
+      const ul = $("poemList");
+      const li = btn.parentElement;
+      if (ul.scrollWidth > ul.clientWidth) ul.scrollLeft = Math.max(0, li.offsetLeft - ul.clientWidth / 2 + li.offsetWidth / 2);
+      // PC 세로 목록(목록 상자 안 스크롤)
+      if (ul.scrollHeight > ul.clientHeight + 2) {
+        const top = li.offsetTop - ul.offsetTop;
+        if (top < ul.scrollTop || top > ul.scrollTop + ul.clientHeight - li.offsetHeight) ul.scrollTop = Math.max(0, top - ul.clientHeight / 3);
+      }
+    }
+  }
+
+  // 가중치에 따라 바뀌는 화면(행별 감지 수·본문 표시는 그대로)
+  function renderWeightViews() {
+    for (const b of $("poemList").querySelectorAll("button[data-id]")) b.querySelector(".dot").setAttribute("style", dotStyle(b.dataset.id));
+    renderAnalysis();
+    renderCompare();
+    renderRadar();
+    renderDiagram();
+    renderImage();
+    renderRecs();
+    renderHeat();
+    renderPCA();
+    renderMineRecs();
+    updateFocusNote();
+  }
+
+  // ---------------------------------------------------------------- F-01 시 목록
+  function renderList() {
+    const ul = clear($("poemList"));
+    const q = S.query.trim().replace(/\s+/g, "").toLowerCase();
+    let shown = 0;
+    for (const p of S.poems) {
+      const hay = (p.title + p.poet).replace(/\s+/g, "").toLowerCase();
+      if (q && !hay.includes(q)) continue;
+      shown++;
+      ul.appendChild(el("li", null, el("button", {
+        type: "button", "data-id": p.id, "aria-pressed": String(p.id === S.sel),
+        onclick: () => selectPoem(p.id),
+        "aria-label": `${p.title}, ${p.poet}, ${p.year}`,
+      }, el("span", { class: "dot", style: dotStyle(p.id), "aria-hidden": "true" }),
+         el("span", { class: "t", text: p.title }), el("span", { class: "p", text: `${p.poet} · ${p.year}` }))));
+    }
+    $("listEmpty").hidden = shown > 0;
+    $("listCount").textContent = q ? `${S.poems.length}편 중 ${shown}편` : "";
+  }
+
+  // 목록의 점 색: 그 시의 현재 지배 정서(없으면 회색). 이름은 화면의 분석 결과에 글자로 나온다.
+  function dotStyle(id) { const d = dominantOf(finOf(id)); return d ? `--c:${S.emo.get(d).color}` : ""; }
+
+  // ---------------------------------------------------------------- F-02 본문(+ F-04 행별 감정 표시)
+  function renderPoem() {
+    const p = S.byId.get(S.sel);
+    const lx = S.lex.get(p.id);
+    $("poemTitle").textContent = p.title;
+    const meta = [`${p.poet}`, `발표 ${p.year}`, p.edition.label];
+    if (p.titleInEdition) meta.push(`판본 제목 「${p.titleInEdition}」`);
+    $("poemMeta").textContent = meta.join(" · ");
+    const box = clear($("poemBox"));
+    const canOrig = !!p.orig;
+    $("btnOrig").hidden = !canOrig;
+    $("btnOrig").setAttribute("aria-pressed", String(S.orig && canOrig));
+    $("origNote").hidden = !(S.orig && canOrig);
+    box.classList.toggle("nomarks", !S.marks);
+    if (S.orig && canOrig) {
+      clear($("hitLegend"));
+      box.classList.toggle("old", OLD_HANGUL.test(p.orig));
+      for (const st of p.orig.split(/\n\s*\n/)) {
+        const d = el("div", { class: "stanza" });
+        st.split("\n").forEach((t) => d.appendChild(el("div", { class: "ln", style: "cursor:default" }, el("span", { class: "no" }), el("span", { class: "tx", text: t }))));
+        box.appendChild(d);
+      }
+      return;
+    }
+    box.classList.toggle("old", OLD_HANGUL.test(p.text));
+    let cur = null, curSt = 0;
+    for (const l of lx.lines) {
+      if (l.stanza !== curSt) { cur = el("div", { class: "stanza" }); box.appendChild(cur); curSt = l.stanza; }
+      cur.appendChild(lineButton(l));
+    }
+    updateLineClasses();
+    const lg = clear($("hitLegend"));
+    const present = S.EMOS.filter((e, j) => lx.totals[j] > 0);
+    lg.appendChild(el("li", { class: "lab", text: "맞춘 시어:" }));
+    if (!present.length) lg.appendChild(el("li", { text: "사전에서 감지한 시어 없음" }));
+    present.forEach((e) => lg.appendChild(el("li", null, el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), `${e.name}(${mark(e.k)}) ${lx.totals[S.K.indexOf(e.k)]}`)));
+  }
+
+  function lineSegments(l, litWord) {
+    const out = [];
+    let pos = 0;
+    for (const h of l.hits) {
+      if (h.start > pos) out.push(l.text.slice(pos, h.start));
+      const e = S.emo.get(h.k);
+      out.push(el("span", {
+        class: "hit" + (litWord && h.w === litWord ? " lit" : ""), style: `--c:${e.color}`, "data-w": h.w,
+      }, h.shown, el("sup", { "aria-hidden": "true", text: mark(h.k) })));
+      pos = h.end;
+    }
+    if (pos < l.text.length) out.push(l.text.slice(pos));
+    return out;
+  }
+  function countsText(counts) {
+    return S.K.map((k, j) => (counts[j] ? `${mark(k)}${counts[j]}` : "")).filter(Boolean).join(" ");
+  }
+  function countsLong(counts) {
+    return S.K.map((k, j) => (counts[j] ? `${S.emo.get(k).name} ${counts[j]}` : "")).filter(Boolean).join(", ");
+  }
+  function lineButton(l) {
+    const label = `${l.no}행. ${l.text}. ` + (l.hits.length ? `감지: ${l.hits.map((h) => `${h.shown}(${S.emo.get(h.k).name})`).join(", ")}` : "사전에서 감지한 시어 없음");
+    return el("button", {
+      type: "button", class: "ln", "data-no": l.no, "aria-label": label,
+      onclick: () => selectLine(S.line === l.no ? null : l.no),
+    }, el("span", { class: "no", "aria-hidden": "true", text: l.no }),
+       el("span", { class: "tx", "aria-hidden": "true" }, lineSegments(l)),
+       el("span", { class: "cnt", "aria-hidden": "true", text: countsText(l.counts) }));
+  }
+
+  function lineMatches(l) {
+    const f = S.focus;
+    if (!f) return false;
+    if (f.type === "emo") return l.counts[S.K.indexOf(f.k)] > 0;
+    return l.hits.some((h) => h.w === f.w);
+  }
+  function updateLineClasses() {
+    const lx = S.lex.get(S.sel);
+    for (const b of $("poemBox").querySelectorAll("button.ln")) {
+      const l = lx.lines[Number(b.dataset.no) - 1];
+      const m = lineMatches(l);
+      b.classList.toggle("sel", S.line === l.no);
+      b.classList.toggle("lit", !!S.focus && m);
+      b.classList.toggle("dim", !!S.focus && !m);
+      b.setAttribute("aria-pressed", String(S.line === l.no));
+      for (const h of b.querySelectorAll(".hit")) h.classList.toggle("lit", !!S.focus && S.focus.type === "word" && h.dataset.w === S.focus.w);
+    }
+  }
+  function scrollLineIntoBox(no) {
+    const box = $("poemBox");
+    const b = box.querySelector(`button.ln[data-no="${no}"]`);
+    if (!b) return;
+    const top = b.offsetTop - box.offsetTop;
+    if (top < box.scrollTop || top > box.scrollTop + box.clientHeight - b.offsetHeight) box.scrollTop = Math.max(0, top - box.clientHeight / 3);
+  }
+
+  // ---------------------------------------------------------------- 계산과 해석 사이 A: 행·감정·시어 강조
+  function selectLine(no, opt = {}) {
+    if (S.orig) { S.orig = false; renderPoem(); }
+    S.line = no;
+    updateLineClasses();
+    if (no && opt.scroll) scrollLineIntoBox(no);
+    renderLineInfo();
+    renderMemo();
+    updateFlowSel();
+  }
+  function setFocus(f) {
+    if (S.orig && f) { S.orig = false; renderPoem(); }
+    const same = f && S.focus && f.type === S.focus.type && (f.k === S.focus.k && f.w === S.focus.w);
+    S.focus = same ? null : f;
+    updateLineClasses();
+    renderLineInfo();
+    renderAnalysis();
+    renderDiagram();
+    updateFocusNote();
+    if (S.focus) {
+      const first = S.lex.get(S.sel).lines.find(lineMatches);
+      if (first) scrollLineIntoBox(first.no);
+    }
+  }
+  function updateFocusNote() {
+    const note = $("focusNote");
+    $("btnClearFocus").hidden = !S.focus;
+    if (!S.focus) { note.hidden = true; return; }
+    const n = S.lex.get(S.sel).lines.filter(lineMatches).length;
+    let t;
+    if (S.focus.type === "emo") {
+      const e = S.emo.get(S.focus.k);
+      const j = S.K.indexOf(S.focus.k);
+      const v = pct(finOf(S.sel))[j];
+      t = n ? `‘${e.name}’ 시어가 감지된 행 ${n}개를 강조했습니다.`
+            : `사전이 ‘${e.name}’으로 감지한 행은 없습니다.` + (v > 0 ? ` 지금 보이는 ${fmt(v)}%는 해석 프로필에서 온 값입니다.` : "");
+    } else {
+      t = `시어 ‘${S.focus.label || S.focus.w}’이(가) 나온 행 ${n}개를 강조했습니다.`;
+    }
+    note.textContent = t;
+    note.hidden = false;
+  }
+
+  function renderLineInfo() {
+    const box = clear($("lineInfo"));
+    const lx = S.lex.get(S.sel);
+    if (!S.line) {
+      box.appendChild(el("p", { class: "small muted", text: `행을 누르면 그 행에서 감지된 시어와 범주별 개수를 봅니다. 분석 행 ${lx.lines.length}개 가운데 ${lx.lines.filter((l) => l.hits.length).length}개 행에서 시어가 감지됐습니다.` }));
+      return;
+    }
+    const l = lx.lines[S.line - 1];
+    box.appendChild(el("p", { class: "small muted", text: `${l.no}행 · ${l.stanza}연` }));
+    box.appendChild(el("p", { class: "q", style: "margin:2px 0" }, lineSegments(l, S.focus && S.focus.type === "word" ? S.focus.w : null)));
+    if (!l.hits.length) {
+      box.appendChild(el("p", { class: "small", text: "사전에서 감지한 시어 없음 — 감정이 없다는 뜻이 아니라, 이 사전의 시어가 이 행에 나오지 않았다는 뜻입니다." }));
+    } else {
+      box.appendChild(el("p", { class: "small", style: "margin:4px 0 0", text: `범주별 개수: ${countsLong(l.counts)}` }));
+      const ul = el("ul", { class: "chips", "aria-label": "이 행의 감지 시어(누르면 같은 시어가 나온 행을 강조)" });
+      l.hits.forEach((h) => {
+        const e = S.emo.get(h.k);
+        const on = S.focus && S.focus.type === "word" && S.focus.w === h.w;
+        ul.appendChild(el("li", null, el("button", {
+          type: "button", class: "chip", "aria-pressed": String(!!on), style: `--c:${e.color}`,
+          onclick: () => setFocus({ type: "word", w: h.w, label: h.shown }),
+        }, el("span", { class: "sw", "aria-hidden": "true" }), `${h.shown} → ${e.name}`)));
+      });
+      box.appendChild(ul);
+    }
+    const bl = lx.blocked.filter((b) => b.no === l.no);
+    if (bl.length) box.appendChild(el("p", { class: "small muted", text: `차단어 일치: ${bl.map((b) => `‘${b.w}’`).join(", ")} — 부분 문자열 오탐을 막으려고 감정으로 세지 않았습니다.` }));
+  }
+
+  // ---------------------------------------------------------------- 서지(본문 출처와 판본)
+  function renderBiblio() {
+    const p = S.byId.get(S.sel);
+    const b = clear($("biblioBody"));
+    const dl = el("dl");
+    const row = (k, ...v) => { dl.appendChild(el("dt", { text: k })); dl.appendChild(el("dd", null, v)); };
+    row("본문 출처", p.source, " ", link(p.sourceUrl, "위키문헌 문서"));
+    row("판본", p.edition.label + (p.edition.scan ? ` — ${p.edition.scan}` : "") + (p.edition.proofreadLevel ? ` (판독 상태 level ${p.edition.proofreadLevel})` : ""));
+    row("옮긴 방법", p.textMethod);
+    if (p.fixes && p.fixes.length) {
+      row("고친 곳", el("ul", null, p.fixes.map((f) => el("li", null,
+        `‘${f.from}’ → ‘${f.to}’ (${f.count}곳) — ${f.why}`,
+        (f.evidence || []).map((ev) => [" ", link(ev.url, ev.label)])))));
+    } else row("고친 곳", "없음(내려받은 본문 그대로)");
+    row("발표 연도", `${p.year} — ${p.yearBasis}`);
+    row("발표 지면", p.firstPub);
+    if (p.created) row("창작 연도", p.created);
+    if (p.collected) row("시집 수록", p.collected);
+    row("발표 근거", (p.pubSources || []).map((s, i) => [i ? " · " : "", link(s.url, s.label)]));
+    row("시인 사망", `${p.poetDeath}년 `, (p.deathSources || []).map((s, i) => [i ? " · " : "", link(s.url, s.label)]));
+    if (p.titleNote) row("제목", p.titleNote);
+    if (p.epigraph) row("부제", p.epigraph);
+    if (p.afterword) row("부기", p.afterword);
+    b.appendChild(dl);
+    if (p.notes && p.notes.length) b.appendChild(el("ul", null, p.notes.map((n) => el("li", { text: n }))));
+  }
+
+  // ---------------------------------------------------------------- F-03, F-05
+  function renderAnalysis() {
+    const p = S.byId.get(S.sel);
+    const vec = finOf(p.id);
+    const ps = pct(vec);
+    const dom = dominantOf(vec);
+    const ties = window.PoemEngine.tiesOf(vec, S.K);
+    const d = clear($("dominant"));
+    d.appendChild(el("span", { class: "lab", text: "지배 정서" }));
+    if (!dom) {
+      d.appendChild(el("span", { class: "nm", text: "계산하지 않음" }));
+      d.appendChild(el("span", { class: "tie", text: "사전에서 감지한 시어가 없어 비율과 지배 정서를 만들지 않았습니다. 가중치를 100% 아래로 내리면 사람이 정한 해석 프로필로 볼 수 있습니다." }));
+    } else {
+      const e = S.emo.get(dom);
+      d.appendChild(el("span", { class: "nm", text: e.name }));
+      // 상위 두 감정을 이름과 숫자로
+      S.K.map((k, j) => [ps[j], k]).filter((x) => x[0] > 0).sort((a, b) => b[0] - a[0]).slice(0, 2).forEach(([v, k]) =>
+        d.appendChild(el("span", { class: "pill" }, el("span", { class: "sw", style: `--c:${S.emo.get(k).color};border-radius:50%`, "aria-hidden": "true" }), `${S.emo.get(k).name} ${fmt(v)}%`)));
+      if (ties.length > 1) d.appendChild(el("span", { class: "tie", text: `동률: ${ties.map((k) => S.emo.get(k).name).join(" · ")} — 범주 순서상 앞의 것을 지배 정서로 표시합니다.` }));
+    }
+    // 근거가 적은 결과 경고(검증 사례 2에서 추가): 감지 시어 1~2개면 비율이 한두 낱말에 좌우된다
+    const lxT = S.lex.get(p.id).total;
+    if (lxT > 0 && lxT < LOW_EVIDENCE) d.appendChild(el("span", { class: "tie low-ev", text: `주의: 사전이 감지한 시어가 ${lxT}개뿐이라 사전 비율이 한두 낱말에 크게 좌우됩니다.` }));
+    $("ratioMethod").textContent = "· " + methodLabel(p);
+    const ul = clear($("ratios"));
+    S.EMOS.forEach((e, j) => {
+      const on = S.focus && S.focus.type === "emo" && S.focus.k === e.k;
+      ul.appendChild(el("li", null,
+        el("button", { type: "button", "aria-pressed": String(!!on), "aria-label": `${e.name} ${dom ? fmt(ps[j]) + "%" : "값 없음"}. 누르면 이 감정이 감지된 행을 강조`, onclick: () => setFocus({ type: "emo", k: e.k }) },
+          el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), e.name),
+        el("div", { class: "bar", "aria-hidden": "true" }, el("i", { style: `--c:${e.color};width:${dom ? ps[j] : 0}%` })),
+        el("span", { class: "v", text: dom ? fmt(ps[j]) + "%" : "—" })));
+    });
+    const it = clear($("interp"));
+    const dl = el("dl");
+    const row = (k, v) => { dl.appendChild(el("dt", { text: k })); dl.appendChild(el("dd", null, v)); };
+    row("주제", p.theme);
+    if (p.speaker) row("화자", p.speaker);
+    if (p.devices && p.devices.length) row("표현", p.devices.join(", "));
+    it.appendChild(dl);
+    it.appendChild(el("h3", { class: "mini-title", text: "감상과 해석" }));
+    it.appendChild(el("p", { class: "body", text: p.interp }));
+    if (p.key && p.key.length) it.appendChild(el("blockquote", { "aria-label": "핵심 구절" }, p.key.join(" / ")));
+  }
+
+  // ---------------------------------------------------------------- 계산과 해석 사이 B: 사전만 vs 결합
+  function renderCompare() {
+    const p = S.byId.get(S.sel);
+    const lx = S.lex.get(p.id);
+    const ph = S.phat.get(p.id);
+    const fv = finOf(p.id);
+    const lp = pct(lx.vec), pp = ph ? pct(ph) : null, fp = pct(fv);
+    const lz = isZero(lx.vec), fz = isZero(fv);
+    const wp = Math.round(S.w * 100);
+    const t = clear($("compare"));
+    t.appendChild(el("caption", { class: "small muted", style: "text-align:left;caption-side:top", text: `사전 감지 ${lx.total}개 · 분석 행 ${lx.lines.length}개 중 ${lx.lines.filter((l) => l.hits.length).length}개 행에서 감지 · 가중치 ${wp}%` }));
+    t.appendChild(el("thead", null, el("tr", null,
+      el("th", { scope: "col", text: "감정" }), el("th", { scope: "col", text: "사전만" }), el("th", { scope: "col", text: "해석 프로필" }),
+      el("th", { scope: "col", text: `결합(${wp}%)` }), el("th", { scope: "col", text: "차이(%p)" }))));
+    const tb = el("tbody");
+    S.EMOS.forEach((e, j) => {
+      let diff = "—", cls = "";
+      if (!lz && !fz) {
+        const dv = (fv[j] - lx.vec[j]) * 100;
+        const r = Math.round(dv * 10) / 10;
+        diff = (r > 0 ? "+" : r < 0 ? "−" : "±") + Math.abs(r).toFixed(1);
+        cls = r > 0 ? "pos" : r < 0 ? "neg" : "";
+      }
+      tb.appendChild(el("tr", null,
+        el("th", { scope: "row", style: "text-align:left;font-weight:500" }, el("span", { class: "sw", style: `--c:${e.color};margin-right:6px`, "aria-hidden": "true" }), e.name),
+        el("td", { text: lz ? "—" : fmt(lp[j]) }), el("td", { text: pp ? fmt(pp[j]) : "없음" }),
+        el("td", { text: fz ? "—" : fmt(fp[j]) }), el("td", { class: cls, text: diff })));
+    });
+    const sum = (a) => fmt(a.reduce((s, x) => s + x, 0));
+    tb.appendChild(el("tr", null, el("th", { scope: "row", style: "text-align:left", text: "합계" }),
+      el("td", { text: lz ? "—" : sum(lp) }), el("td", { text: pp ? sum(pp) : "—" }), el("td", { text: fz ? "—" : sum(fp) }), el("td")));
+    t.appendChild(tb);
+    const ld = dominantOf(lx.vec), fd = dominantOf(fv);
+    const nm = (k) => (k ? S.emo.get(k).name : "없음");
+    const note = clear($("profileNote"));
+    append(note, [
+      el("strong", { text: "지배 정서: " }), `사전만 ${nm(ld)} → 결합 ${nm(fd)}`, ld !== fd ? " (달라짐)" : " (같음)", el("br"),
+      el("strong", { text: "해석 프로필의 근거: " }), p.profileNote || "프로필 없음", el("br"),
+      el("span", { class: "muted", text: "해석 프로필은 사람이 정한 0~1 값이며 모델이 계산한 결과가 아닙니다. 작품을 고를 때 붙인 분류 라벨로 만들지 않았습니다." }),
+    ]);
+  }
+
+  // ---------------------------------------------------------------- 계산과 해석 사이 C: 독자 메모(localStorage)
+  const MEMO_KEY = "sigyeol.memo.v1";
+  function storageOK() {
+    try { const k = "__sigyeol_test"; localStorage.setItem(k, "1"); localStorage.removeItem(k); return true; } catch (e) { return false; }
+  }
+  function memoLoad() {
+    try { const v = JSON.parse(localStorage.getItem(MEMO_KEY) || "{}"); return v && typeof v === "object" ? v : {}; } catch (e) { return {}; }
+  }
+  function memoSave(all) {
+    try { localStorage.setItem(MEMO_KEY, JSON.stringify(all)); return true; } catch (e) { return false; }
+  }
+  function renderMemo() {
+    const box = clear($("memo"));
+    box.appendChild(el("p", { class: "small muted", text: "메모는 이 기기의 이 브라우저에만 저장됩니다. 감정 계산이나 정답 판정에 쓰지 않으며, 다른 기기나 서버로 보내지 않습니다." }));
+    if (!S.memoOK) { box.appendChild(el("p", { class: "notice small", text: "이 브라우저에서는 저장 공간을 쓸 수 없어 메모 기능을 끕니다(사생활 보호 모드 등)." })); return; }
+    const all = memoLoad();
+    const mine = all[S.sel] || {};
+    if (S.line) {
+      const l = S.lex.get(S.sel).lines[S.line - 1];
+      const ta = el("textarea", { id: "memoText", rows: "3", maxlength: "1000", "aria-label": `${l.no}행 메모` });
+      ta.value = mine[l.no] || "";
+      const status = el("span", { class: "small muted", "aria-live": "polite" });
+      box.appendChild(el("p", { class: "small", style: "margin:4px 0", text: `${l.no}행에 남길 메모` }));
+      box.appendChild(ta);
+      box.appendChild(el("div", { class: "row-btns" },
+        el("button", { type: "button", class: "btn", onclick: () => {
+          const a = memoLoad(); const v = ta.value.trim();
+          a[S.sel] = a[S.sel] || {};
+          if (v) a[S.sel][l.no] = v; else delete a[S.sel][l.no];
+          status.textContent = memoSave(a) ? (v ? "저장했습니다." : "빈 메모라 지웠습니다.") : "저장하지 못했습니다.";
+          renderMemoList(box, a[S.sel] || {});
+        } }, "저장"),
+        el("button", { type: "button", class: "tbtn", onclick: () => {
+          const a = memoLoad();
+          if (a[S.sel]) delete a[S.sel][l.no];
+          memoSave(a); ta.value = ""; status.textContent = "지웠습니다.";
+          renderMemoList(box, a[S.sel] || {});
+        } }, "삭제"),
+        status));
+    } else {
+      box.appendChild(el("p", { class: "small", text: "본문에서 행을 고르면 그 행에 메모를 남길 수 있습니다." }));
+    }
+    renderMemoList(box, mine);
+  }
+  function renderMemoList(box, mine) {
+    const old = box.querySelector(".memo-list-wrap");
+    if (old) old.remove();
+    const keys = Object.keys(mine).map(Number).sort((a, b) => a - b);
+    if (!keys.length) return;
+    const lx = S.lex.get(S.sel);
+    const wrap = el("div", { class: "memo-list-wrap" }, el("p", { class: "small muted", style: "margin:10px 0 0", text: `이 시에 남긴 메모 ${keys.length}개` }));
+    const ul = el("ul", { class: "memo-list" });
+    keys.forEach((no) => {
+      const l = lx.lines[no - 1];
+      ul.appendChild(el("li", null, el("button", { type: "button", onclick: () => selectLine(no, { scroll: true }) }, `${no}행`), ` ${l ? "「" + l.text.slice(0, 18) + (l.text.length > 18 ? "…" : "") + "」" : ""} — `, mine[no]));
+    });
+    wrap.appendChild(ul);
+    box.appendChild(wrap);
+  }
+
+  // ---------------------------------------------------------------- F-06 레이더
+  function renderRadar() {
+    const p = S.byId.get(S.sel);
+    const fv = finOf(p.id), lv = S.lex.get(p.id).vec, ph = S.phat.get(p.id);
+    const fp = pct(fv), lp = pct(lv);
+    const box = clear($("radar"));
+    const W = 380, H = 360, cx = W / 2, cy = H / 2 + 4, R = 128;
+    const n = S.K.length;
+    const mx = Math.max(...fp, ...lp, 1);
+    const top = Math.min(100, Math.ceil(mx / 20) * 20);
+    const ang = (j) => -Math.PI / 2 + (2 * Math.PI * j) / n;
+    const pt = (j, v) => [cx + Math.cos(ang(j)) * R * (v / top), cy + Math.sin(ang(j)) * R * (v / top)];
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-labelledby": "radarDesc" });
+    svg.appendChild(sv("title", { id: "radarDesc", text: `${p.title} 감정 프로필 레이더 차트. 결합 결과와 사전만 결과. 눈금 최대 ${top}%. 값은 아래 표에 있습니다.` }));
+    for (let r = 1; r <= 4; r++) {
+      const v = (top * r) / 4;
+      const pts = S.K.map((_, j) => pt(j, v).join(",")).join(" ");
+      svg.appendChild(sv("polygon", { points: pts, fill: "none", stroke: "#d8cfbe", "stroke-width": 1 }));
+      svg.appendChild(sv("text", { x: cx + 3, y: cy - R * (r / 4) - 2, "font-size": 10, fill: "#6b6359", text: `${v}%` }));
+    }
+    S.EMOS.forEach((e, j) => {
+      const [x, y] = pt(j, top);
+      svg.appendChild(sv("line", { x1: cx, y1: cy, x2: x, y2: y, stroke: "#e2d9c8" }));
+      const [lx2, ly2] = [cx + Math.cos(ang(j)) * (R + 18), cy + Math.sin(ang(j)) * (R + 18)];
+      const anchor = Math.abs(Math.cos(ang(j))) < 0.2 ? "middle" : Math.cos(ang(j)) > 0 ? "start" : "end";
+      svg.appendChild(sv("text", { x: lx2, y: ly2 + 4, "text-anchor": anchor, "font-size": 12, text: e.name }));
+    });
+    const poly = (vals, attrs) => sv("polygon", Object.assign({ points: S.K.map((_, j) => pt(j, vals[j]).join(",")).join(" ") }, attrs));
+    if (!isZero(lv)) svg.appendChild(poly(lp, { fill: "none", stroke: "#4a433c", "stroke-width": 1.6, "stroke-dasharray": "5 4" }));
+    if (!isZero(fv)) {
+      svg.appendChild(poly(fp, { fill: "rgba(124,59,42,.16)", stroke: "#7c3b2a", "stroke-width": 2.2 }));
+      fp.forEach((v, j) => { const [x, y] = pt(j, v); svg.appendChild(sv("circle", { cx: x, cy: y, r: 2.6, fill: "#7c3b2a" })); });
+    }
+    if (isZero(lv) && isZero(fv)) svg.appendChild(sv("text", { x: cx, y: cy + 4, "text-anchor": "middle", "font-size": 13, text: "표시할 값이 없습니다(사전 감지 0건)" }));
+    box.appendChild(svg);
+    box.appendChild(el("ul", { class: "legend small" },
+      el("li", null, el("span", { class: "key-solid", style: "border-color:#7c3b2a" }), `결합 결과(${methodLabel(p)})`),
+      el("li", null, el("span", { class: "key-dash" }), "사전만")));
+    const t = clear($("radarTable"));
+    t.appendChild(el("caption", { class: "sr-label", text: "감정 프로필 값(%)" }));
+    t.appendChild(el("thead", null, el("tr", null, el("th", { text: "감정" }), el("th", { text: "결합" }), el("th", { text: "사전만" }), el("th", { text: "해석 프로필" }))));
+    const tb = el("tbody");
+    const pp = ph ? pct(ph) : null;
+    S.EMOS.forEach((e, j) => tb.appendChild(el("tr", null, el("td", { text: e.name }),
+      el("td", { text: isZero(fv) ? "—" : fmt(fp[j]) }), el("td", { text: isZero(lv) ? "—" : fmt(lp[j]) }), el("td", { text: pp ? fmt(pp[j]) : "없음" }))));
+    t.appendChild(tb);
+  }
+
+  // ---------------------------------------------------------------- F-07 행별 감정 흐름
+  function renderFlow() {
+    const lx = S.lex.get(S.sel);
+    const box = clear($("flow"));
+    const n = lx.lines.length;
+    const maxC = Math.max(1, ...lx.lines.map((l) => l.counts.reduce((a, b) => a + b, 0)));
+    const padL = 34, padR = 10, padT = 12, padB = 40, ch = 170;
+    // 상자 폭에 맞춰 막대 폭을 정하고, 너무 좁아지면(8px 미만) 상자 안에서 가로 스크롤
+    const avail = Math.max(300, (box.clientWidth || 600) - 4);
+    const slot = Math.max(12, Math.min(34, (avail - padL - padR) / Math.max(n, 1)));
+    const gap = Math.max(3, Math.round(slot * 0.22)), bw = slot - gap;
+    const W = Math.max(300, padL + padR + n * slot), H = padT + ch + padB;
+    const y = (v) => padT + ch - (ch * v) / maxC;
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, style: "max-width:none", "aria-label": `행별 감정 흐름. 분석 행 ${n}개, 한 행 최대 ${maxC}개 감지` });
+    for (let v = 0; v <= maxC; v++) {
+      if (maxC > 6 && v % 2) continue;
+      svg.appendChild(sv("line", { x1: padL - 4, x2: W - padR, y1: y(v), y2: y(v), stroke: v ? "#ece5d8" : "#bdb2a0" }));
+      svg.appendChild(sv("text", { x: padL - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 10.5, text: v }));
+    }
+    svg.appendChild(sv("text", { x: 10, y: padT + ch / 2, "font-size": 11, "text-anchor": "middle", transform: `rotate(-90 10 ${padT + ch / 2})`, text: "감지 수" }));
+    svg.appendChild(sv("text", { x: padL + (W - padL - padR) / 2, y: H - 4, "font-size": 11, "text-anchor": "middle", text: "분석 행 번호" }));
+    const used = new Set();
+    lx.lines.forEach((l, i) => {
+      const x = padL + i * slot + gap / 2;
+      if (i > 0 && l.stanza !== lx.lines[i - 1].stanza) svg.appendChild(sv("line", { x1: x - gap / 2, x2: x - gap / 2, y1: padT, y2: padT + ch, stroke: "#cfc4b0", "stroke-dasharray": "2 3" }));
+      const tot = l.counts.reduce((a, b) => a + b, 0);
+      const g = sv("g", { class: "flow-bar" + (S.line === l.no ? " sel" : ""), "data-no": l.no });
+      g.appendChild(sv("rect", { class: "hitbox", x: x - 2, y: padT, width: bw + 4, height: ch, fill: "transparent", rx: 3 }));
+      let acc = 0;
+      S.K.forEach((k, j) => {
+        const c = l.counts[j];
+        if (!c) return;
+        used.add(k);
+        g.appendChild(sv("rect", { x, y: y(acc + c), width: bw, height: y(acc) - y(acc + c) - 1, fill: S.emo.get(k).color, rx: 2 }));
+        acc += c;
+      });
+      if (!tot) g.appendChild(sv("rect", { x, y: y(0) - 2, width: bw, height: 2, fill: "#cfc4b0" }));
+      if (n <= 24 || l.no % 2 === 1 || l.no === n) svg.appendChild(sv("text", { x: x + bw / 2, y: padT + ch + 14, "text-anchor": "middle", "font-size": 10, text: l.no }));
+      pressable(g, `${l.no}행, 감지 ${tot}개${tot ? ": " + countsLong(l.counts) : ""}`, () => { selectLine(l.no, { scroll: true }); });
+      g.addEventListener("focus", () => showFlowPick(l));
+      svg.appendChild(g);
+    });
+    box.appendChild(svg);
+    const lg = clear($("flowLegend"));
+    if (!used.size) lg.appendChild(el("li", { text: "이 시에서는 사전이 감지한 시어가 없습니다." }));
+    S.EMOS.filter((e) => used.has(e.k)).forEach((e) => lg.appendChild(el("li", null, el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), e.name)));
+    if (lx.stanzas > 1) lg.appendChild(el("li", { class: "muted", text: "┆ 점선: 연 경계" }));
+    showFlowPick(S.line ? lx.lines[S.line - 1] : null);
+  }
+  function showFlowPick(l) {
+    const box = clear($("flowPick"));
+    if (!l) { box.textContent = "막대를 고르면 그 행의 본문과 감지 시어가 여기에 보입니다."; return; }
+    append(box, [el("strong", { text: `${l.no}행 ` }), `「${l.text}」 `,
+      l.hits.length ? `— ${l.hits.map((h) => `${h.shown}(${S.emo.get(h.k).name})`).join(", ")}` : "— 사전에서 감지한 시어 없음"]);
+  }
+  function updateFlowSel() {
+    for (const g of $("flow").querySelectorAll(".flow-bar")) g.classList.toggle("sel", Number(g.dataset.no) === S.line);
+    const lx = S.lex.get(S.sel);
+    showFlowPick(S.line ? lx.lines[S.line - 1] : null);
+  }
+
+  // ---------------------------------------------------------------- F-08 시어 → 감정 → 주제
+  function renderDiagram() {
+    const p = S.byId.get(S.sel);
+    const lx = S.lex.get(p.id);
+    const fp = pct(finOf(p.id));
+    const box = clear($("dia"));
+    // 시어 노드: 실제 감지된 시어(정규형 기준)만
+    const words = new Map();
+    for (const l of lx.lines) for (const h of l.hits) {
+      const o = words.get(h.w) || { w: h.w, shown: h.shown, k: h.k, n: 0 };
+      o.n++; words.set(h.w, o);
+    }
+    let wl = [...words.values()].sort((a, b) => S.K.indexOf(a.k) - S.K.indexOf(b.k) || b.n - a.n);
+    const MAXW = 14;
+    const hidden = wl.length > MAXW ? wl.length - MAXW : 0;
+    if (hidden) wl = wl.slice().sort((a, b) => b.n - a.n).slice(0, MAXW).sort((a, b) => S.K.indexOf(a.k) - S.K.indexOf(b.k) || b.n - a.n);
+    const themes = p.themeLinks || [];
+    const emoSet = new Set([...words.values()].map((o) => o.k));
+    themes.forEach((t) => t.emos.forEach((k) => emoSet.add(k)));
+    const emos = S.K.filter((k) => emoSet.has(k));
+    const rowH = 30;
+    const rows = Math.max(wl.length, emos.length, themes.length * 2, 3);
+    const W = 760, H = 46 + rows * rowH;
+    const colW = { x: 10, r: 170 }, colE = { x: 290, w: 150 }, colT = { x: 548, w: 205 };
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, style: "max-width:none", "aria-label": "시어, 감정, 주제 연결 다이어그램" });
+    const head = (x, t, a) => svg.appendChild(sv("text", { x, y: 16, "font-size": 12, "font-weight": 700, "text-anchor": a, text: t }));
+    head(colW.r, "감지 시어(계산)", "end"); head(colE.x + colE.w / 2, "감정", "middle"); head(colT.x, "주제(해석)", "start");
+    const yW = (i) => 40 + i * ((H - 50) / Math.max(wl.length, 1)) + ((H - 50) / Math.max(wl.length, 1)) / 2;
+    const yE = (i) => 40 + i * ((H - 50) / Math.max(emos.length, 1)) + ((H - 50) / Math.max(emos.length, 1)) / 2;
+    const yT = (i) => 40 + i * ((H - 50) / Math.max(themes.length, 1)) + ((H - 50) / Math.max(themes.length, 1)) / 2;
+    const curve = (x1, y1, x2, y2) => `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
+    // 연결선 먼저
+    wl.forEach((o, i) => {
+      const e = S.emo.get(o.k);
+      svg.appendChild(sv("path", { d: curve(colW.r + 6, yW(i), colE.x, yE(emos.indexOf(o.k))), fill: "none", stroke: e.color, "stroke-opacity": 0.75, "stroke-width": Math.min(1.2 + o.n * 0.9, 7) }));
+    });
+    themes.forEach((t, ti) => t.emos.forEach((k) => {
+      svg.appendChild(sv("path", { d: curve(colE.x + colE.w, yE(emos.indexOf(k)), colT.x - 6, yT(ti)), fill: "none", stroke: "#8a8072", "stroke-width": 1.4, "stroke-dasharray": "5 4" }));
+    }));
+    // 시어 노드
+    wl.forEach((o, i) => {
+      const g = sv("g", { class: "dia-node" });
+      const on = S.focus && S.focus.type === "word" && S.focus.w === o.w;
+      g.appendChild(sv("rect", { x: colW.x, y: yW(i) - 11, width: colW.r - colW.x + 4, height: 22, rx: 4, fill: on ? "#f0e2d6" : "transparent", stroke: "none" }));
+      g.appendChild(sv("text", { x: colW.r, y: yW(i) + 4, "text-anchor": "end", "font-size": 13, text: `${o.shown}${o.n > 1 ? " ×" + o.n : ""}` }));
+      pressable(g, `시어 ${o.shown}, ${o.n}회, ${S.emo.get(o.k).name}. 누르면 이 시어가 나온 행을 강조`, () => setFocus({ type: "word", w: o.w, label: o.shown }));
+      svg.appendChild(g);
+    });
+    if (!wl.length) svg.appendChild(sv("text", { x: colW.r, y: 50, "text-anchor": "end", "font-size": 12.5, fill: "#6b6359", text: "사전 감지 시어 없음" }));
+    // 감정 노드
+    emos.forEach((k, i) => {
+      const e = S.emo.get(k), j = S.K.indexOf(k);
+      const on = S.focus && S.focus.type === "emo" && S.focus.k === k;
+      const g = sv("g", { class: "dia-node" });
+      g.appendChild(sv("rect", { x: colE.x, y: yE(i) - 13, width: colE.w, height: 26, rx: 13, fill: on ? "#f0e2d6" : "#fffdf8", stroke: e.color, "stroke-width": 2 }));
+      const lexN = lx.totals[j];
+      g.appendChild(sv("text", { x: colE.x + colE.w / 2, y: yE(i) + 4.5, "text-anchor": "middle", "font-size": 12.5, text: `${e.name} ${isZero(finOf(p.id)) ? "—" : fmt(fp[j]) + "%"}` }));
+      pressable(g, `${e.name}: 사전 감지 ${lexN}개, 최종 ${fmt(fp[j])}%. 누르면 해당 행 강조`, () => setFocus({ type: "emo", k }));
+      svg.appendChild(g);
+    });
+    // 주제 노드(해석, 누를 수 없음)
+    themes.forEach((t, ti) => {
+      const lines = wrap(t.label, 13);
+      const g = sv("g");
+      g.appendChild(sv("rect", { x: colT.x, y: yT(ti) - 9 - lines.length * 8, width: colT.w, height: 18 + lines.length * 16, rx: 6, fill: "#f4eee3", stroke: "#cfc4b0", "stroke-dasharray": "4 3" }));
+      lines.forEach((ln, li) => g.appendChild(sv("text", { x: colT.x + 10, y: yT(ti) + 4 - (lines.length - 1) * 8 + li * 16, "font-size": 12.5, text: ln })));
+      svg.appendChild(g);
+    });
+    box.appendChild(svg);
+    if (hidden) box.appendChild(el("p", { class: "small muted", text: `감지 시어 ${words.size}종 가운데 많이 나온 ${MAXW}종만 그렸습니다(${hidden}종 생략). 감정 비율 계산에는 모두 들어갑니다.` }));
+    if (!themes.length) box.appendChild(el("p", { class: "small muted", text: "이 작품에는 감정–주제 연결(해석)이 없습니다." }));
+  }
+  function wrap(s, n) {
+    if (s.length <= n) return [s];
+    const cut = s.lastIndexOf(" ", n);
+    const i = cut > 4 ? cut : n;
+    return [s.slice(0, i).trim(), s.slice(i).trim()];
+  }
+
+  // ---------------------------------------------------------------- F-13 감정 이미지(Canvas, 외부 호출 없음)
+  // 최종 감정 비율만큼 그 감정 색의 ‘결’(물결 붓질)을 겹쳐 그린다. 같은 시·같은 비율이면 항상 같은 그림이 나오도록 시 id로 난수를 고정한다.
+  function seeded(str) {
+    let h = 2166136261;
+    for (const c of str) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); }
+    return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; };
+  }
+  function hexA(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+  function renderImage() {
+    const p = S.byId.get(S.sel);
+    const vec = finOf(p.id), ps = pct(vec);
+    const cv = $("emoCanvas");
+    const g = cv.getContext && cv.getContext("2d");
+    const lg = clear($("imgLegend"));
+    if (!g) { lg.appendChild(el("li", { text: "이 브라우저는 Canvas를 지원하지 않아 그림을 그리지 못합니다." })); return; }
+    const W = cv.width, H = cv.height;
+    g.clearRect(0, 0, W, H);
+    g.fillStyle = "#f8f3e8"; g.fillRect(0, 0, W, H);
+    const rnd = seeded(p.id + Math.round(S.w * 100));
+    // 한지 결
+    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(120,100,70,${0.03 * rnd()})`; g.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 3, 1); }
+    const order = S.K.map((k, j) => [vec[j], k]).filter((x) => x[0] > 0).sort((a, b) => b[0] - a[0]);
+    if (!order.length) {
+      g.fillStyle = "#6b6359"; g.font = "15px sans-serif"; g.textAlign = "center";
+      g.fillText("그릴 감정 값이 없습니다(사전 감지 0건, 사전 100%)", W / 2, H / 2);
+      lg.appendChild(el("li", { text: "감정 값이 없어 빈 화면으로 둡니다. 가중치를 낮추면 해석 프로필로 그립니다." }));
+      $("imgPrompt").value = "";
+      return;
+    }
+    // 비중이 큰 감정일수록 화면에서 넓은 띠(높이)와 많은 붓질을 차지한다
+    let y0 = H * 0.08;
+    const usable = H * 0.84;
+    order.forEach(([v, k]) => {
+      const e = S.emo.get(k);
+      const band = usable * v;
+      const strokes = Math.max(3, Math.round(60 * v));
+      for (let s = 0; s < strokes; s++) {
+        const yc = y0 + band * rnd();
+        const amp = 6 + 26 * rnd() * (k === "calm" ? 0.4 : k === "fear" || k === "anger" ? 1.6 : 1);
+        const freq = (k === "fear" || k === "anger" ? 3.2 : 1.4) + rnd() * 1.6;
+        const ph = rnd() * Math.PI * 2;
+        g.beginPath();
+        for (let x = -10; x <= W + 10; x += 8) {
+          const y = yc + Math.sin((x / W) * Math.PI * freq + ph) * amp + (rnd() - 0.5) * 2;
+          if (x === -10) g.moveTo(x, y); else g.lineTo(x, y);
+        }
+        g.strokeStyle = hexA(e.color, 0.12 + 0.25 * rnd());
+        g.lineWidth = 1 + 9 * rnd() * Math.sqrt(v);
+        g.lineCap = "round";
+        g.stroke();
+      }
+      y0 += band;
+    });
+    // 지배 정서 먹 점
+    const d = S.emo.get(order[0][1]);
+    g.beginPath(); g.arc(W * (0.72 + 0.1 * rnd()), H * (0.22 + 0.1 * rnd()), 18 + 30 * order[0][0], 0, Math.PI * 2);
+    g.fillStyle = hexA(d.color, 0.55); g.fill();
+    g.fillStyle = "rgba(42,37,33,.75)"; g.font = "13px serif"; g.textAlign = "left";
+    g.fillText(`「${p.title}」 ${p.poet}`, 16, H - 14);
+    cv.setAttribute("aria-label", `「${p.title}」 감정 이미지: ${order.map(([v, k]) => `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`).join(", ")}의 비율로 색 띠를 그렸습니다.`);
+    order.forEach(([, k]) => lg.appendChild(el("li", null, el("span", { class: "sw", style: `--c:${S.emo.get(k).color}`, "aria-hidden": "true" }), `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`)));
+    lg.appendChild(el("li", { class: "muted", text: "띠의 높이 = 비율, 물결의 세기 = 감정의 성격(평온은 잔잔, 불안·분노는 거칠게)" }));
+    // AI 이미지용 프롬프트(복사해서 외부 서비스에 직접 붙여 넣는 용도)
+    const top = order.slice(0, 4).map(([, k]) => `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`).join(", ");
+    $("imgPrompt").value = [
+      `한국 근대시 「${p.title}」(${p.poet}, ${p.year})의 정서를 표현한 그림을 그려 주세요.`,
+      `핵심 구절: ${(p.key || []).join(" / ")}`,
+      `주제: ${p.theme}`,
+      `정서 비율(${methodLabel(p)}): ${top}. 가장 큰 정서는 ${d.name}입니다.`,
+      `화풍: 한지 위 수묵 담채, 넉넉한 여백, 절제된 색. 그림 안에 글자나 실존 인물은 넣지 않습니다.`,
+    ].join("\n");
+  }
+
+  // ---------------------------------------------------------------- F-09 추천
+  function itemsAll() { return S.poems.map((p) => ({ id: p.id, vec: finOf(p.id), order: p.order ?? 0 })); }
+  function recCards(vec, excludeId, target) {
+    const r = window.PoemEngine.recommend(vec, itemsAll(), excludeId, 3);
+    clear(target);
+    if (r.reason === "zero") {
+      target.appendChild(el("li", { class: "notice small", style: "grid-column:1/-1", text: "기준이 되는 감정 벡터가 모두 0이라 유사도를 계산할 수 없어 추천하지 않습니다." + (excludeId && S.phat.get(excludeId) ? " 가중치를 100% 아래로 내리면 해석 프로필로 추천을 볼 수 있습니다." : "") }));
+      return r;
+    }
+    if (!r.list.length) { target.appendChild(el("li", { class: "notice small", style: "grid-column:1/-1", text: "비교할 수 있는 다른 작품이 없습니다." })); return r; }
+    r.list.forEach((it, i) => {
+      const q = S.byId.get(it.id);
+      const d = dominantOf(finOf(it.id));
+      target.appendChild(el("li", null, el("button", { type: "button", onclick: () => selectPoem(it.id, { scrollTop: true }), "aria-label": `${i + 1}위 ${q.title}, ${q.poet}, 유사도 ${(it.sim * 100).toFixed(1)}%. 누르면 이 시로 이동` },
+        el("span", { class: "small muted", text: `${i + 1}위` }),
+        el("span", { class: "rt", text: q.title }),
+        el("span", { class: "small muted", text: `${q.poet} · 지배 정서 ${d ? S.emo.get(d).name : "없음"}` }), el("br"),
+        el("span", { class: "rs", text: (it.sim * 100).toFixed(1) + "%" }), el("span", { class: "small muted", text: " 유사도" }))));
+    });
+    if (r.tieAtCut) target.appendChild(el("li", { class: "small muted", style: "grid-column:1/-1", text: "3위와 유사도가 같은 작품이 더 있어 수록 순서가 앞선 작품을 보였습니다." }));
+    return r;
+  }
+  function renderRecs() { recCards(finOf(S.sel), S.sel, $("recList")); }
+
+  // ---------------------------------------------------------------- F-10 히트맵
+  function renderHeat() {
+    const box = clear($("heatBox"));
+    const t = el("table", { class: "heat" });
+    t.appendChild(el("caption", { class: "sr-label", text: `작품별 최종 감정 비율(%), 가중치 ${Math.round(S.w * 100)}%` }));
+    t.appendChild(el("thead", null, el("tr", null, el("th", { class: "row", scope: "col", text: "작품" }), S.EMOS.map((e) => el("th", { scope: "col", title: e.def, text: e.name })))));
+    const tb = el("tbody");
+    for (const p of S.poems) {
+      const v = finOf(p.id), z = isZero(v), ps = pct(v);
+      const tr = el("tr", { class: p.id === S.sel ? "sel" : null });
+      tr.appendChild(el("th", { class: "row", scope: "row" }, el("button", { type: "button", onclick: () => selectPoem(p.id, { scrollTop: true }), "aria-label": `${p.title} 보기` }, p.title)));
+      ps.forEach((x) => {
+        const a = z ? 0 : Math.min(1, x / 60);
+        tr.appendChild(el("td", { style: `background:rgba(124,59,42,${(a * 0.85).toFixed(3)});color:${a > 0.55 ? "#fbf8f1" : "#2a2521"}`, text: z ? "—" : x.toFixed(0) }));
+      });
+      tb.appendChild(tr);
+    }
+    t.appendChild(tb);
+    box.appendChild(t);
+    const zeros = S.poems.filter((p) => isZero(finOf(p.id)));
+    if (zeros.length) box.appendChild(el("p", { class: "small muted", text: `‘—’: 최종 벡터가 0인 작품(${zeros.map((p) => p.title).join(", ")}). 사전 감지가 0건이고 사전 100%로 볼 때 생깁니다.` }));
+    box.appendChild(el("p", { class: "small muted", text: "칸 숫자는 반올림한 정수라 한 행 합계가 99~101이 될 수 있습니다. 정확한 값은 위의 비교 표에 있습니다." }));
+  }
+
+  // ---------------------------------------------------------------- F-12 감성 지도(PCA)
+  function renderPCA() {
+    const box = clear($("pca"));
+    const axesP = clear($("pcaAxes"));
+    const pts = S.poems.filter((p) => !isZero(finOf(p.id)));
+    const skipped = S.poems.filter((p) => isZero(finOf(p.id)));
+    if (pts.length < 3) { box.appendChild(el("p", { class: "notice small", text: "감정 벡터가 있는 작품이 3편 미만이라 지도를 그리지 않습니다." })); return; }
+    const res = window.PoemEngine.pca2(pts.map((p) => finOf(p.id)));
+    const W = 560, H = 420, pad = 40;
+    const xs = res.coords.map((c) => c[0]), ys = res.coords.map((c) => c[1]);
+    const ext = (a) => { const m = Math.max(...a.map(Math.abs), 1e-6); return m * 1.12; };
+    const ex = ext(xs), ey = ext(ys);
+    const X = (v) => W / 2 + (v / ex) * (W / 2 - pad);
+    const Y = (v) => H / 2 - (v / ey) * (H / 2 - pad);
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, style: "min-width:480px", "aria-label": "감성 지도(주성분분석 2차원)" });
+    svg.appendChild(sv("rect", { x: 0, y: 0, width: W, height: H, fill: "#fffdf8", rx: 8 }));
+    svg.appendChild(sv("line", { x1: pad / 2, x2: W - pad / 2, y1: H / 2, y2: H / 2, stroke: "#d8cfbe" }));
+    svg.appendChild(sv("line", { y1: pad / 2, y2: H - pad / 2, x1: W / 2, x2: W / 2, stroke: "#d8cfbe" }));
+    const axisName = (comp, sign) => {
+      const idx = comp.map((v, j) => [v * sign, j]).filter((x) => x[0] > 0.15).sort((a, b) => b[0] - a[0]).slice(0, 2);
+      return idx.length ? idx.map((x) => S.EMOS[x[1]].name).join(", ") : "뚜렷한 감정 없음";
+    };
+    const c1 = res.comps[0], c2 = res.comps[1];
+    const lab = (x, y, t, a) => svg.appendChild(sv("text", { x, y, "text-anchor": a, "font-size": 11.5, fill: "#7c3b2a", text: t }));
+    lab(W - 8, H / 2 - 6, `${axisName(c1, 1)} →`, "end");
+    lab(8, H / 2 - 6, `← ${axisName(c1, -1)}`, "start");
+    lab(W / 2 + 6, 16, `↑ ${axisName(c2, 1)}`, "start");
+    lab(W / 2 + 6, H - 8, `↓ ${axisName(c2, -1)}`, "start");
+    // 점을 먼저 모두 그리고, 이름표는 겹치지 않는 자리(오른쪽·왼쪽·위·아래)에만 붙인다.
+    const P = pts.map((p, i) => ({ p, x: X(res.coords[i][0]), y: Y(res.coords[i][1]), d: dominantOf(finOf(p.id)) }));
+    const boxes = P.map((q) => ({ x1: q.x - 6, y1: q.y - 6, x2: q.x + 6, y2: q.y + 6 }));
+    const overlaps = (b) => boxes.some((o) => !(b.x2 < o.x1 || b.x1 > o.x2 || b.y2 < o.y1 || b.y1 > o.y2)) || b.x1 < 2 || b.x2 > W - 2 || b.y1 < 2 || b.y2 > H - 2;
+    const omitted = [];
+    const labelLayer = sv("g");
+    const order = P.slice().sort((a, b) => (b.p.id === S.sel) - (a.p.id === S.sel));
+    for (const q of order) {
+      const sel = q.p.id === S.sel;
+      const fs = sel ? 12.5 : 11;
+      const tw = q.p.title.length * fs * 0.98 + 2, th = fs + 2;
+      const cand = [
+        { x: q.x + 9, y: q.y + 4, a: "start", b: { x1: q.x + 8, y1: q.y - th / 2, x2: q.x + 9 + tw, y2: q.y + th / 2 } },
+        { x: q.x - 9, y: q.y + 4, a: "end", b: { x1: q.x - 9 - tw, y1: q.y - th / 2, x2: q.x - 8, y2: q.y + th / 2 } },
+        { x: q.x, y: q.y - 10, a: "middle", b: { x1: q.x - tw / 2, y1: q.y - 10 - th, x2: q.x + tw / 2, y2: q.y - 8 } },
+        { x: q.x, y: q.y + 19, a: "middle", b: { x1: q.x - tw / 2, y1: q.y + 8, x2: q.x + tw / 2, y2: q.y + 10 + th } },
+      ];
+      const c = cand.find((k) => !overlaps(k.b)) || (sel ? cand[0] : null);
+      if (!c) { omitted.push(q.p.title); continue; }
+      boxes.push(c.b);
+      if (sel) labelLayer.appendChild(sv("rect", { x: c.b.x1 - 2, y: c.b.y1 - 1, width: c.b.x2 - c.b.x1 + 4, height: c.b.y2 - c.b.y1 + 3, fill: "#fffdf8", "fill-opacity": 0.9, rx: 3 }));
+      labelLayer.appendChild(sv("text", { x: c.x, y: c.y, "text-anchor": c.a, "font-size": fs, "font-weight": sel ? 700 : 400, "pointer-events": "none", text: q.p.title }));
+    }
+    P.forEach((q) => {
+      const sel = q.p.id === S.sel;
+      const g = sv("g", { class: "pca-pt" });
+      g.appendChild(sv("title", { text: q.p.title }));
+      g.appendChild(sv("circle", { cx: q.x, cy: q.y, r: sel ? 8 : 5.5, fill: S.emo.get(q.d).color, stroke: sel ? "#2a2521" : "#fffdf8", "stroke-width": sel ? 2.5 : 1.5 }));
+      pressable(g, `${q.p.title}, 지배 정서 ${S.emo.get(q.d).name}. 누르면 이 시로 이동`, () => selectPoem(q.p.id, { scrollTop: true }));
+      svg.appendChild(g);
+    });
+    svg.appendChild(labelLayer);
+    box.appendChild(svg);
+    const e1 = (res.explained[0] * 100).toFixed(1), e2 = (res.explained[1] * 100).toFixed(1);
+    append(axesP, [
+      el("strong", { text: "가로축" }), ` (분산의 ${e1}%): 오른쪽일수록 ${axisName(c1, 1)}, 왼쪽일수록 ${axisName(c1, -1)} 비중이 큽니다. `,
+      el("strong", { text: "세로축" }), ` (분산의 ${e2}%): 위일수록 ${axisName(c2, 1)}, 아래일수록 ${axisName(c2, -1)}. `,
+      "점 색은 각 작품의 지배 정서입니다.",
+      omitted.length ? ` 이름표가 겹쳐 생략한 점: ${omitted.join(", ")}(점에 마우스를 올리거나 키보드로 고르면 이름이 나옵니다).` : "",
+      skipped.length ? ` 최종 벡터가 0인 작품(${skipped.map((p) => p.title).join(", ")})은 지도에서 뺐습니다.` : "",
+      " 가중치를 바꾸면 축의 뜻도 달라질 수 있습니다.",
+    ]);
+  }
+
+  // ---------------------------------------------------------------- F-11 내 시 분석
+  function runMine() {
+    const raw = $("mineText").value;
+    const out = clear($("mineOut"));
+    S.mine = null;
+    if (!raw.trim()) {
+      out.appendChild(el("p", { class: "notice", text: "분석할 시를 입력해 주세요. 한 행에 한 줄씩 쓰고, 연 사이는 빈 줄로 띄우면 됩니다." }));
+      $("mineText").focus();
+      return;
+    }
+    const r = window.PoemEngine.analyzeText(raw, { EMOS: S.EMOS, matcher: S.matcher }, "mine");
+    S.mine = r;
+    if (r.total === 0) {
+      out.appendChild(el("p", { class: "notice", text: `분석 행 ${r.lines.length}개에서 사전이 감지한 시어가 없습니다. 감정이 없다는 뜻이 아니라, 이 사전에 든 시어가 나오지 않았다는 뜻입니다. 그래서 비율과 추천을 만들지 않았습니다.` }));
+      return;
+    }
+    const ps = pct(r.vec);
+    const dom = r.dominant;
+    const grid = el("div", { class: "mine-grid" });
+    const left = el("div", null,
+      el("p", null, el("strong", { text: "지배 정서 " }), `${S.emo.get(dom).name} ${fmt(ps[S.K.indexOf(dom)])}%`, el("span", { class: "small muted", text: ` · 사전만 · 감지 ${r.total}개` })),
+      r.total < LOW_EVIDENCE ? el("p", { class: "small low-ev", text: `주의: 감지 시어가 ${r.total}개뿐이라 비율이 한두 낱말에 크게 좌우됩니다.` }) : null);
+    const ul = el("ul", { class: "ratios", "aria-label": "입력한 시의 감정 비율" });
+    S.EMOS.forEach((e, j) => ul.appendChild(el("li", null,
+      el("span", { style: "display:flex;gap:6px;align-items:center;font-size:13.5px" }, el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), e.name),
+      el("div", { class: "bar", "aria-hidden": "true" }, el("i", { style: `--c:${e.color};width:${ps[j]}%` })),
+      el("span", { class: "v", text: fmt(ps[j]) + "%" }))));
+    left.appendChild(ul);
+    left.appendChild(el("h3", { class: "mini-title", text: "비슷한 시" }));
+    left.appendChild(el("p", { class: "small muted", text: "입력한 시의 사전 벡터와 수록작의 최종 벡터(현재 가중치)를 비교합니다." }));
+    const rl = el("ol", { class: "rec-list", id: "mineRecs", style: "grid-template-columns:1fr" });
+    left.appendChild(rl);
+    const right = el("div", null, el("h3", { class: "mini-title", style: "margin-top:0", text: "행별 감지" }));
+    const lu = el("ul", { class: "mine-lines" });
+    r.lines.forEach((l) => lu.appendChild(el("li", null,
+      el("span", { class: "meta", text: `${l.no}행 · ${l.stanza}연 · ${l.hits.length ? countsLong(l.counts) : "사전에서 감지한 시어 없음"}` }),
+      lineSegments(l))));
+    right.appendChild(lu);
+    grid.appendChild(left); grid.appendChild(right);
+    out.appendChild(grid);
+    renderMineRecs();
+  }
+  function renderMineRecs() {
+    if (!S.mine || S.mine.total === 0) return;
+    const rl = $("mineRecs");
+    if (rl) recCards(S.mine.vec, null, rl);
+  }
+
+  // ---------------------------------------------------------------- 범주와 사전
+  function renderMethod() {
+    const L = window.LEXICON;
+    const b = clear($("methodBody"));
+    b.appendChild(el("p", { class: "small", text: `감정 범주 ${S.EMOS.length}개와 범주별 사전(${L.LEX_VERSION}). 한 시어는 한 범주에만 넣고, 긴 시어부터 하나의 정규식으로 찾아 같은 자리를 두 번 세지 않습니다. 같은 시어가 다른 자리에 또 나오면 나온 만큼 셉니다. 옛 표기의 ㅅ계 합용병서(예: ‘ᄯᅥᆯ며’)와 반복 부호 々는 분석용 사본에서만 된소리·앞 글자로 바꾸고 화면 본문은 그대로 둡니다.` }));
+    const grid = el("div", { class: "method-cats" });
+    S.EMOS.forEach((e) => grid.appendChild(el("article", null,
+      el("h3", null, el("span", { class: "sw", style: `--c:${e.color}`, "aria-hidden": "true" }), `${e.name}`, el("span", { class: "small muted", text: ` ${e.k} · 시어 ${L.LEX[e.k].length}개` })),
+      el("p", { text: e.def }),
+      el("p", { class: "words", text: L.LEX[e.k].join(" · ") }))));
+    b.appendChild(grid);
+    b.appendChild(el("h3", { class: "mini-title", text: "가까운 범주를 가르는 기준" }));
+    b.appendChild(el("ul", { class: "small" }, L.BOUNDARIES.map((t) => el("li", { text: t }))));
+    b.appendChild(el("h3", { class: "mini-title", text: "차단어" }));
+    b.appendChild(el("p", { class: "small", text: `${L.BLOCK.map((w) => `‘${w}’`).join(", ")} — ‘바라(희망)’가 ‘바라보다’ 속에서 잘못 잡히는 것을 막으려고 넣은 말입니다. 차단어가 일치한 자리는 어떤 감정으로도 세지 않습니다.` }));
+    b.appendChild(el("h3", { class: "mini-title", text: "계산식" }));
+    b.appendChild(el("ul", { class: "small" },
+      el("li", { text: "사전 벡터 v_lex(e) = Σ 행별 감지 수 c(l, e) ÷ 전체 감지 수. 감지가 0이면 모두 0으로 두고 지배 정서를 정하지 않습니다." }),
+      el("li", { text: "최종 벡터 v = normalize((1 − w)·p̂ + w·v_lex). p̂는 해석 프로필을 합이 1이 되게 나눈 값, w는 사전 가중치. 프로필이 없거나 w = 100%면 v = v_lex." }),
+      el("li", { text: "추천: 최종 벡터끼리 코사인 유사도, 자기 자신 제외 상위 3편. 영벡터는 유사도를 정의하지 않아 제외하고, 동률이면 수록 순서가 앞선 작품을 먼저 둡니다." }),
+      el("li", { text: "화면의 백분율은 최대 나머지 방식으로 반올림해 합계가 정확히 100.0%가 되게 했습니다." })));
+  }
+
+  // ---------------------------------------------------------------- 시작
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>
 </body>
 </html>
