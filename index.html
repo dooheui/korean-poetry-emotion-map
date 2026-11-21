@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시의 결 — 한국 근대시 감정 분석</title>
+<meta name="description" content="저작권이 끝난 한국 근대시를 감정 사전으로 세고, 사람이 정한 해석 프로필과 나란히 비교하는 정적 웹앱">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23f6f1e7%22/%3E%3Cpath d=%22M6 22 C12 10 20 10 26 22%22 stroke=%22%237c3b2a%22 stroke-width=%223%22 fill=%22none%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 글꼴을 못 받아도 아래 CSS의 시스템 글꼴로 본문이 그대로 보인다(display=swap) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#reading">본문으로 건너뛰기</a>
+
+<header class="site">
+  <div class="site-top">
+    <div class="brand">
+      <h1>시의 결</h1>
+      <p>한국 근대시의 감정을 사전으로 세어 보고, 그 숫자를 사람의 해석과 나란히 놓아 봅니다.</p>
+    </div>
+    <div class="browse">
+      <label for="q" class="sr-label">제목이나 시인으로 찾기</label>
+      <input id="q" type="search" placeholder="제목·시인 찾기" autocomplete="off">
+      <span id="listCount" class="muted small" aria-live="polite"></span>
+    </div>
+  </div>
+  <nav class="poem-nav" aria-label="시 목록">
+    <ul id="poemList" class="poem-list"></ul>
+    <p id="listEmpty" class="notice" hidden>찾는 제목이나 시인이 목록에 없습니다. 검색어를 지우면 전체 목록이 다시 보입니다.</p>
+  </nav>
+  <nav class="jump small" aria-label="화면 안 바로가기">
+    <a href="#reading">읽기</a><a href="#lab">계산과 해석 사이</a><a href="#charts">차트</a><a href="#diagram">시어 연결</a><a href="#recs">비슷한 시</a><a href="#heat">전체 비교</a><a href="#map">감성 지도</a><a href="#mine">내 시 분석</a><a href="#method">범주와 사전</a>
+  </nav>
+</header>
+
+<div id="loadError" class="load-error" role="alert" hidden></div>
+
+<main id="app">
+  <!-- 1단: 본문(F-02, F-04)과 지배 정서·비율·해석(F-03, F-05) -->
+  <section id="reading" class="reading" aria-label="시 읽기와 분석 결과">
+    <article class="panel poem-panel" aria-labelledby="poemTitle">
+      <header class="poem-head">
+        <h2 id="poemTitle">불러오는 중…</h2>
+        <p id="poemMeta" class="muted"></p>
+        <div class="poem-tools">
+          <button type="button" id="btnMarks" class="tbtn" aria-pressed="true">감지 표시</button>
+          <button type="button" id="btnOrig" class="tbtn" aria-pressed="false" hidden>원문 표기 보기</button>
+          <button type="button" id="btnClearFocus" class="tbtn" hidden>강조 해제</button>
+        </div>
+        <p id="focusNote" class="focus-note small" aria-live="polite" hidden></p>
+      </header>
+      <div id="poemBox" class="poem-box" tabindex="0" aria-label="시 본문. 행을 누르면 그 행의 감지 결과를 봅니다."></div>
+      <p id="origNote" class="small muted" hidden>원문 표기는 비교용으로만 보여 주며 분석은 현대어 칸으로 합니다.</p>
+      <section id="lineInfo" class="line-info" aria-live="polite" aria-label="선택한 행"></section>
+      <details class="biblio" id="biblio">
+        <summary>본문 출처와 판본</summary>
+        <div id="biblioBody"></div>
+      </details>
+    </article>
+
+    <section class="panel analysis-panel" aria-labelledby="anaTitle">
+      <h2 id="anaTitle" class="sec-title">감정 분석</h2>
+      <div id="dominant" class="dominant"></div>
+      <div class="weight">
+        <label for="w">사전 가중치 <output id="wOut" for="w">50%</output></label>
+        <input id="w" type="range" min="0" max="100" step="10" value="50" aria-describedby="wHelp">
+        <p id="wHelp" class="small muted">100%는 사전만, 0%는 사람이 정한 해석 프로필만 씁니다. 바꾸면 비율·지배 정서·차트·추천·히트맵·감성 지도가 다시 계산됩니다. 행별 감지 수는 바뀌지 않습니다.</p>
+      </div>
+      <h3 class="mini-title">감정 비율 <span id="ratioMethod" class="small muted"></span></h3>
+      <ul id="ratios" class="ratios" aria-label="감정 비율"></ul>
+      <div id="interp" class="interp"></div>
+    </section>
+  </section>
+
+  <!-- 계산과 해석 사이(차별화 기능) -->
+  <section id="lab" class="panel lab" aria-labelledby="labTitle">
+    <h2 id="labTitle" class="sec-title">계산과 해석 사이</h2>
+    <p class="small muted">사전이 센 숫자와 사람이 읽은 해석을 나란히 둡니다. 감정 이름이나 시어를 누르면 해당 행이 강조되고, 행을 누르면 그 행에서 감지된 시어를 봅니다.</p>
+    <div class="lab-grid">
+      <div>
+        <h3 class="mini-title">사전만 vs 결합 결과</h3>
+        <div class="scroll-x"><table id="compare" class="data-table"></table></div>
+        <p class="small muted">차이(%p)는 해석 프로필을 섞어서 생긴 변화량입니다. 차이가 작다고 사전이 더 정확하다는 뜻은 아닙니다. 프로필도 사람의 한 가지 읽기일 뿐입니다.</p>
+        <p id="profileNote" class="small"></p>
+      </div>
+      <div>
+        <h3 class="mini-title">독자 메모</h3>
+        <div id="memo" class="memo"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 차트(F-06, F-07) -->
+  <section id="charts" class="charts">
+    <section class="panel" aria-labelledby="radarTitle">
+      <h2 id="radarTitle" class="sec-title">감정 프로필</h2>
+      <div id="radar" class="chart-box"></div>
+      <div class="scroll-x"><table id="radarTable" class="data-table small"></table></div>
+    </section>
+    <section class="panel" aria-labelledby="flowTitle">
+      <h2 id="flowTitle" class="sec-title">행별 감정 흐름</h2>
+      <p class="small muted">가로축은 분석 행 번호(빈 줄 제외), 세로축은 그 행에서 사전이 감지한 시어 수입니다. 막대를 누르거나 키보드로 고르면 그 행을 봅니다.</p>
+      <div id="flow" class="chart-box scroll-x"></div>
+      <ul id="flowLegend" class="legend small"></ul>
+      <p id="flowPick" class="flow-pick small" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <!-- F-08 -->
+  <section id="diagram" class="panel" aria-labelledby="diaTitle">
+    <h2 id="diaTitle" class="sec-title">시어 → 감정 → 주제</h2>
+    <p class="small muted"><span class="key-solid"></span> 실선: 사전이 실제로 감지한 시어와 그 범주(계산). <span class="key-dash"></span> 점선: 감정과 주제의 연결(사람의 해석). 장식용 연결은 없습니다.</p>
+    <div id="dia" class="chart-box scroll-x"></div>
+  </section>
+
+  <!-- F-09 -->
+  <section id="recs" class="panel" aria-labelledby="recTitle">
+    <h2 id="recTitle" class="sec-title">감정 결이 비슷한 시</h2>
+    <p class="small muted">최종 감정 벡터끼리의 코사인 유사도입니다. 감정 비율이 닮았다는 뜻이며, 주제나 문학적 의미가 같다는 뜻은 아닙니다.</p>
+    <ol id="recList" class="rec-list"></ol>
+  </section>
+
+  <!-- F-10 -->
+  <section id="heat" class="panel" aria-labelledby="heatTitle">
+    <h2 id="heatTitle" class="sec-title">전체 비교</h2>
+    <p class="small muted">작품마다 최종 감정 비율(%)입니다. 칸의 진하기와 숫자가 같은 값을 나타냅니다. 작품 이름을 누르면 그 시로 이동합니다.</p>
+    <div id="heatBox" class="scroll-x heat-box"></div>
+  </section>
+
+  <!-- F-12 -->
+  <section id="map" class="panel" aria-labelledby="mapTitle">
+    <h2 id="mapTitle" class="sec-title">감성 지도</h2>
+    <p class="small muted">최종 감정 벡터를 주성분분석(PCA)으로 2차원에 놓았습니다. 가까울수록 감정 비율이 닮았습니다. 축 이름은 그 축에 크게 실린 감정입니다.</p>
+    <div id="pca" class="chart-box scroll-x"></div>
+    <p id="pcaAxes" class="small"></p>
+  </section>
+
+  <!-- F-11 -->
+  <section id="mine" class="panel" aria-labelledby="mineTitle">
+    <h2 id="mineTitle" class="sec-title">내 시 분석</h2>
+    <p class="small muted">입력한 글은 이 브라우저 안에서만 같은 사전·엔진으로 분석합니다. 어디로도 보내지 않고 저장하지 않습니다. 해석 프로필은 쓰지 않습니다.</p>
+    <label for="mineText" class="sr-label">분석할 시</label>
+    <textarea id="mineText" rows="7" placeholder="한 행에 한 줄씩, 연 사이는 빈 줄로 띄워 입력합니다."></textarea>
+    <div class="row-btns">
+      <button type="button" id="mineRun" class="btn">분석하기</button>
+      <button type="button" id="mineClear" class="tbtn">지우기</button>
+    </div>
+    <div id="mineOut" aria-live="polite"></div>
+  </section>
+
+  <!-- 범주와 사전 -->
+  <section id="method" class="panel" aria-labelledby="methodTitle">
+    <h2 id="methodTitle" class="sec-title">범주와 사전</h2>
+    <div id="methodBody"></div>
+  </section>
+</main>
+
+<footer class="site-foot small">
+  <p><strong>출처 안내.</strong> 수록 작품은 모두 시인이 1962년 이전에 세상을 떠나 저작권 보호기간이 끝난 작품입니다. 본문은 각 작품의 ‘본문 출처와 판본’에 적은 위키문헌 문서(스캔 판독본 포함)에서 옮겼고, 사망 연도·발표 연도의 근거도 같은 곳에 링크했습니다.</p>
+  <p>주제·해석·해석 프로필은 사람이 정한 읽기 값이며 정답이 아닙니다. 감정 비율은 사전 일치 횟수로 계산한 값이라 반어·부정·문맥을 읽지 못합니다.</p>
+  <p class="muted">이 페이지는 서버 없이 브라우저에서만 동작합니다. 독자 메모는 이 기기 브라우저(localStorage)에만 저장됩니다.</p>
+</footer>
+
+<script>
+  // 데이터 스크립트가 없거나 깨져도 화면에 이유를 알린다.
+  window.__dataScriptFailed = false;
+</script>
+<script src="data/poems.js" onerror="window.__dataScriptFailed=true"></script>
+<script src="js/lexicon.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
