@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- 글꼴을 못 받아도 시스템 글꼴로 본문이 그대로 보인다(display=swap) -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
 <style>
 /* 시의 결 — 따뜻한 아이보리 바탕, 짙은 먹색 글자, 절제된 강조색 하나 */
 :root {
@@ -23,9 +23,9 @@
   --accent: #7c3b2a;
   --accent-soft: #f0e2d6;
   --focus: #1f5fa8;
-  --f-poem: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", "Batang", "바탕", "Source Han Serif K", "Noto Serif CJK KR", serif;
-  --f-ui: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
-  --f-old: "Noto Serif CJK KR", "Source Han Serif K", "Noto Sans CJK KR", "함초롬바탕", "HCR Batang", "Batang", "Noto Serif KR", serif;
+  --f-poem: "Gowun Batang", "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", "Batang", "바탕", "Source Han Serif K", "Noto Serif CJK KR", serif;
+  --f-ui: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+  --f-old: "Gowun Batang", "Noto Serif CJK KR", "Source Han Serif K", "Noto Sans CJK KR", "함초롬바탕", "HCR Batang", "Batang", "Noto Serif KR", serif;
   --r: 10px;
   --hint: #6a5848;            /* 안내 문구: 따뜻한 회갈색 */
   --shadow: 0 1px 2px rgba(42, 37, 33, .04);
@@ -203,7 +203,7 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 .emo-note p { margin: 0; line-height: 1.55; }
 .emo-note .emo-note-sub { margin-top: 0.25rem; font-size: 0.875rem; color: var(--hint); }
 .emo-note-acts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.45rem; }
-@media (min-width: 1181px) { .only-stacked { display: none !important; } }
+@media (min-width: 769px) { .only-stacked { display: none !important; } }
 .interp { margin-top: 0.69rem; border-top: 1px solid var(--line); padding-top: 0.552rem; font-size: 1rem; }
 .interp dl { display: grid; grid-template-columns: 3.4em minmax(0, 1fr); gap: 2px 0.69rem; margin: 0 0 0.414rem; }
 .interp dt { color: var(--muted); font-size: 0.875rem; }
@@ -336,7 +336,7 @@ footer.site-foot { border-top: 1px solid var(--line); padding: var(--gap) var(--
 footer.site-foot p { margin: 0.276rem 0; }
 
 /* ---------------------------------------------------------------- 좁은 PC·태블릿 */
-@media (max-width: 1180px) {
+@media (max-width: 768px) {
   .reading { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
   .ana-col { border-left: 0; padding-left: 0; margin-left: 0; border-top: 1px solid var(--line); padding-top: 1rem; }
   .poem-box { max-height: 60vh; }
@@ -400,6 +400,179 @@ footer.site-foot p { margin: 0.276rem 0; }
 .source-quick { display:inline-block; margin-left:0.55rem; text-underline-offset:3px; }
 @media(max-width:768px) { .quick-guide { padding:0.55rem 0.85rem; font-size:0.875rem; } #btnShare, #shareClose { min-height:44px; } }
 
+
+/* =====================================================================
+   작은 시집 레이아웃 — 첫 화면에서 F-01~F-05를 함께 읽는 구성
+   글자를 축소하는 대신 부가 설명을 다음 섹션으로 옮긴다.
+   ===================================================================== */
+:root { --bg:#f3f0e8; --paper:#fffdf8; --line:#e5dfd1; --line-2:#d1c6b4; --accent:#775543; --accent-soft:#f1e9dc; --side:206px; --gap:12px; --pad:18px; --r:12px; }
+html { font-size:16px; }
+body { font-family:var(--f-ui); line-height:1.5; }
+header.site { min-height:64px; padding:10px 22px 9px; flex-wrap:nowrap; align-items:center; }
+.kicker { font-size:11px; letter-spacing:.1em; }
+.brand h1 { font-family:var(--f-poem); font-weight:700; font-size:30px; letter-spacing:.08em; line-height:1.1; }
+.intro { font-family:var(--f-poem); font-size:13px; text-align:right; line-height:1.5; }
+.intro strong { display:inline; font-family:inherit; font-size:16px; font-weight:400; }
+.intro span { display:block; color:var(--muted); }
+.quick-guide { padding:5px 22px; font-size:12px; line-height:1.4; }
+.layout { padding:10px 18px 24px; gap:14px; }
+.side { top:10px; height:calc(100svh - 112px); min-height:420px; }
+.side-title { font-size:12px; }
+.side-sec { margin-bottom:10px; padding-bottom:10px; }
+#q { font-size:14px; padding:6px 8px 6px 30px; }
+.poem-list button { padding:5px 7px; }
+.poem-list .t { font-family:var(--f-poem); font-size:15px; font-weight:700; line-height:1.3; }
+.poem-list .p { font-size:11px; line-height:1.3; }
+.weight label { font-size:13px; }
+.weight p { font-size:11px; }
+.range-ends { font-size:11px; }
+.side-mine { font-size:12px; min-height:28px; padding:3px 8px; }
+.toc { padding:4px 0; }
+.toc ul { gap:5px; }
+.toc a { font-size:12px; height:28px; min-height:28px; padding:4px 10px; line-height:18px; }
+.panel { padding:18px 20px; }
+main { gap:12px; }
+/* 최소 769px부터 본문과 분석을 함께 보여 준다. */
+.reading { grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:22px; padding:18px 20px; }
+.poem-col { min-width:0; display:flex; flex-direction:column; }
+.poem-head h2 { font-family:var(--f-poem); font-size:27px; font-weight:700; line-height:1.25; letter-spacing:-.025em; }
+#poemMeta { font-size:11px; line-height:1.5; margin:5px 0 0; }
+.source-quick { margin-left:6px; white-space:nowrap; }
+.poem-tools { gap:5px; margin-top:7px; }
+.poem-tools .tbtn { font-size:12px; min-height:28px; padding:3px 8px; }
+.poem-box { font-family:var(--f-poem); font-size:17px; font-weight:400; line-height:1.9; min-height:0; max-height:none; margin-top:12px; }
+.poem-box.old { font-family:var(--f-old); }
+.stanza { margin-bottom:1em; }
+.ln { grid-template-columns:1.5em minmax(0,1fr) auto; gap:5px; padding:1px 3px; }
+.ln .no, .ln .cnt { font-family:var(--f-ui); font-size:10px; }
+.hit sup { font-size:9px; }
+.legend { font-size:11px; gap:2px 8px; margin-top:7px; }
+.line-info-title { margin:8px 0 0; font-size:12px; font-weight:400; border-top:1px solid var(--line); padding-top:7px; }
+.line-info-title span { color:var(--muted); font-size:11px; margin-left:4px; }
+.line-info { margin-top:3px; padding-top:0; border:0; font-size:12px; }
+.line-info .small { font-size:12px; }
+.line-info .q { font-size:14px; }
+.biblio { margin-top:6px; padding-top:5px; font-size:12px; }
+.ana-col { min-width:0; border-left:1px solid var(--line); padding-left:20px; }
+.result-headline { display:flex; align-items:baseline; flex-wrap:wrap; gap:3px 9px; margin-bottom:9px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+.result-headline .eyebrow { width:100%; font-size:11px; color:var(--muted); letter-spacing:.05em; }
+.headline-emotion { display:inline-flex; align-items:center; gap:8px; padding:0; border:0; background:transparent; cursor:pointer; color:var(--ink); border-radius:4px; }
+.headline-emotion:hover, .headline-emotion[aria-pressed="true"] { background:var(--cl); }
+.emotion-name { font-family:var(--f-poem); font-weight:700; font-size:27px; line-height:1.3; }
+.emotion-pct { font-family:var(--f-poem); font-size:22px; font-variant-numeric:tabular-nums; }
+.headline-method { font-size:11px; color:var(--muted); }
+.ratio-head { margin:0 0 5px; gap:2px; }
+.ratio-title { font-family:var(--f-poem); font-size:14px; font-weight:700; }
+.ratio-method { display:none; } /* 같은 기준을 바로 위 지배 정서 옆에 표시 */
+.ratio-hint { font-size:12px; line-height:1.4; width:100%; }
+.ratios { grid-template-columns:minmax(0,1fr); gap:3px; }
+.ratios li { display:grid; grid-template-columns:110px minmax(16px,1fr) 43px; align-items:center; gap:7px; min-width:0; }
+.emo-btn { font-size:12px; min-height:24px; padding:2px 7px; gap:5px; border-radius:5px; background:transparent; }
+.emo-btn[aria-pressed="true"] { padding:1px 6px; }
+.emo-btn .sw { width:7px; height:7px; }
+.ratios .v { font-size:12px; line-height:1.4; }
+.bar { height:6px; }
+.emo-note { font-size:12px; margin-top:6px; padding:6px 8px; }
+.emo-note .emo-note-sub { font-size:11px; }
+.interp { margin-top:10px; padding-top:8px; font-family:var(--f-poem); font-size:15px; }
+.interp dl { grid-template-columns:2.2em minmax(0,1fr); gap:4px 7px; margin-bottom:6px; }
+.interp dt { font-family:var(--f-ui); font-size:12px; }
+.interp dd { font-weight:400; }
+.interp .mini-title { font-family:var(--f-ui); font-size:12px; margin:4px 0; }
+.interp p.body { font-size:15px; line-height:1.7; word-break:keep-all; overflow-wrap:anywhere; }
+.reading-extras { margin-top:7px; font-family:var(--f-ui); font-size:12px; }
+.reading-extras summary { cursor:pointer; color:var(--muted); }
+.reading-extras p { margin:5px 0; }
+.reading-extras blockquote { font-family:var(--f-poem); font-size:15px; }
+.analysis-explainer { margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+.analysis-explainer .trio { border:0; }
+.sec-title { font-family:var(--f-poem); font-weight:700; font-size:22px; }
+.between-grid { gap:20px; }
+.wide-body { font-family:var(--f-poem); font-size:20px; line-height:2; }
+/* PC: 바깥 페이지를 내리지 않고 본문·비율·주제·해석이 모두 보이는 한 펼침. */
+@media (min-width:1180px) and (min-height:650px) {
+  .reading { height:calc(100svh - 156px); min-height:494px; max-height:820px; align-items:stretch; }
+  .poem-col { min-height:0; }
+  .poem-box { flex:1 1 auto; min-height:120px; overflow-y:auto; }
+  .ana-col { min-height:0; display:flex; flex-direction:column; }
+  .interp { min-height:0; flex:1 1 auto; overflow-y:auto; scrollbar-width:thin; }
+  .poem-col .line-info { max-height:85px; overflow-y:auto; }
+  .poem-col .biblio[open] { max-height:180px; overflow:auto; }
+}
+/* 넓은 PC에서 10개 감정을 5행으로 나누어 해석 공간 확보. */
+@media (min-width:1180px) {
+  .ratios { grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:12px; }
+  .ratios li { grid-template-columns:minmax(108px,max-content) minmax(10px,1fr) 39px; gap:5px; }
+  .emo-btn { font-size:12px; padding:2px 5px; }
+  .emo-btn[aria-pressed="true"] { padding:1px 4px; }
+}
+/* 작은 노트북은 과도한 고정 높이 대신 자연스럽게 한 번 스크롤. */
+@media (min-width:769px) and (max-width:1179px) {
+  :root { --side:174px; }
+  .reading { gap:14px; padding:15px; }
+  .ana-col { padding-left:14px; }
+  .poem-box { max-height:420px; }
+  .poem-head h2 { font-size:24px; }
+  .interp p.body { font-size:14px; }
+}
+@media (max-width:768px) {
+  header.site { padding:10px 14px; min-height:56px; }
+  .brand h1 { font-size:27px; }
+  .kicker { font-size:9px; }
+  .intro { max-width:48%; font-size:11px; }
+  .intro strong { font-size:13px; }
+  .intro span { display:none; }
+  .quick-guide { padding:5px 14px; gap:2px 4px; font-size:11px; }
+  .layout { padding:8px 12px 20px; gap:8px; }
+  .side { position:static; min-height:0; height:auto; display:block; }
+  .side-sec { margin-bottom:6px; padding-bottom:6px; }
+  .side-title { margin-bottom:4px; }
+  .poem-list { margin:5px 0 0; gap:5px; }
+  .poem-list button { min-height:40px; padding:6px 10px; }
+  .poem-list .p { display:block; font-size:10px; }
+  .weight { display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:0 10px; }
+  .weight .side-title { display:none; }
+  .weight label { font-size:12px; }
+  .weight input[type=range] { margin:0; min-height:32px; }
+  .range-ends, #wHelp { display:none; } /* 동일한 계산 기준은 결과·상세 비교에서 안내 */
+  .toc a { min-height:34px; height:34px; line-height:24px; font-size:12px; }
+  .panel { padding:14px; }
+  .reading { grid-template-columns:1fr; gap:14px; height:auto; min-height:0; max-height:none; }
+  .poem-head h2 { font-size:25px; }
+  .poem-box { height:176px; min-height:176px; max-height:176px; overflow-y:auto; font-size:17px; line-height:1.85; }
+  .poem-box.old { font-size:17px; }
+  .line-info-title span { display:none; }
+  .line-info { font-size:12px; }
+  .line-info .q { font-size:14px; }
+  .legend { font-size:10px; }
+  .ana-col { display:block; padding:12px 0 0; border-left:0; border-top:1px solid var(--line); }
+  .result-headline { margin-bottom:8px; }
+  .emotion-name { font-size:25px; }
+  .emotion-pct { font-size:21px; }
+  .headline-emotion { min-height:44px; }
+  .ratio-hint { font-size:12px; }
+  .ratios { grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px 10px; }
+  .ratios li { grid-template-columns:minmax(0,1fr) 36px; gap:0 3px; }
+  .emo-btn { min-height:44px; font-size:12px; padding:2px 3px; gap:3px; }
+  .emo-btn[aria-pressed="true"] { padding:1px 2px; }
+  .ratios .bar { grid-row:2; grid-column:1 / -1; height:3px; margin-bottom:3px; }
+  .ratios .v { grid-row:1; grid-column:2; font-size:12px; }
+  .ratios .emo-btn { grid-row:1; grid-column:1; }
+  .emo-btn .sw { width:6px; height:6px; }
+  .emo-btn { max-width:100%; }
+  .emo-btn .en { white-space:normal; overflow-wrap:anywhere; }
+  .interp { overflow:visible; font-size:15px; }
+  .interp p.body { font-size:15px; }
+  .poem-tools .tbtn, #btnShare { min-height:36px; }
+  .sec-title { font-size:21px; }
+  .charts, .between-grid, .lab-grid, .img-grid { grid-template-columns:1fr; }
+}
+@media print {
+  .quick-guide,.toc,.reading-extras,.share-box,#shareStatus { display:none; }
+  .reading { height:auto; max-height:none; display:block; }
+  .poem-box,.interp { height:auto; max-height:none; overflow:visible; }
+}
+
 </style>
 </head>
 <body>
@@ -410,7 +583,7 @@ footer.site-foot p { margin: 0.276rem 0; }
     <p class="kicker">감성컴퓨팅 실습 · 한국 근대시 감정 분석</p>
     <h1>시의 결</h1>
   </div>
-  <p class="intro"><strong>숫자로 읽은 감정과, 시를 읽으며 느낀 감정은 같을까요?</strong> 감정 사전이 센 결과와 사람이 정한 해석을 나란히 놓고, 어디서 같고 어디서 갈라지는지 살펴봅니다.</p>
+  <p class="intro"><strong>시 한 편, 마음의 여러 빛깔.</strong><span>시어가 전하는 감정과 해석의 차이를 읽습니다.</span></p>
 </header>
 <nav class="quick-guide" aria-label="처음 사용하는 분을 위한 안내"><span>① 시를 고르고</span><span aria-hidden="true">→</span><span>② 감정 이름을 누르고</span><span aria-hidden="true">→</span><span>③ 계산과 해석을 비교해 보세요.</span></nav>
 
@@ -474,6 +647,7 @@ footer.site-foot p { margin: 0.276rem 0; }
         <div id="poemBox" class="poem-box" tabindex="0" aria-label="시 본문. 행을 누르면 그 행의 감지 결과를 봅니다."></div>
         <p id="origNote" class="small muted" hidden>원문 표기는 비교용으로만 보여 주며 분석은 현대어 칸으로 합니다.</p>
         <ul id="hitLegend" class="legend small" aria-label="이 시에서 맞춘 시어의 감정"></ul>
+        <h3 class="line-info-title">행별 감정 <span>시의 행을 누르면 근거 시어를 보여 드려요.</span></h3>
         <section id="lineInfo" class="line-info" aria-live="polite" aria-label="선택한 행"></section>
         <details class="biblio" id="biblio">
           <summary>본문 출처와 판본</summary>
@@ -483,15 +657,14 @@ footer.site-foot p { margin: 0.276rem 0; }
 
       <div class="ana-col" aria-labelledby="anaTitle">
         <h2 id="anaTitle" class="sr-label">분석 결과</h2>
-        <div id="trio" class="trio" aria-live="polite"></div>
-        <aside id="evidenceSummary" class="evidence-summary" aria-label="사전 분석 근거"></aside>
+        <div id="resultHeadline" class="result-headline" aria-live="polite"></div>
         <div class="ratio-head">
           <h3 class="ratio-title">결합 결과의 감정 비율 <span id="ratioMethod" class="ratio-method"></span></h3>
-          <p class="ratio-hint" id="ratioHint">감정 이름을 눌러 보세요. 시에서 감지된 시어와 해당 행을 확인할 수 있어요.</p>
+          <p class="ratio-hint" id="ratioHint">감정 이름을 누르면 시의 근거 구절을 볼 수 있어요.</p>
         </div>
         <ul id="ratios" class="ratios" aria-label="결합 결과의 감정 비율" aria-describedby="ratioHint"></ul>
         <div id="emoNote" class="emo-note" aria-live="polite" hidden></div>
-        <p class="small muted ratio-note">비율은 사전이 센 시어와 해석 프로필을 섞은 감정 구성이며, 시가 그 감정일 확률이나 정확도가 아닙니다.</p>
+
         <div id="interp" class="interp"></div>
       </div>
     </section>
@@ -499,6 +672,11 @@ footer.site-foot p { margin: 0.276rem 0; }
     <!-- 2단: 계산과 해석의 차이 요약(대표 기능) -->
     <section id="between" class="panel between" aria-labelledby="betweenTitle">
       <div class="sec-head"><h2 id="betweenTitle" class="sec-title">계산과 해석 사이</h2><span class="small muted">사전이 센 숫자와 사람이 읽은 해석은 어디서 갈라질까</span></div>
+      <div class="analysis-explainer">
+        <div id="trio" class="trio" aria-live="polite"></div>
+        <aside id="evidenceSummary" class="evidence-summary" aria-label="사전 분석 근거"></aside>
+        <p class="small muted ratio-note">비율은 사전이 센 시어와 해석 프로필을 섞은 감정 구성이며, 시가 그 감정일 확률이나 정확도가 아닙니다.</p>
+      </div>
       <div class="between-grid">
         <div>
           <h3 class="mini-title">감정별로 나란히 보기</h3>
@@ -2797,7 +2975,7 @@ window.POEM_DATA = [
     if (w >= 1) return { vec: vLex.slice(), method: "lexicon" }; // 사전 100%: 프로필이 덮어쓰지 않는다
     const mix = vLex.map((x, j) => (1 - w) * pHat[j] + w * x);
     const s = mix.reduce((a, b) => a + b, 0);
-    return { vec: s > 0 ? mix.map((x) => x / s) : mix.map(() => 0), method: w <= 0 ? "profile" : "hybrid" };
+    return { vec: s > 0 ? mix.map((x) => x / s) : mix.map(() => 0), method: "hybrid" };
   }
 
   // ---------------------------------------------------------------- 지배 정서
@@ -3397,7 +3575,8 @@ window.POEM_DATA = [
     const same = f && S.focus && f.type === S.focus.type && (f.k === S.focus.k && f.w === S.focus.w);
     S.focus = same && !opt.force ? null : f;
     const ae = document.activeElement;
-    const refocus = ae && ae.closest && ae.closest("#ratios") ? `#ratios button[data-k="${ae.dataset.k}"]` : null;
+    const refocus = ae && ae.closest && ae.closest("#ratios") ? `#ratios button[data-k="${ae.dataset.k}"]`
+      : ae && ae.closest && ae.closest("#resultHeadline") ? "#resultHeadline .headline-emotion" : null;
     updateLineClasses();
     renderLineInfo();
     renderAnalysis();
@@ -3598,11 +3777,32 @@ window.POEM_DATA = [
     // 근거가 적은 경우의 안내는 renderEvidence에서 한 번만 표시한다.
   }
 
+
+  // F-05: 첫 화면에는 결합 지배 정서만. 세 결과의 상세 비교는 아래에서 제공.
+  function renderResultHeadline() {
+    const p = S.byId.get(S.sel), vec = finOf(p.id);
+    const k = dominantOf(vec), ps = pct(vec), box = clear($("resultHeadline"));
+    box.appendChild(el("span", { class: "eyebrow", text: "이 시의 지배 정서" }));
+    if (!k) {
+      box.appendChild(el("strong", { class: "emotion-name", text: "감지된 시어 없음" }));
+      box.appendChild(el("span", { class: "headline-method", text: "사전 100%에서는 비율을 계산하지 않아요." }));
+      return;
+    }
+    const e = S.emo.get(k);
+    box.appendChild(el("button", { type: "button", class: "headline-emotion", style: `--c:${e.color};--cl:${hexA(e.color,.10)}`, "data-k": k,
+      "aria-pressed": String(!!(S.focus && S.focus.type === "emo" && S.focus.k === k)),
+      "aria-label": `${e.name} ${fmt(ps[S.K.indexOf(k)])}%. 누르면 해당 감정의 근거를 확인`, onclick: () => setFocus({ type: "emo", k }) },
+      el("span", { class: "sw", "aria-hidden": "true" }), el("strong", { class: "emotion-name", text: e.name }),
+      el("span", { class: "emotion-pct", text: fmt(ps[S.K.indexOf(k)]) + "%" })));
+    box.appendChild(el("span", { class: "headline-method", text: methodLabel(p) }));
+  }
+
   function renderAnalysis() {
     const p = S.byId.get(S.sel);
     const vec = finOf(p.id);
     const ps = pct(vec);
     const dom = dominantOf(vec);
+    renderResultHeadline();
     renderTrio();
     renderEvidence();
     $("ratioMethod").textContent = "· " + methodLabel(p);
@@ -3622,12 +3822,16 @@ window.POEM_DATA = [
     const dl = el("dl");
     const row = (k, v) => { dl.appendChild(el("dt", { text: k })); dl.appendChild(el("dd", null, v)); };
     row("주제", p.theme);
-    if (p.speaker) row("화자", p.speaker);
-    if (p.devices && p.devices.length) row("표현", p.devices.join(", "));
+
     it.appendChild(dl);
     it.appendChild(el("h3", { class: "mini-title", text: "감상과 해석" }));
     it.appendChild(el("p", { class: "body", text: p.interp }));
-    if (p.key && p.key.length) it.appendChild(el("blockquote", { "aria-label": "핵심 구절" }, p.key.join(" / ")));
+    const more = el("details", { class: "reading-extras" });
+    more.appendChild(el("summary", { text: "화자 · 표현 · 핵심 구절" }));
+    if (p.speaker) more.appendChild(el("p", null, el("b", { text: "화자 " }), p.speaker));
+    if (p.devices && p.devices.length) more.appendChild(el("p", null, el("b", { text: "표현 " }), p.devices.join(", ")));
+    if (p.key && p.key.length) more.appendChild(el("blockquote", { "aria-label": "핵심 구절" }, p.key.join(" / ")));
+    it.appendChild(more);
   }
 
   // ---------------------------------------------------------------- 계산과 해석 사이(요약): 감정별 세 막대
