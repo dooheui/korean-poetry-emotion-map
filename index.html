@@ -386,6 +386,20 @@ footer.site-foot p { margin: 0.276rem 0; }
   .layout { grid-template-columns: 1fr; }
   .poem-box { max-height: none; overflow: visible; }
 }
+
+/* 첫 방문 안내·사전 근거·설정 공유 */
+.quick-guide { max-width:1680px; margin:0 auto; padding:0.55rem var(--pad); display:flex; flex-wrap:wrap; gap:0.2rem 0.55rem; color:var(--muted); font-size:0.875rem; border-bottom:1px solid var(--line); }
+.evidence-summary { margin:0.65rem 0; padding:0.6rem 0.8rem; border:1px solid var(--line); border-radius:0.55rem; background:rgba(240,226,214,.35); font-size:0.875rem; }
+.evidence-summary p { margin:0.2rem 0; }
+.evidence-summary strong { color:var(--ink-2); font-weight:500; }
+.evidence-summary details { color:var(--muted); margin-top:0.2rem; }
+.evidence-summary summary { cursor:pointer; }
+.share-box { margin-top:0.6rem; padding:0.7rem; border:1px solid var(--line-2); border-radius:var(--r); background:var(--paper); display:flex; flex-wrap:wrap; gap:0.45rem; }
+.share-box label { width:100%; font-size:0.875rem; }
+.share-box input { flex:1 1 12rem; width:100%; min-width:0; padding:0.55rem; border:1px solid var(--line-2); border-radius:0.4rem; background:var(--paper); font-size:1rem; }
+.source-quick { display:inline-block; margin-left:0.55rem; text-underline-offset:3px; }
+@media(max-width:768px) { .quick-guide { padding:0.55rem 0.85rem; font-size:0.875rem; } #btnShare, #shareClose { min-height:44px; } }
+
 </style>
 </head>
 <body>
@@ -398,6 +412,7 @@ footer.site-foot p { margin: 0.276rem 0; }
   </div>
   <p class="intro"><strong>숫자로 읽은 감정과, 시를 읽으며 느낀 감정은 같을까요?</strong> 감정 사전이 센 결과와 사람이 정한 해석을 나란히 놓고, 어디서 같고 어디서 갈라지는지 살펴봅니다.</p>
 </header>
+<nav class="quick-guide" aria-label="처음 사용하는 분을 위한 안내"><span>① 시를 고르고</span><span aria-hidden="true">→</span><span>② 감정 이름을 누르고</span><span aria-hidden="true">→</span><span>③ 계산과 해석을 비교해 보세요.</span></nav>
 
 <div id="loadError" class="load-error" role="alert" hidden></div>
 
@@ -447,10 +462,13 @@ footer.site-foot p { margin: 0.276rem 0; }
           <p id="poemMeta" class="muted small"></p>
           <div class="poem-tools">
             <button type="button" id="btnWide" class="tbtn">넓게 읽기</button>
+            <button type="button" id="btnShare" class="tbtn">이 시 공유하기</button>
             <button type="button" id="btnMarks" class="tbtn" aria-pressed="true">감지 표시</button>
             <button type="button" id="btnOrig" class="tbtn" aria-pressed="false" hidden>원문 표기 보기</button>
             <button type="button" id="btnClearFocus" class="tbtn" hidden>강조 해제</button>
           </div>
+          <div id="shareBox" class="share-box" hidden><label for="shareUrl">공유 링크 — 직접 선택해 복사할 수 있어요</label><input id="shareUrl" type="text" readonly spellcheck="false"><button id="shareClose" type="button" class="tbtn">닫기</button></div>
+          <p id="shareStatus" class="small muted" role="status" hidden></p>
           <p id="focusNote" class="focus-note small" aria-live="polite" hidden></p>
         </header>
         <div id="poemBox" class="poem-box" tabindex="0" aria-label="시 본문. 행을 누르면 그 행의 감지 결과를 봅니다."></div>
@@ -466,6 +484,7 @@ footer.site-foot p { margin: 0.276rem 0; }
       <div class="ana-col" aria-labelledby="anaTitle">
         <h2 id="anaTitle" class="sr-label">분석 결과</h2>
         <div id="trio" class="trio" aria-live="polite"></div>
+        <aside id="evidenceSummary" class="evidence-summary" aria-label="사전 분석 근거"></aside>
         <div class="ratio-head">
           <h3 class="ratio-title">결합 결과의 감정 비율 <span id="ratioMethod" class="ratio-method"></span></h3>
           <p class="ratio-hint" id="ratioHint">감정 이름을 눌러 보세요. 시에서 감지된 시어와 해당 행을 확인할 수 있어요.</p>
@@ -612,7 +631,7 @@ footer.site-foot p { margin: 0.276rem 0; }
   <p class="muted">서버 없이 브라우저에서만 동작합니다. 독자 메모는 이 기기 브라우저(localStorage)에만 저장됩니다. 주소 끝에 <code>?check=1</code>을 붙이면 엔진·데이터 자체 점검 결과를 볼 수 있습니다.</p>
 </footer>
 
-<!-- 이 파일은 dev/tools/build_single.py가 dev/ 폴더의 소스를 합쳐 만든 것이다. 수정은 dev/에서 하고 다시 만든다. -->
+<!-- 배포용 단일 파일. 작품 데이터·사전·엔진·화면 코드를 이 파일 안에서 관리합니다. -->
 <script>/* data/poems.js */
 // data/poems.json과 같은 내용. file://로 열어도 동작하도록 스크립트로도 제공한다(tools/build_data.mjs가 생성).
 window.POEM_DATA = [
@@ -2965,11 +2984,13 @@ window.POEM_DATA = [
       }
     } catch (e) { fail("분석 준비 중 오류: " + e.message); return; }
     S.memoOK = storageOK();
+    const initial = readUrlState();
+    S.w = initial.weight / 100;
+    syncWeightControl();
     recompute();
     bindStatic();
     renderMethod();
-    const q = new URLSearchParams(location.search).get("p");
-    selectPoem(S.byId.has(q) ? q : S.poems[0].id, { fromLoad: true });
+    selectPoem(initial.id, { fromLoad: true });
     if (new URLSearchParams(location.search).get("check") === "1") { window.__selfCheck = runSelfCheck(); goTo("selfcheck"); }
   }
 
@@ -2994,6 +3015,71 @@ window.POEM_DATA = [
     return `사전 ${wp}% + 해석 프로필 ${100 - wp}%`;
   }
 
+
+  // 연도 값은 바꾸지 않고, 자료에 기록된 기준만 정확히 표시한다.
+  function yearInfo(p) {
+    const basis = p.yearBasis || "";
+    const label = basis.includes("시집") ? "시집 수록" : basis.startsWith("최초 발표") ? "발표" : "기록 연도";
+    return `${label} ${p.year}` + (p.created ? ` · 창작 ${p.created}` : "");
+  }
+  // URL과 슬라이더 모두 0~100, 10 단위. 유효하지 않은 값은 기본 50%.
+  function readUrlState() {
+    const q = new URLSearchParams(location.search);
+    const raw = q.get("w");
+    const n = raw !== null && /^(?:0|[1-9][0-9]?|100)$/.test(raw) ? Number(raw) : NaN;
+    return { id: S.byId.has(q.get("p")) ? q.get("p") : S.poems[0].id,
+      weight: Number.isFinite(n) && n % 10 === 0 ? n : 50 };
+  }
+  function syncWeightControl() {
+    const n = Math.round(S.w * 100);
+    $("w").value = String(n);
+    $("wOut").textContent = n + "%";
+  }
+  function updateUrl(push = false) {
+    const u = new URL(location.href);
+    u.searchParams.set("p", S.sel);
+    u.searchParams.set("w", String(Math.round(S.w * 100)));
+    u.hash = "";
+    try { history[push ? "pushState" : "replaceState"](null, "", u); } catch (e) { /* 로컬 파일에서도 분석은 동작 */ }
+  }
+  function shareUrl() {
+    const u = new URL(/^https?:$/.test(location.protocol) ? location.href : "https://dooheui.github.io/korean-poetry-emotion-map/");
+    // 공유되는 값은 작품 ID와 가중치뿐. 입력문·메모·기타 파라미터는 제외한다.
+    u.search = ""; u.hash = "";
+    u.searchParams.set("p", S.sel);
+    u.searchParams.set("w", String(Math.round(S.w * 100)));
+    return u.href;
+  }
+  function refreshShare() {
+    $("shareUrl").value = shareUrl();
+    $("shareStatus").hidden = true;
+  }
+  async function copyShare() {
+    const value = shareUrl();
+    $("shareUrl").value = value;
+    const id = S.sel, weight = S.w;
+    let ok = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(value); ok = true; }
+    } catch (e) { /* 권한 거절·지원하지 않는 환경은 직접 복사 */ }
+    if (S.sel !== id || S.w !== weight) { refreshShare(); return; }
+    $("shareBox").hidden = ok;
+    $("shareStatus").hidden = false;
+    $("shareStatus").textContent = ok ? "현재 작품과 분석 설정의 링크를 복사했어요." : "자동 복사가 되지 않았어요. 표시된 링크를 선택해 직접 복사해 주세요.";
+    if (!ok) { $("shareUrl").focus({ preventScroll: true }); $("shareUrl").select(); }
+  }
+  function renderEvidence() {
+    const lx = S.lex.get(S.sel);
+    const rows = lx.lines.filter((l) => l.hits.length).length;
+    const kinds = new Set(lx.lines.flatMap((l) => l.hits.map((h) => h.w))).size;
+    const box = clear($("evidenceSummary"));
+    box.appendChild(el("strong", { text: `사전 분석 근거: 시어 ${lx.total}회 감지 · 전체 ${lx.lines.length}행 중 ${rows}행에서 감지` }));
+    box.appendChild(el("details", null, el("summary", { text: "근거 수치는 무엇을 뜻하나요?" }),
+      el("p", { text: `같은 시어가 반복되면 나온 만큼 셉니다. 서로 다른 사전 시어는 ${kinds}종입니다. 빈 줄은 행 수에서 제외합니다. 이 수치는 정확도·신뢰도·감정의 강도가 아니며, 해석 프로필만 볼 때도 사전에서 찾은 근거의 양을 나타냅니다.` })));
+    if (lx.total === 0) box.appendChild(el("p", { class: "low-ev", text: "사전에서 감지한 시어가 없어요. 감정이 없다는 뜻은 아닙니다. 사전 100%에서는 비율을 만들지 않고, 그 미만에서는 해석 프로필이 있으면 그 값으로 표시합니다." }));
+    else if (lx.total < LOW_EVIDENCE) box.appendChild(el("p", { class: "low-ev", text: `감지 시어가 ${lx.total}회뿐이라 사전 비율이 한두 낱말에 크게 좌우됩니다.` }));
+  }
+
   // ---------------------------------------------------------------- 고정 이벤트
   function bindStatic() {
     $("q").addEventListener("input", (e) => { S.query = e.target.value; renderList(); });
@@ -3002,7 +3088,12 @@ window.POEM_DATA = [
       $("wOut").textContent = e.target.value + "%";
       recompute();
       renderWeightViews();
+      updateUrl();
+      refreshShare();
     });
+    $("btnShare").addEventListener("click", copyShare);
+    $("shareUrl").addEventListener("click", (e) => e.target.select());
+    $("shareClose").addEventListener("click", () => { $("shareBox").hidden = true; $("btnShare").focus(); });
     $("btnMarks").addEventListener("click", () => {
       S.marks = !S.marks;
       $("btnMarks").setAttribute("aria-pressed", String(S.marks));
@@ -3033,8 +3124,11 @@ window.POEM_DATA = [
     });
     $("mineClear").addEventListener("click", () => { $("mineText").value = ""; S.mine = null; clear($("mineOut")); $("mineText").focus(); });
     window.addEventListener("popstate", () => {
-      const q = new URLSearchParams(location.search).get("p");
-      if (q && S.byId.has(q) && q !== S.sel) selectPoem(q, { fromLoad: true });
+      const state = readUrlState();
+      S.w = state.weight / 100;
+      syncWeightControl();
+      recompute();
+      selectPoem(state.id, { fromLoad: true });
     });
   }
 
@@ -3090,7 +3184,7 @@ window.POEM_DATA = [
       const p = S.byId.get(S.sel);
       const lx = S.lex.get(p.id);
       $("wideTitle").textContent = p.title;
-      $("wideMeta").textContent = `${p.poet} · 발표 ${p.year} · ${p.edition.label}`;
+      $("wideMeta").textContent = `${p.poet} · ${yearInfo(p)} · ${p.edition.label}`;
       const body = clear($("wideBody"));
       body.classList.toggle("old", OLD_HANGUL.test(p.text));
       let cur = null, st = 0;
@@ -3121,12 +3215,9 @@ window.POEM_DATA = [
   function selectPoem(id, opt = {}) {
     const t0 = performance.now();
     S.sel = id; S.line = null; S.focus = null; S.orig = false;
-    if (!opt.fromLoad) {
-      const u = new URL(location.href);
-      u.searchParams.set("p", id);
-      u.hash = "";
-      try { history.pushState(null, "", u); } catch (e) { /* file:// 등에서 주소를 못 바꿔도 화면은 그대로 동작 */ }
-    }
+    if (!opt.fromLoad) updateUrl(true);
+    $("shareBox").hidden = true;
+    refreshShare();
     renderList();
     renderPoem();
     renderBiblio();
@@ -3180,9 +3271,9 @@ window.POEM_DATA = [
       ul.appendChild(el("li", null, el("button", {
         type: "button", "data-id": p.id, "aria-pressed": String(p.id === S.sel),
         onclick: () => selectPoem(p.id),
-        "aria-label": `${p.title}, ${p.poet}, ${p.year}`,
+        "aria-label": `${p.title}, ${p.poet}, ${yearInfo(p)}`,
       }, el("span", { class: "dot", style: dotStyle(p.id), "aria-hidden": "true" }),
-         el("span", { class: "t", text: p.title }), el("span", { class: "p", text: `${p.poet} · ${p.year}` }))));
+         el("span", { class: "t", text: p.title }), el("span", { class: "p", text: `${p.poet} · ${yearInfo(p)}` }))));
     }
     $("listEmpty").hidden = shown > 0;
     $("listCount").textContent = q ? `${S.poems.length}편 중 ${shown}편` : "";
@@ -3196,9 +3287,13 @@ window.POEM_DATA = [
     const p = S.byId.get(S.sel);
     const lx = S.lex.get(p.id);
     $("poemTitle").textContent = p.title;
-    const meta = [`${p.poet}`, `발표 ${p.year}`, p.edition.label];
+    const meta = [`${p.poet}`, yearInfo(p), p.edition.label];
     if (p.titleInEdition) meta.push(`판본 제목 「${p.titleInEdition}」`);
-    $("poemMeta").textContent = meta.join(" · ");
+    const metaBox = clear($("poemMeta"));
+    const source = link(p.sourceUrl, "원문 출처 ↗");
+    source.className = "source-quick";
+    source.setAttribute("aria-label", `${p.title} 원문 출처 (새 창)`);
+    append(metaBox, [meta.join(" · "), source]);
     const box = clear($("poemBox"));
     const canOrig = !!p.orig;
     $("btnOrig").hidden = !canOrig;
@@ -3421,7 +3516,7 @@ window.POEM_DATA = [
         `‘${f.from}’ → ‘${f.to}’ (${f.count}곳) — ${f.why}`,
         (f.evidence || []).map((ev) => [" ", link(ev.url, ev.label)])))));
     } else row("고친 곳", "없음(내려받은 본문 그대로)");
-    row("발표 연도", `${p.year} — ${p.yearBasis}`);
+    row("연도 기준", `${yearInfo(p)} — ${p.yearBasis}`);
     row("발표 지면", p.firstPub);
     if (p.created) row("창작 연도", p.created);
     if (p.collected) row("시집 수록", p.collected);
@@ -3500,7 +3595,7 @@ window.POEM_DATA = [
     if (!t.fin) box.appendChild(el("p", { class: "tie", text: "사전에서 감지한 시어가 없어 비율과 지배 정서를 만들지 않았습니다. 가중치를 100% 아래로 내리면 사람이 정한 해석 프로필로 볼 수 있습니다." }));
     else if (t.fin.ties.length > 1) box.appendChild(el("p", { class: "tie", text: `결합 결과가 ${names(t.fin.ties)} 동률이라 범주 순서상 앞의 ${josa(S.emo.get(t.fin.k).name, "을/를")} 지배 정서로 표시합니다.` }));
     // 근거가 적은 결과 경고(검증 사례 2에서 추가)
-    if (t.lx.total > 0 && t.lx.total < LOW_EVIDENCE) box.appendChild(el("p", { class: "tie low-ev", text: `주의: 사전이 감지한 시어가 ${t.lx.total}개뿐이라 사전 비율이 한두 낱말에 크게 좌우됩니다.` }));
+    // 근거가 적은 경우의 안내는 renderEvidence에서 한 번만 표시한다.
   }
 
   function renderAnalysis() {
@@ -3509,6 +3604,7 @@ window.POEM_DATA = [
     const ps = pct(vec);
     const dom = dominantOf(vec);
     renderTrio();
+    renderEvidence();
     $("ratioMethod").textContent = "· " + methodLabel(p);
     const ul = clear($("ratios"));
     S.EMOS.forEach((e, j) => {
@@ -3973,7 +4069,7 @@ window.POEM_DATA = [
     // AI 이미지용 프롬프트(복사해서 외부 서비스에 직접 붙여 넣는 용도)
     const top = order.slice(0, 4).map(([, k]) => `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`).join(", ");
     $("imgPrompt").value = [
-      `한국 근대시 「${p.title}」(${p.poet}, ${p.year})의 정서를 표현한 그림을 그려 주세요.`,
+      `한국 근대시 「${p.title}」(${p.poet}, ${yearInfo(p)})의 정서를 표현한 그림을 그려 주세요.`,
       `핵심 구절: ${(p.key || []).join(" / ")}`,
       `주제: ${p.theme}`,
       `정서 비율(${methodLabel(p)}): ${top}. 가장 큰 정서는 ${d.name}입니다.`,
