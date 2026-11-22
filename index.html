@@ -287,7 +287,7 @@ main > section, main > .pair > section, main > .charts > section { scroll-margin
 .dia-node { cursor: pointer; }
 .dia-node:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
 .img-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 1.241rem; }
-#emoCanvas { width: 100%; height: auto; display: block; border-radius: 0.552rem; border: 1px solid var(--line); background: #f8f3e8; }
+#emoCanvas { width: 100%; max-width: 640px; aspect-ratio: 16 / 9; height: auto; display: block; border-radius: 0.552rem; border: 1px solid var(--line); background: #f8f3e8; }
 #imgPrompt, .memo textarea, #mineText { width: 100%; border: 1px solid var(--line-2); border-radius: 0.552rem; padding: 0.552rem 0.69rem; background: #fffdf8; resize: vertical; font-size: 0.95rem; }
 .row-btns { display: flex; gap: 0.552rem; margin-top: 0.552rem; flex-wrap: wrap; align-items: center; }
 .rec-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.69rem; }
@@ -576,6 +576,39 @@ main { gap:12px; }
   .poem-box,.interp { height:auto; max-height:none; overflow:visible; }
 }
 
+
+/* 감정 이미지: 창가와 풍경(가로형, PC 최대 640×360) */
+.img-grid { grid-template-columns: minmax(0, 640px) minmax(0, 1fr); align-items: start; }
+.img-main { min-width: 0; }
+#emoCanvas[hidden] { display: none; }
+.img-note { margin: 0.5rem 0 0.25rem; color: var(--muted); max-width: 640px; }
+.img-legend { list-style: none; margin: 0 0 0.5rem; padding: 0; max-width: 640px; }
+.img-legend li { padding: 2px 0 2px 14px; position: relative; line-height: 1.5; }
+.img-legend li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 8px; height: 8px; border-radius: 50%; background: var(--c, #b9ad9b); }
+.img-legend li.rule { color: var(--muted); }
+.img-legend li.rule::before { background: transparent; border: 1px solid #b9ad9b; }
+@media (max-width: 1179px) { .img-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* 시어 연결: 실제 px로 그리고(최대 960px) 좁으면 이 칸 안에서만 가로 스크롤 */
+.dia-box { overflow: visible; }
+.dia-wrap { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.chart-box .dia-svg { display: block; max-width: none; }
+.dia-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 6px; }
+/* 감성 지도: 최대 640px, 큰 화면에서도 카드 너비를 다 채우지 않음 */
+.pca-box { overflow-x: auto; }
+.chart-box .pca-svg { display: block; max-width: none; margin: 0 auto; }
+.pca-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.pca-tools .pca-pick { flex: 1 1 260px; margin: 4px 0; }
+.pca-pt.picked .dot, .pca-pt:focus-visible .dot { stroke: var(--focus); stroke-width: 3; }
+.pca-pt:focus { outline: none; }
+/* 확대 보기 대화상자: 브라우저 안에 들어가고, 긴 그림만 안에서 스크롤 */
+.zoom-dlg { width: min(1160px, 96vw); max-width: 96vw; max-height: 92vh; display: none; }
+.zoom-dlg[open] { display: flex; flex-direction: column; }
+.zoom-body { overflow: auto; min-height: 0; flex: 1 1 auto; padding: 8px 14px 12px; }
+.zoom-body > svg { display: block; margin: 0 auto; max-width: none; }
+.zoom-pick { padding: 0 14px 10px; margin: 0; }
+#zoomNote { margin: 2px 0 0; }
+@media (max-width: 768px) { .zoom-dlg { width: 96vw; max-height: 94vh; } #pcaZoom, #diaZoom, #zoomClose { min-height: 44px; } }
 </style>
 </head>
 <body>
@@ -711,7 +744,7 @@ main { gap:12px; }
     <section id="diagram" class="panel" aria-labelledby="diaTitle">
       <div class="sec-head"><h2 id="diaTitle" class="sec-title">시어 → 감정 → 주제</h2>
       <span class="small muted"><span class="key-solid"></span> 계산(실제 감지) <span class="key-dash"></span> 해석</span></div>
-      <div id="dia" class="chart-box scroll-x"></div>
+      <div id="dia" class="chart-box dia-box"></div>
     </section>
 
     <!-- 4단: F-09 -->
@@ -730,25 +763,27 @@ main { gap:12px; }
       <section id="map" class="panel" aria-labelledby="mapTitle">
         <div class="sec-head"><h2 id="mapTitle" class="sec-title">감성 지도</h2><span class="small muted">주성분분석(PCA) 2차원</span></div>
         <p id="pcaSummary" class="pca-summary" aria-live="polite"></p>
-        <div id="pca" class="chart-box scroll-x"></div>
-        <p id="pcaPick" class="pca-pick small" aria-live="polite"></p>
+        <div id="pca" class="chart-box pca-box"></div>
+        <div class="pca-tools"><p id="pcaPick" class="pca-pick small" aria-live="polite"></p><button type="button" id="pcaZoom" class="tbtn">확대 보기</button></div>
         <p id="pcaAxes" class="small"></p>
       </section>
     </section>
 
     <!-- 6단: F-13 -->
     <section id="image" class="panel" aria-labelledby="imgTitle">
-      <div class="sec-head"><h2 id="imgTitle" class="sec-title">감정 이미지</h2><span class="small muted">결합 감정 비율로 브라우저가 직접 그림</span></div>
+      <div class="sec-head"><h2 id="imgTitle" class="sec-title">감정 이미지</h2><span class="small muted">창가와 풍경으로 옮긴 결합 감정 · 브라우저가 직접 그림</span></div>
       <div class="img-grid">
-        <div>
-          <canvas id="emoCanvas" width="720" height="400" role="img" aria-label="감정 이미지"></canvas>
-          <ul id="imgLegend" class="legend small"></ul>
-          <div class="row-btns"><button type="button" id="imgSave" class="tbtn">PNG로 저장</button></div>
+        <div class="img-main">
+          <canvas id="emoCanvas" width="1280" height="720" role="img" aria-label="감정 이미지"></canvas>
+          <p id="imgEmpty" class="notice small" hidden></p>
+          <p id="imgNote" class="img-note small">감정 비율을 풍경·빛·색감과 선택적인 인물로 옮긴 상징적 장면입니다. 시에 실제로 등장하는 장면과 다를 수 있습니다.</p>
+          <ul id="imgLegend" class="img-legend small" aria-label="이 그림에 적용한 감정과 표현 요소"></ul>
+          <div class="row-btns"><button type="button" id="imgSave" class="tbtn">PNG로 저장</button><span id="imgSaveMsg" class="small muted" aria-live="polite"></span></div>
         </div>
         <div>
           <h3 class="mini-title">AI 이미지용 프롬프트</h3>
-          <p class="small muted">아래 글을 복사해 이미지 생성 서비스에 직접 붙여 넣어 쓰세요. 이 웹앱은 어떤 서비스도 호출하지 않고 API 키도 쓰지 않습니다.</p>
-          <textarea id="imgPrompt" rows="8" readonly aria-label="AI 이미지용 프롬프트"></textarea>
+          <p class="small muted">위 장면과 같은 내용의 글입니다. 복사해 이미지 생성 서비스에 직접 붙여 넣어 쓰는 선택 기능이며, 이 웹앱은 어떤 서비스도 호출하지 않고 API 키도 쓰지 않습니다.</p>
+          <textarea id="imgPrompt" rows="10" readonly aria-label="AI 이미지용 프롬프트"></textarea>
           <div class="row-btns"><button type="button" id="imgCopy" class="tbtn">프롬프트 복사</button><span id="imgCopyMsg" class="small muted" aria-live="polite"></span></div>
         </div>
       </div>
@@ -802,6 +837,15 @@ main { gap:12px; }
     <button type="button" id="wideClose" class="tbtn wide-close">닫기 <span class="muted">(Esc)</span></button>
   </div>
   <div id="wideBody" class="wide-body" tabindex="0" aria-label="시 전체 본문"></div>
+</dialog>
+
+<dialog id="zoomDlg" class="wide-dlg zoom-dlg" aria-labelledby="zoomTitle">
+  <div class="wide-head">
+    <div><h2 id="zoomTitle"></h2><p id="zoomNote" class="muted small"></p></div>
+    <button type="button" id="zoomClose" class="tbtn wide-close">닫기 <span class="muted">(Esc)</span></button>
+  </div>
+  <div id="zoomBody" class="zoom-body" tabindex="0" aria-label="확대한 그림(넘치면 이 안에서 스크롤)"></div>
+  <p id="zoomPick" class="pca-pick small zoom-pick" aria-live="polite" hidden></p>
 </dialog>
 
 <button type="button" id="toTop" class="to-top" aria-label="맨 위로" hidden>▲</button>
@@ -3066,6 +3110,646 @@ window.POEM_DATA = [
   else root.PoemEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
+<script>/* js/scene.js */
+/*
+ * 시의 결 — 감정 이미지: ‘시의 감정을 담은 창가와 풍경’ (Canvas, 외부 호출 없음)
+ *
+ * 1) 장면 규칙(SCENE_RULES, FIGURE_RULE, pickSecondary)과 2) 그리기(draw)를 나눠 둔다.
+ *    규칙은 감정 벡터 → 장면 사양(spec)만 정하고, 그리기는 spec에 적힌 요소만 그린다.
+ *    화면 설명·프롬프트도 같은 spec에서 만들어, 그림에 없는 요소를 설명하지 않게 한다.
+ * 2) 같은 spec + 같은 seed면 항상 같은 그림(난수는 seed로 고정, 애니메이션 없음).
+ * 이 규칙은 디자인 규칙이다. 감정의 보편적 정답이나 시의 실제 장면이 아니다.
+ */
+(function () {
+  "use strict";
+
+  // ================================================================ 1. 장면 규칙
+  // base: 가장 높은 감정이 정하는 기본 분위기(창밖 풍경·날씨, 실내, 색감)
+  // mod : 15% 이상인 보조 감정(최대 2개)이 더하는 요소 하나(빛·날씨·소품·색조)
+  const SCENE_RULES = {
+    sad: {
+      caption: "창밖의 비와 낮은 구름, 창에 맺힌 빗방울",
+      outside: "낮게 깔린 구름과 내리는 비, 흐린 언덕",
+      inside: () => "창유리에 맺힌 빗방울과 흐린 빛",
+      tone: "푸른 회색의 낮은 채도",
+      mod: { caption: "창유리에 맺힌 빗방울", inside: "창유리에 맺힌 빗방울" },
+    },
+    joy: {
+      caption: "밝은 햇살과 열린 들판, 바닥까지 드는 햇빛",
+      outside: "맑은 하늘의 밝은 햇살과 멀리 열린 들판",
+      inside: () => "바닥까지 드는 햇빛과 창턱의 꽃병, 빈 의자",
+      tone: "따뜻한 노랑·살구빛의 밝은 채도",
+      mod: { caption: "바닥에 드는 따뜻한 햇빛", inside: "바닥에 드는 따뜻한 햇빛" },
+    },
+    calm: {
+      caption: "잔잔한 호수와 부드러운 언덕, 고른 빛",
+      outside: "바람 없이 잔잔한 호수와 부드러운 언덕",
+      inside: () => "살짝 드리운 커튼과 고른 빛, 작은 탁자 위의 책",
+      tone: "연한 초록·크림빛의 부드러운 채도",
+      mod: { caption: "창턱의 작은 화분", inside: "창턱의 작은 화분" },
+    },
+    hope: {
+      caption: "구름 사이로 내려오는 빛과 밝아지는 수평선",
+      outside: "구름 사이로 내려오는 빛과 밝아지는 바다 수평선",
+      inside: (fig) => (fig ? "창으로 번지는 금빛" : "창을 향해 놓인 빈 의자와 창턱의 새싹 화분, 창으로 번지는 금빛"),
+      tone: "청록과 금빛",
+      mod: { caption: "구름 틈으로 내려오는 빛줄기", outside: "구름 틈으로 내려오는 빛줄기" },
+    },
+    love: {
+      caption: "따뜻한 등불과 찻잔, 노을빛 지붕",
+      outside: "노을 진 하늘 아래 불 켜진 낮은 지붕들",
+      inside: (fig) => (fig ? "따뜻한 등불과 탁자 위의 찻잔" : "따뜻한 등불과 탁자 위의 찻잔 두 개"),
+      tone: "부드러운 분홍·호박빛",
+      mod: { caption: "따뜻한 실내 조명", inside: "탁자 위의 따뜻한 등불" },
+    },
+    shame: {
+      caption: "유리창에 겹친 실내 반사와 조용한 그림자",
+      outside: "해 질 녘의 조용한 나무들",
+      inside: () => "유리창에 겹쳐 비친 실내와 조용한 그림자",
+      tone: "가라앉은 남회색과 옅은 살구빛",
+      mod: { caption: "유리창에 은은히 비친 실내 반사", inside: "유리창에 은은히 비친 실내 반사" },
+    },
+    long: {
+      caption: "먼 지평선까지 이어진 길과 작은 불빛, 비어 있는 의자",
+      outside: "먼 지평선까지 이어진 길과 작은 불빛들",
+      inside: () => "창 아래 비어 있는 의자 하나",
+      tone: "빛바랜 보라·남청빛",
+      mod: { caption: "먼 지평선의 작은 불빛들", outside: "먼 지평선의 작은 불빛들" },
+    },
+    anger: {
+      caption: "거센 바람에 휘는 나무와 날카로운 그림자",
+      outside: "거센 바람에 휘는 나무와 흩날리는 잎, 빠르게 흐르는 구름",
+      inside: (fig) => (fig ? "벽과 바닥에 비스듬히 꺾인 날카로운 그림자" : "벽과 바닥에 비스듬히 꺾인 날카로운 그림자와 흩어진 종이"),
+      tone: "적갈색을 절제해 쓴 거친 색조",
+      mod: { caption: "바람에 흩날리는 나뭇잎", outside: "바람에 흩날리는 나뭇잎" },
+    },
+    fear: {
+      caption: "짙은 안개와 흐릿한 시야, 차가운 빛",
+      outside: "짙은 안개에 가려 흐릿한 나무 윤곽",
+      inside: () => "어둑한 방과 차가운 빛",
+      tone: "차가운 보랏빛의 낮은 명도",
+      mod: { caption: "창밖에 낮게 깔린 안개", outside: "낮게 깔린 안개" },
+    },
+    void: {
+      caption: "옅어진 지평선과 넓은 빈자리",
+      outside: "옅어진 지평선과 텅 빈 들판",
+      inside: () => "넓게 비운 방과 의자 하나",
+      tone: "낮은 채도의 바랜 색",
+      mod: { caption: "옅어진 지평선", outside: "옅게 바랜 지평선" },
+    },
+  };
+
+  // 인물 포함 여부 규칙(무작위가 아님)
+  //  - 평온·허무·기쁨 중심: 인물 없는 풍경 중심 장면
+  //  - 슬픔·그리움·부끄러움·성찰·불안·공포 중심: 인물 장면
+  //  - 희망·의지·사랑·분노 중심: 선택된 보조 감정에 슬픔·그리움·부끄러움·불안이 있으면 인물, 없으면 사물 중심
+  const FIGURE_RULE = {
+    never: ["calm", "void", "joy"],
+    always: ["sad", "long", "shame", "fear"],
+    conditional: ["hope", "love", "anger"],
+    inwardSecondary: ["sad", "long", "shame", "fear"],
+  };
+
+  // 인물을 넣을 때의 자세·표정(가장 높은 감정이 정함). 모두 창밖을 향해 비스듬히 앉은 옆얼굴.
+  const POSES = {
+    sad:   { lean: 0.2,  head: 0.42, drop: 5,  eye: "down", brow: -2.4, mouth: -1.1, hand: "lap",   legs: "sit",
+             text: "고개를 숙이고 어깨가 내려간 채 앉은 자세, 아래로 향한 시선과 살짝 처진 입꼬리" },
+    long:  { lean: 0.04, head: -0.2, drop: 0,  eye: "far",  brow: -0.6, mouth: 0,    hand: "knee",  legs: "sit",
+             text: "무릎에 손을 얹고 고개를 들어 먼 곳을 바라보는 자세, 멀리 향한 시선과 다문 입" },
+    shame: { lean: 0.14, head: 0.24, drop: 2,  eye: "half", brow: -0.8, mouth: 0,    hand: "chin",  legs: "sit",
+             text: "턱에 손을 대고 생각에 잠긴 자세, 살짝 내리뜬 눈과 차분한 입매" },
+    fear:  { lean: 0.24, head: 0.12, drop: 6,  eye: "wide", brow: -3.4, mouth: -0.5, hand: "knees", legs: "hug",
+             text: "무릎을 끌어안고 움츠린 자세, 긴장해 올라간 눈썹과 굳은 입" },
+    hope:  { lean: -0.03, head: -0.12, drop: -1, eye: "far", brow: 0.4, mouth: 1,    hand: "lap",   legs: "sit",
+             text: "허리를 펴고 수평선을 바라보는 자세, 앞을 향한 시선과 옅은 미소" },
+    love:  { lean: 0.08, head: 0.08, drop: 0,  eye: "soft", brow: 0.4, mouth: 1.3,  hand: "cup",   legs: "sit", blush: true,
+             text: "두 손으로 찻잔을 감싸 쥔 편안한 자세, 부드러운 눈매와 옅은 미소" },
+    anger: { lean: 0.02, head: 0.02, drop: -2, eye: "open", brow: 3,   mouth: -0.4, hand: "fist",  legs: "sit",
+             text: "주먹을 무릎에 올린 채 굳은 자세, 모인 눈썹과 꾹 다문 입" },
+  };
+
+  const SECONDARY_MIN = 15;   // %
+  const SECONDARY_MAX = 2;
+
+  // 보조 감정: 가장 높은 감정을 뺀 나머지 가운데 화면 표시 비율 15% 이상, 큰 순(동률은 범주 순서), 최대 2개
+  function pickSecondary(pct, K, dominant) {
+    return K.map((k, j) => ({ k, j, p: pct[j] }))
+      .filter((x) => x.k !== dominant && x.p >= SECONDARY_MIN)
+      .sort((a, b) => b.p - a.p || a.j - b.j)
+      .slice(0, SECONDARY_MAX);
+  }
+
+  function figureFor(dominant, secondary) {
+    if (FIGURE_RULE.never.includes(dominant)) return { present: false, why: `${dominant} 중심은 인물 없이 그리는 규칙` };
+    if (FIGURE_RULE.always.includes(dominant)) return { present: true, why: `${dominant} 중심은 인물을 넣는 규칙` };
+    const inward = secondary.find((s) => FIGURE_RULE.inwardSecondary.includes(s.k));
+    return inward ? { present: true, why: `보조 감정 ${inward.k} 때문에 인물을 넣는 규칙`, via: inward.k }
+                  : { present: false, why: `보조 감정에 슬픔·그리움·성찰·불안이 없어 사물 중심으로 그리는 규칙` };
+  }
+
+  // 벡터 → 장면 사양. vec가 모두 0이면 null(그림을 만들지 않음)
+  function spec(opt) {
+    const { vec, pct, K, emos, dominant } = opt;
+    if (!dominant || !vec.some((x) => x > 0)) return null;
+    const name = (k) => emos.find((e) => e.k === k).name;
+    const di = K.indexOf(dominant);
+    const secondary = pickSecondary(pct, K, dominant).map((s) => ({ k: s.k, name: name(s.k), pct: s.p }));
+    const fig = figureFor(dominant, secondary);
+    const nameOf = (k) => (k ? name(k) : "");
+    fig.why = fig.why.replace(/\b(sad|joy|calm|hope|love|shame|long|anger|fear|void)\b/g, (m) => nameOf(m));
+    if (fig.present) fig.pose = dominant;
+    const base = SCENE_RULES[dominant];
+    const items = [{ k: dominant, name: name(dominant), pct: pct[di], role: "base", caption: base.caption,
+      outside: base.outside, inside: base.inside(fig.present) }];
+    secondary.forEach((s) => {
+      const m = SCENE_RULES[s.k].mod;
+      items.push({ k: s.k, name: s.name, pct: s.pct, role: "mod", caption: m.caption, outside: m.outside || "", inside: m.inside || "" });
+    });
+    return {
+      dominant, secondary, figure: fig, items, tone: base.tone,
+      mods: secondary.map((s) => s.k),
+      profileOnly: !!opt.profileOnly,
+    };
+  }
+
+  const fmt = (x) => (Math.round(x * 10) / 10).toFixed(1);
+
+  // 그림 아래 설명 줄(실제로 그린 요소만)
+  function describe(sp) {
+    const lines = sp.items.map((it) => `${it.name} ${fmt(it.pct)}% → ${it.caption}${it.role === "base" ? " (기본 분위기)" : ""}`);
+    if (!sp.secondary.length) lines.push("15% 이상인 보조 감정 없음 → 보조 요소를 더하지 않음");
+    if (sp.figure.present) lines.push(`인물 있는 장면 → 창밖을 향해 비스듬히 앉은 옆모습: ${POSES[sp.figure.pose].text} (${sp.figure.why})`);
+    else lines.push(`인물 없는 장면 → 빈 창가와 풍경으로 표현 (${sp.figure.why})`);
+    return lines;
+  }
+
+  function prompt(sp, title) {
+    const main = `${sp.items[0].name} ${fmt(sp.items[0].pct)}%`;
+    const sub = sp.secondary.length ? sp.secondary.map((s) => `${s.name} ${fmt(s.pct)}%`).join(", ") : "없음(15% 이상인 보조 감정이 없음)";
+    const outside = sp.items.map((i) => i.outside).filter(Boolean).join(", ");
+    const inside = sp.items.map((i) => i.inside).filter(Boolean).join(", ");
+    return [
+      `한국 시 「${title}」의 분석된 정서를 표현한 가로형 수채화 일러스트.`,
+      "창문을 통해 바깥 풍경이 보이는 조용한 공간.",
+      `주요 감정은 ${main}, 보조 감정은 ${sub}.`,
+      `창밖에는 ${outside}, 실내에는 ${inside},`,
+      `전체 분위기는 ${sp.tone}.`,
+      sp.figure.present ? `창밖을 향해 비스듬히 앉아 옆얼굴과 표정이 보이는 인물: ${POSES[sp.figure.pose].text}.`
+                        : "사람 없이 창가·사물·빛과 풍경만 표현.",
+      "한지처럼 은은한 질감과 절제된 붓 터치, 충분한 여백.",
+      "그림 안에 글자·숫자·차트·로고·워터마크는 넣지 않는다.",
+      "이 장면은 감정 분석을 시각적으로 옮긴 상징이며 시의 실제 장면 재현이 아니다.",
+    ].join("\n");
+  }
+
+  // ================================================================ 2. 그리기
+  const LW = 640, LH = 360;                       // 논리 좌표(캔버스 크기와 무관)
+  const WIN = { x0: 300, y0: 34, x1: 606, y1: 250 }; // 창 안쪽(유리) 영역
+  const FLOOR = 300;                              // 벽과 바닥의 경계
+
+  const PAL = {
+    sad:   { sky: ["#77889a", "#b2bbc1"], far: "#9aa6a3", near: "#788581", wall: "#d4d1ca", wallD: "#aeaaa2", floor: "#b4ab9f", floorD: "#958b80", frame: "#665c55", cloth: "#5c7083" },
+    joy:   { sky: ["#86bfdc", "#f8e6b6"], far: "#cfd88f", near: "#a8bd62", wall: "#f4e6cc", wallD: "#e0c79f", floor: "#e2c690", floorD: "#c7a46a", frame: "#986a3d", cloth: "#d9a35a" },
+    calm:  { sky: ["#bcd6cf", "#f2ebd8"], far: "#b9caaf", near: "#94ae90", water: "#a8c6bd", wall: "#eee8d8", wallD: "#d6ccb4", floor: "#d8ccb2", floorD: "#bfb091", frame: "#897a61", cloth: "#c8d6bf" },
+    hope:  { sky: ["#4d8488", "#f2d28a"], far: "#6c9a96", near: "#4b6e6b", water: "#5f9090", wall: "#e9e1cf", wallD: "#cbbea2", floor: "#d6c6a5", floorD: "#b8a37e", frame: "#74644e", cloth: "#3f7f7b" },
+    love:  { sky: ["#c4929f", "#f4c99b"], far: "#a27070", near: "#7e5658", wall: "#f0dccb", wallD: "#d9bba3", floor: "#d8b794", floorD: "#bb9570", frame: "#8a5d47", cloth: "#b0667a" },
+    shame: { sky: ["#8790a8", "#ddcfc4"], far: "#7d8595", near: "#646c7b", wall: "#e1dbd1", wallD: "#c1b8aa", floor: "#c8bba8", floorD: "#a99c88", frame: "#6b6158", cloth: "#7d6e86" },
+    long:  { sky: ["#3e4977", "#dcbcb4"], far: "#655f84", near: "#4a4767", wall: "#dcd2d5", wallD: "#b9adb4", floor: "#c2b4b1", floorD: "#a39593", frame: "#5d5367", cloth: "#6a6489" },
+    anger: { sky: ["#7a584f", "#c99f88"], far: "#8b7564", near: "#6d594b", wall: "#e3d7c7", wallD: "#c2ae96", floor: "#cab69c", floorD: "#a78d72", frame: "#6c4939", cloth: "#8a4a3a" },
+    fear:  { sky: ["#6c6784", "#b7b3c4"], far: "#5a566e", near: "#4c4860", wall: "#cdc8cf", wallD: "#a69fab", floor: "#aca4ab", floorD: "#8b838e", frame: "#4e4758", cloth: "#5f5a70" },
+    void:  { sky: ["#d6d4cd", "#edeae2"], far: "#d9d5c9", near: "#cfcabd", wall: "#ebe7de", wallD: "#d6d0c4", floor: "#dfd8cb", floorD: "#cdc5b6", frame: "#a39a8d", cloth: "#b5ada0" },
+  };
+
+  function seeded(str) {
+    let h = 2166136261;
+    for (const c of str) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); }
+    return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; };
+  }
+  function rgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function rgba(hex, a) { const [r, g, b] = rgb(hex); return `rgba(${r},${g},${b},${a})`; }
+  function mix(a, b, t) {
+    const A = rgb(a), B = rgb(b);
+    return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join("");
+  }
+
+  function draw(canvas, sp, opt) {
+    const g = canvas.getContext && canvas.getContext("2d");
+    if (!g) return false;
+    const s = canvas.width / LW;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    g.setTransform(s, 0, 0, s, 0, 0);
+    const R = seeded(opt.seed || "seed");
+    const P = PAL[sp.dominant];
+    const has = (k) => sp.mods.includes(k);
+    const D = sp.dominant;
+    const fig = sp.figure.present;
+
+    // ---- 수채 도우미
+    const wash = (shape, color, alpha, n = 3, j = 1.8) => {
+      for (let i = 0; i < n; i++) {
+        g.save(); g.translate((R() - 0.5) * j, (R() - 0.5) * j);
+        g.globalAlpha = alpha * (0.55 + 0.45 * R()); g.fillStyle = color;
+        g.beginPath(); shape(); g.fill(); g.restore();
+      }
+    };
+    const edge = (shape, color, alpha = 0.35, w = 1) => {
+      g.save(); g.globalAlpha = alpha; g.strokeStyle = color; g.lineWidth = w; g.lineJoin = "round"; g.lineCap = "round";
+      g.beginPath(); shape(); g.stroke(); g.restore();
+    };
+    const glow = (x, y, r, color, a) => {
+      const gr = g.createRadialGradient(x, y, 0, x, y, r);
+      gr.addColorStop(0, rgba(color, a)); gr.addColorStop(1, rgba(color, 0));
+      g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+    };
+    const ink = "#4a3d34";
+    const rect = (x, y, w, h) => () => g.rect(x, y, w, h);
+    const ell = (x, y, rx, ry, rot = 0) => () => g.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2);
+
+    // ---------------------------------------------------------- 실내 벽·바닥
+    const wallG = g.createLinearGradient(0, 0, LW, 0);
+    wallG.addColorStop(0, mix(P.wall, P.wallD, 0.55)); wallG.addColorStop(0.45, P.wall); wallG.addColorStop(1, mix(P.wall, P.wallD, 0.3));
+    g.fillStyle = wallG; g.fillRect(0, 0, LW, FLOOR);
+    for (let i = 0; i < 6; i++) glow(R() * LW * 0.9, R() * FLOOR * 0.8, 50 + R() * 90, P.wallD, 0.12);
+    // 바닥(소실점을 향하는 마루)
+    const flG = g.createLinearGradient(0, FLOOR, 0, LH);
+    flG.addColorStop(0, P.floorD); flG.addColorStop(1, P.floor);
+    g.fillStyle = flG; g.fillRect(0, FLOOR, LW, LH - FLOOR);
+    g.save(); g.globalAlpha = 0.18; g.strokeStyle = P.floorD; g.lineWidth = 1;
+    for (let i = -6; i <= 14; i++) { const xb = i * 52; g.beginPath(); g.moveTo(320 + (xb - 320) * 0.35, FLOOR); g.lineTo(xb, LH); g.stroke(); }
+    g.restore();
+    // 걸레받이
+    wash(rect(0, FLOOR - 4, LW, 5), P.wallD, 0.6, 2, 1);
+    // 왼쪽 벽 모서리 그늘(공간 깊이)
+    const cg = g.createLinearGradient(0, 0, 70, 0); cg.addColorStop(0, rgba(P.wallD, 0.55)); cg.addColorStop(1, rgba(P.wallD, 0));
+    g.fillStyle = cg; g.fillRect(0, 0, 70, FLOOR);
+
+    // ---------------------------------------------------------- 창 안쪽 깊이(벽 두께)
+    const { x0, y0, x1, y1 } = WIN, ww = x1 - x0, wh = y1 - y0;
+    wash(() => { g.moveTo(x0 - 16, y0 - 12); g.lineTo(x0, y0); g.lineTo(x0, y1); g.lineTo(x0 - 16, y1 + 8); g.closePath(); }, P.wallD, 0.85, 2, 0.8);
+    wash(() => { g.moveTo(x0 - 16, y0 - 12); g.lineTo(x1 + 12, y0 - 12); g.lineTo(x1, y0); g.lineTo(x0, y0); g.closePath(); }, mix(P.wallD, "#000000", 0.08), 0.8, 2, 0.8);
+
+    // ---------------------------------------------------------- 창밖 풍경(유리 영역으로 자름)
+    g.save(); g.beginPath(); g.rect(x0, y0, ww, wh); g.clip();
+    const hz = y0 + wh * (D === "void" ? 0.7 : 0.6);       // 지평선
+    const sky = g.createLinearGradient(0, y0, 0, hz);
+    sky.addColorStop(0, P.sky[0]);
+    if (D === "long") sky.addColorStop(0.55, "#7c6f9a");
+    if (D === "hope") sky.addColorStop(0.5, "#8db4a8");
+    sky.addColorStop(1, P.sky[1]);
+    g.fillStyle = sky; g.fillRect(x0, y0, ww, hz - y0 + 2);
+
+    const cloud = (cx, cy, w, h, color, a, n = 6) => {
+      for (let i = 0; i < n; i++) wash(ell(cx + (R() - 0.5) * w, cy + (R() - 0.5) * h * 0.6, w * (0.22 + R() * 0.22), h * (0.35 + R() * 0.3)), color, a, 2, 3);
+    };
+    const hills = (baseY, amp, color, a, seedShift) => {
+      wash(() => {
+        g.moveTo(x0 - 5, y1 + 5); g.lineTo(x0 - 5, baseY);
+        for (let x = x0 - 5; x <= x1 + 5; x += 12) g.lineTo(x, baseY - amp * (0.5 + 0.5 * Math.sin((x + seedShift) / 41) * Math.cos((x + seedShift) / 67)));
+        g.lineTo(x1 + 5, y1 + 5); g.closePath();
+      }, color, a, 3, 2);
+    };
+    const ground = (color, a) => wash(rect(x0 - 4, hz, ww + 8, y1 - hz + 6), color, a, 3, 1.5);
+
+    // 해·빛
+    if (D === "joy") { glow(x0 + ww * 0.74, y0 + 36, 70, "#fff3c4", 0.9); glow(x0 + ww * 0.74, y0 + 36, 20, "#ffffff", 0.9); }
+    if (D === "hope") glow(x0 + ww * 0.58, hz, 120, "#f9e2a0", 0.75);
+    if (D === "love") glow(x0 + ww * 0.3, hz - 6, 110, "#f6c48e", 0.6);
+    if (D === "long") glow(x0 + ww * 0.5, hz + 4, 110, "#e7c3b5", 0.45);
+
+    // 구름
+    if (D === "sad") { for (let i = 0; i < 4; i++) cloud(x0 + ww * (0.15 + i * 0.25), y0 + 26 + R() * 30, 150, 60, "#6c7987", 0.22, 7); }
+    if (D === "joy") { cloud(x0 + 70, y0 + 52, 80, 26, "#ffffff", 0.5, 4); cloud(x0 + 200, y0 + 70, 70, 20, "#ffffff", 0.45, 4); }
+    if (D === "calm") cloud(x0 + 120, y0 + 40, 160, 18, "#ffffff", 0.35, 4);
+    if (D === "hope") { cloud(x0 + 60, y0 + 34, 140, 40, "#55858a", 0.22, 5); cloud(x0 + 260, y0 + 30, 140, 40, "#55858a", 0.22, 5); glow(x0 + ww * 0.55, y0 + 34, 34, "#fff4cf", 0.7); }
+    if (D === "anger") for (let i = 0; i < 5; i++) wash(ell(x0 + R() * ww, y0 + 18 + R() * 70, 60 + R() * 50, 7 + R() * 6, -0.12), "#5d4038", 0.22, 2, 4);
+    if (D === "shame") cloud(x0 + 210, y0 + 46, 130, 22, "#f2d7c8", 0.35, 4);
+    if (D === "fear") cloud(x0 + 150, y0 + 40, 300, 50, "#5e5a74", 0.2, 6);
+    if (D === "long") { for (let i = 0; i < 14; i++) { g.fillStyle = rgba("#ffffff", 0.35 + 0.4 * R()); g.beginPath(); g.arc(x0 + R() * ww, y0 + R() * (hz - y0) * 0.55, 0.6 + R() * 0.8, 0, 7); g.fill(); } }
+
+    // 구름 사이 빛줄기(희망 기본 또는 희망 보조)
+    if (D === "hope" || has("hope")) {
+      const sx = x0 + ww * 0.55, sy = y0 + 30;
+      for (let i = 0; i < 6; i++) {
+        const a = -0.55 + i * 0.22 + (R() - 0.5) * 0.05;
+        g.save(); g.globalAlpha = 0.2 + 0.1 * R(); g.fillStyle = "#fff2c2";
+        g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + Math.sin(a) * 260 - 9, sy + 230); g.lineTo(sx + Math.sin(a) * 260 + 9, sy + 230); g.closePath(); g.fill(); g.restore();
+      }
+      if (D !== "hope") glow(sx, sy, 40, "#fff2c2", 0.5);
+    }
+
+    // 지면·풍경
+    if (D === "sad") { hills(hz - 4, 26, P.far, 0.55, 30); hills(hz + 16, 22, P.near, 0.7, 90); ground(P.near, 0.6); }
+    if (D === "joy") {
+      hills(hz - 2, 14, P.far, 0.6, 10); ground(P.far, 0.75);
+      wash(() => { g.moveTo(x0 + ww * 0.47, hz + 2); g.lineTo(x0 + ww * 0.53, hz + 2); g.lineTo(x0 + ww * 0.75, y1 + 4); g.lineTo(x0 + ww * 0.42, y1 + 4); g.closePath(); }, "#efe0b0", 0.75, 2, 1);
+      for (let i = 0; i < 26; i++) { g.fillStyle = rgba(["#f2b84b", "#ffffff", "#e9857a"][i % 3], 0.75); g.beginPath(); g.arc(x0 + R() * ww, hz + 14 + R() * (y1 - hz - 14), 1.3, 0, 7); g.fill(); }
+    }
+    if (D === "calm") {
+      hills(hz - 2, 30, P.far, 0.5, 120); hills(hz + 2, 16, P.near, 0.55, 20);
+      const wg = g.createLinearGradient(0, hz, 0, y1); wg.addColorStop(0, mix(P.water, "#ffffff", 0.35)); wg.addColorStop(1, P.water);
+      g.fillStyle = wg; g.fillRect(x0, hz + 6, ww, y1 - hz);
+      g.save(); g.globalAlpha = 0.35; g.strokeStyle = "#ffffff"; g.lineWidth = 1;
+      for (let i = 0; i < 9; i++) { const y = hz + 14 + i * 9; const x = x0 + 20 + R() * (ww - 100); g.beginPath(); g.moveTo(x, y); g.lineTo(x + 30 + R() * 50, y); g.stroke(); }
+      g.restore();
+      g.save(); g.strokeStyle = rgba("#6f8a6a", 0.7); g.lineWidth = 1.2;
+      for (let i = 0; i < 12; i++) { const x = x0 + 6 + i * 5 + R() * 3; g.beginPath(); g.moveTo(x, y1); g.quadraticCurveTo(x + 2, y1 - 20, x + 1 + R() * 3, y1 - 26 - R() * 14); g.stroke(); }
+      g.restore();
+    }
+    if (D === "hope") {
+      const wg = g.createLinearGradient(0, hz, 0, y1); wg.addColorStop(0, "#f3dc9a"); wg.addColorStop(0.25, P.water); wg.addColorStop(1, mix(P.water, "#2f5050", 0.3));
+      g.fillStyle = wg; g.fillRect(x0, hz, ww, y1 - hz);
+      g.save(); g.globalAlpha = 0.5; g.strokeStyle = "#fbe6ad"; g.lineWidth = 1.2;
+      for (let i = 0; i < 8; i++) { const y = hz + 5 + i * 8; const c = x0 + ww * 0.58; const w = 50 - i * 4; g.beginPath(); g.moveTo(c - w, y); g.lineTo(c + w, y); g.stroke(); }
+      g.restore();
+      hills(hz + 30, 30, P.near, 0.85, 200);
+    }
+    if (D === "love") {
+      wash(rect(x0 - 4, hz + 8, ww + 8, y1 - hz), mix(P.far, P.sky[1], 0.45), 0.8, 2, 1);
+      for (let i = 0; i < 7; i++) {
+        const bx = x0 + 6 + i * 44 + R() * 6, bw = 34 + R() * 10, bh = 20 + R() * 16, by = hz + 14;
+        wash(() => { g.moveTo(bx, by); g.lineTo(bx, by - bh); g.lineTo(bx + bw / 2, by - bh - 12); g.lineTo(bx + bw, by - bh); g.lineTo(bx + bw, by); g.closePath(); }, i % 2 ? P.far : P.near, 0.75, 2, 1);
+        if (R() > 0.3) { g.fillStyle = rgba("#ffd27e", 0.9); g.fillRect(bx + bw * 0.35, by - bh * 0.6, 5, 6); glow(bx + bw * 0.35 + 2, by - bh * 0.6 + 3, 9, "#ffd27e", 0.5); }
+      }
+      hills(y1 - 22, 10, mix(P.near, P.sky[1], 0.25), 0.55, 40);
+    }
+    if (D === "shame") {
+      hills(hz + 4, 10, P.far, 0.45, 50); ground(P.near, 0.6);
+      for (let i = 0; i < 10; i++) {
+        const tx = x0 + 8 + i * 32 + R() * 10, th = 26 + R() * 28, col = i % 2 ? P.far : P.near;
+        edge(() => { g.moveTo(tx, hz + 6); g.lineTo(tx, hz - th * 0.5); }, col, 0.7, 2);
+        for (let k = 0; k < 6; k++) wash(ell(tx + (R() - 0.5) * 16, hz - th * (0.45 + R() * 0.5), 6 + R() * 5, 5 + R() * 5), col, 0.45, 1, 1.5);
+      }
+    }
+    if (D === "long") {
+      hills(hz, 8, P.far, 0.6, 70); ground(P.near, 0.75);
+      wash(() => { g.moveTo(x0 + ww * 0.49, hz + 2); g.lineTo(x0 + ww * 0.51, hz + 2); g.lineTo(x0 + ww * 0.68, y1 + 4); g.lineTo(x0 + ww * 0.44, y1 + 4); g.closePath(); }, "#8c84a3", 0.6, 2, 1);
+    }
+    if (D === "anger") {
+      hills(hz - 2, 22, P.far, 0.6, 15); hills(hz + 14, 18, P.near, 0.75, 75); ground(P.near, 0.6);
+    }
+    if (D === "fear") {
+      ground(P.near, 0.5);
+      for (let i = 0; i < 8; i++) {
+        const tx = x0 + 14 + i * 40 + R() * 14, th = 50 + R() * 40;
+        g.save(); g.globalAlpha = 0.35; g.strokeStyle = P.near; g.lineWidth = 2;
+        g.beginPath(); g.moveTo(tx, hz + 10); g.lineTo(tx, hz + 10 - th); g.stroke();
+        for (let b = 0; b < 4; b++) { const by = hz + 10 - th * (0.4 + b * 0.15); g.beginPath(); g.moveTo(tx, by); g.lineTo(tx + (b % 2 ? 1 : -1) * (10 + R() * 8), by - 8 - R() * 6); g.stroke(); }
+        g.restore();
+      }
+    }
+    if (D === "void") { g.save(); g.globalAlpha = 0.25; g.strokeStyle = "#b9b2a4"; g.beginPath(); g.moveTo(x0, hz); g.lineTo(x1, hz); g.stroke(); g.restore(); ground(P.far, 0.45); }
+
+    // 바람에 휘는 나무(분노 기본)
+    if (D === "anger") {
+      const tx = x0 + ww * 0.72, ty = hz + 26;
+      edge(() => { g.moveTo(tx, ty); g.quadraticCurveTo(tx - 4, ty - 40, tx - 22, ty - 70); }, "#4b3a32", 0.9, 5);
+      for (let i = 0; i < 9; i++) wash(ell(tx - 30 - R() * 40, ty - 74 + (R() - 0.5) * 34, 18 + R() * 10, 9 + R() * 6, -0.35), "#5f5a3c", 0.4, 2, 2);
+    }
+    // 흩날리는 잎(분노 기본·분노 보조)
+    if (D === "anger" || has("anger")) {
+      for (let i = 0; i < 16; i++) { g.save(); g.translate(x0 + R() * ww, y0 + 20 + R() * (wh - 40)); g.rotate(-0.6 + R() * 0.5); g.fillStyle = rgba(i % 2 ? "#9a5a3a" : "#7a6a3a", 0.8); g.beginPath(); g.ellipse(0, 0, 4, 1.6, 0, 0, 7); g.fill(); g.restore(); }
+    }
+    // 비(슬픔 기본)
+    if (D === "sad") {
+      g.save(); g.strokeStyle = rgba("#e6edf2", 0.45); g.lineWidth = 0.8;
+      for (let i = 0; i < 120; i++) { const rx = x0 + R() * (ww + 40), ry = y0 + R() * wh; g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx - 4, ry + 13); g.stroke(); }
+      g.restore();
+    }
+    // 안개(불안 기본·불안 보조)
+    if (D === "fear" || has("fear")) {
+      const n = D === "fear" ? 9 : 5;
+      for (let i = 0; i < n; i++) wash(ell(x0 + R() * ww, hz - 20 + i * (D === "fear" ? 12 : 9), 150 + R() * 90, 14 + R() * 10), D === "fear" ? "#dcd8e4" : "#eeeaf0", D === "fear" ? 0.32 : 0.3, 2, 6);
+    }
+    // 먼 지평선의 불빛(그리움 기본·그리움 보조)
+    if (D === "long" || has("long")) {
+      for (let i = 0; i < 9; i++) { const lx = x0 + 18 + R() * (ww - 36), ly = hz + 3 + R() * 6; glow(lx, ly, 7, "#ffd59a", 0.7); g.fillStyle = "#ffe3b0"; g.beginPath(); g.arc(lx, ly, 1.3, 0, 7); g.fill(); }
+    }
+    // 옅어진 지평선(허무 보조)
+    if (has("void")) { const fg = g.createLinearGradient(0, hz - 40, 0, y1); fg.addColorStop(0, "rgba(240,236,228,0)"); fg.addColorStop(0.35, "rgba(240,236,228,.55)"); fg.addColorStop(1, "rgba(240,236,228,.35)"); g.fillStyle = fg; g.fillRect(x0, hz - 40, ww, y1 - hz + 40); }
+    // 허무 기본: 전체를 한 번 더 바래게
+    if (D === "void") { g.fillStyle = "rgba(244,241,234,.35)"; g.fillRect(x0, y0, ww, wh); }
+
+    // 유리에 비친 실내(부끄러움 기본·보조)
+    if (D === "shame" || has("shame")) {
+      glow(x0 + 70, y1 - 60, 60, "#f7e3c8", 0.35);
+      g.save(); g.globalAlpha = 0.16; g.fillStyle = "#f4ece2";
+      if (fig) { g.beginPath(); g.ellipse(x0 + 60, y1 - 78, 13, 15, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(x0 + 58, y1 - 30, 26, 34, 0, 0, 7); g.fill(); }
+      else { g.fillRect(x0 + 30, y1 - 60, 40, 46); }
+      g.restore();
+      g.save(); g.globalAlpha = 0.18; g.strokeStyle = "#ffffff"; g.lineWidth = 6;
+      g.beginPath(); g.moveTo(x0 + ww * 0.6, y0); g.lineTo(x0 + ww * 0.38, y1); g.stroke();
+      g.lineWidth = 2; g.beginPath(); g.moveTo(x0 + ww * 0.68, y0); g.lineTo(x0 + ww * 0.46, y1); g.stroke();
+      g.restore();
+    }
+    // 유리에 맺힌 빗방울(슬픔 기본·보조)
+    if (D === "sad" || has("sad")) {
+      const n = D === "sad" ? 46 : 30;
+      for (let i = 0; i < n; i++) {
+        const dx = x0 + 6 + R() * (ww - 12), dy = y0 + 6 + R() * (wh - 12), r = 1.2 + R() * 2.2;
+        g.fillStyle = rgba("#dfe7ee", 0.55); g.beginPath(); g.ellipse(dx, dy, r * 0.8, r, 0, 0, 7); g.fill();
+        g.fillStyle = rgba("#ffffff", 0.75); g.beginPath(); g.arc(dx - r * 0.25, dy - r * 0.35, r * 0.3, 0, 7); g.fill();
+        if (R() > 0.75) { g.strokeStyle = rgba("#dfe7ee", 0.4); g.lineWidth = 0.8; g.beginPath(); g.moveTo(dx, dy + r); g.lineTo(dx + (R() - 0.5) * 3, dy + r + 10 + R() * 14); g.stroke(); }
+      }
+    }
+    g.restore(); // 유리 영역 끝
+
+    // ---------------------------------------------------------- 창틀·창턱
+    const fw = 8;
+    const sillY = y1 + fw;   // 창턱 윗면
+    const frame = (x, y, w, h) => { wash(rect(x, y, w, h), P.frame, 0.9, 2, 0.6); edge(rect(x, y, w, h), ink, 0.25, 0.8); };
+    frame(x0 - fw, y0 - fw, ww + fw * 2, fw); frame(x0 - fw, y1, ww + fw * 2, fw);
+    frame(x0 - fw, y0, fw, wh); frame(x1, y0, fw, wh);
+    frame(x0 + ww / 2 - 3, y0, 6, wh);                       // 가운데 문설주
+    frame(x0, y0 + wh * 0.36, ww, 5);                         // 가로 살
+    // 창턱(앞으로 나온 판)과 그 아래 그림자
+    wash(rect(x0 - 22, y1 + fw, ww + 44, 9), mix(P.frame, "#ffffff", 0.25), 0.95, 2, 0.6);
+    edge(rect(x0 - 22, y1 + fw, ww + 44, 9), ink, 0.3, 0.8);
+    const sg = g.createLinearGradient(0, y1 + fw + 9, 0, y1 + fw + 26); sg.addColorStop(0, rgba(P.wallD, 0.8)); sg.addColorStop(1, rgba(P.wallD, 0));
+    g.fillStyle = sg; g.fillRect(x0 - 22, y1 + fw + 9, ww + 44, 17);
+    
+    // 커튼(평온 기본)
+    if (D === "calm") {
+      wash(() => { g.moveTo(x0 - 30, y0 - 20); g.lineTo(x0 + 26, y0 - 20); g.bezierCurveTo(x0 + 34, y0 + 80, x0 + 6, y0 + 150, x0 + 20, sillY + 30); g.lineTo(x0 - 34, sillY + 30); g.closePath(); }, P.cloth, 0.75, 3, 2);
+      edge(() => { g.moveTo(x0 - 10, y0 - 14); g.bezierCurveTo(x0 - 4, y0 + 60, x0 - 16, y0 + 140, x0 - 8, sillY + 26); }, mix(P.cloth, "#000000", 0.25), 0.4, 1);
+      edge(() => { g.moveTo(x0 + 8, y0 - 14); g.bezierCurveTo(x0 + 16, y0 + 70, x0 - 2, y0 + 150, x0 + 6, sillY + 26); }, mix(P.cloth, "#000000", 0.25), 0.35, 1);
+      wash(rect(x0 - 34, y0 - 24, ww + 70, 5), P.frame, 0.8, 1, 0.5);
+    }
+    // 기쁨: 양쪽으로 묶은 밝은 커튼
+    if (D === "joy") {
+      [[x0 - 34, x0 + 6, 1], [x1 - 6, x1 + 34, -1]].forEach(([a, b, d]) => {
+        wash(() => { g.moveTo(a, y0 - 20); g.lineTo(b, y0 - 20); g.quadraticCurveTo(b - d * 10, y0 + 100, b - d * 2, sillY + 28); g.lineTo(a, sillY + 28); g.closePath(); }, "#f6dcb0", 0.7, 3, 2);
+        wash(ell((a + b) / 2, y0 + 110, 18, 4), P.cloth, 0.8, 1, 0.5);
+      });
+    }
+
+    // ---------------------------------------------------------- 실내 빛과 그림자
+    // 바닥에 드는 햇빛(기쁨 기본·기쁨 보조)
+    if (D === "joy" || has("joy")) {
+      wash(() => { g.moveTo(x0 + 10, FLOOR + 2); g.lineTo(x1 - 30, FLOOR + 2); g.lineTo(x1 - 110, LH); g.lineTo(x0 - 90, LH); g.closePath(); }, "#fff1c8", D === "joy" ? 0.55 : 0.45, 3, 2);
+      wash(() => { g.moveTo(x0 - 10, sillY + 30); g.lineTo(x0 + 120, sillY + 30); g.lineTo(x0 + 80, FLOOR); g.lineTo(x0 - 40, FLOOR); g.closePath(); }, "#fff1c8", 0.22, 2, 2);
+    }
+    // 날카롭게 꺾인 그림자(분노 기본)
+    if (D === "anger") {
+      g.save(); g.globalAlpha = 0.22; g.fillStyle = "#5a3a2e";
+      g.beginPath(); g.moveTo(x0 - 40, FLOOR); g.lineTo(x0 + 10, FLOOR); g.lineTo(x0 - 120, LH); g.lineTo(x0 - 190, LH); g.closePath(); g.fill();
+      g.beginPath(); g.moveTo(x1 - 60, FLOOR); g.lineTo(x1 - 20, FLOOR); g.lineTo(x1 - 150, LH); g.lineTo(x1 - 200, LH); g.closePath(); g.fill();
+      g.globalAlpha = 0.16;
+      g.beginPath(); g.moveTo(x0 - 16, sillY + 9); g.lineTo(x0 - 4, sillY + 9); g.lineTo(x0 - 96, FLOOR); g.lineTo(x0 - 112, FLOOR); g.closePath(); g.fill();
+      g.restore();
+    }
+    // 차갑고 어둑한 실내(불안 기본) / 흐린 실내(슬픔 기본)
+    if (D === "fear") { g.fillStyle = "rgba(70,62,92,.18)"; g.fillRect(0, 0, x0 - 16, LH); g.fillRect(x0 - 16, sillY + 9, LW, LH); }
+    if (D === "sad") { g.fillStyle = "rgba(90,104,120,.10)"; g.fillRect(0, 0, LW, LH); }
+
+    // ---------------------------------------------------------- 실내 사물
+    const chair = (cx, seatY, facing = 1, a = 0.9, col = "#7b5e48") => {
+      const back = cx - facing * 22;
+      wash(rect(cx - 22, seatY, 46, 6), col, a, 2, 0.6);
+      [[cx - 20, seatY + 6], [cx + 20, seatY + 6]].forEach(([lx, ly]) => wash(rect(lx - 2, ly, 4, 336 - ly), col, a, 1, 0.4));
+      wash(rect(back - 2, seatY - 54, 5, 60), col, a, 2, 0.5);
+      wash(rect(Math.min(back, back + facing * 12) - 1, seatY - 52, 14, 4), col, a, 1, 0.4);
+      wash(rect(Math.min(back, back + facing * 12) - 1, seatY - 34, 14, 3), col, a, 1, 0.4);
+      edge(() => { g.moveTo(cx - 22, seatY); g.lineTo(cx + 24, seatY); g.moveTo(back, seatY); g.lineTo(back, seatY - 54); }, ink, 0.35, 0.8);
+      wash(ell(cx, 338, 34, 4), "#000000", 0.08, 1, 1);
+    };
+    const table = (cx) => {
+      wash(rect(cx - 34, 268, 68, 6), "#7a5d47", 0.9, 2, 0.6);
+      wash(rect(cx - 28, 274, 4, 62), "#7a5d47", 0.85, 1, 0.4); wash(rect(cx + 24, 274, 4, 62), "#7a5d47", 0.85, 1, 0.4);
+      edge(rect(cx - 34, 268, 68, 6), ink, 0.3, 0.8);
+      wash(ell(cx, 338, 40, 4), "#000000", 0.08, 1, 1);
+    };
+    const lamp = (cx) => {
+      glow(cx, 246, 120, "#f7b85c", 0.42); glow(cx, 246, 40, "#ffe0a0", 0.6);
+      wash(rect(cx - 3, 250, 6, 18), "#6b5544", 0.9, 1, 0.4);
+      wash(() => { g.moveTo(cx - 16, 252); g.lineTo(cx + 16, 252); g.lineTo(cx + 9, 230); g.lineTo(cx - 9, 230); g.closePath(); }, "#f2c27a", 0.95, 2, 0.6);
+      edge(() => { g.moveTo(cx - 16, 252); g.lineTo(cx + 16, 252); g.lineTo(cx + 9, 230); g.lineTo(cx - 9, 230); g.closePath(); }, ink, 0.3, 0.8);
+      wash(ell(cx, 268, 22, 3), "#ffd58a", 0.5, 1, 0.5);
+    };
+    const cup = (x, y, col = "#f3ece2") => { wash(() => { g.moveTo(x - 5, y - 8); g.lineTo(x + 5, y - 8); g.lineTo(x + 4, y); g.lineTo(x - 4, y); g.closePath(); }, col, 0.95, 2, 0.4); edge(() => { g.moveTo(x - 5, y - 8); g.lineTo(x + 5, y - 8); g.lineTo(x + 4, y); g.lineTo(x - 4, y); g.closePath(); g.moveTo(x + 5, y - 6); g.quadraticCurveTo(x + 9, y - 4, x + 4, y - 2); }, ink, 0.45, 0.8); };
+    const book = (x, y) => { wash(rect(x - 12, y - 4, 24, 4), "#9a6f5a", 0.9, 1, 0.3); wash(rect(x - 11, y - 7, 22, 3), "#d9cdb4", 0.9, 1, 0.3); };
+    const pot = (x, leaves, col = "#5f8a5a") => {
+      wash(() => { g.moveTo(x - 8, sillY - 12); g.lineTo(x + 8, sillY - 12); g.lineTo(x + 6, sillY); g.lineTo(x - 6, sillY); g.closePath(); }, "#b06a4a", 0.95, 2, 0.4);
+      for (let i = 0; i < leaves; i++) { const a = -Math.PI / 2 + (i - (leaves - 1) / 2) * 0.45; wash(ell(x + Math.cos(a) * 9, sillY - 16 + Math.sin(a) * 9, 7, 3, a), col, 0.85, 2, 0.5); }
+    };
+    const vase = (x) => {
+      wash(ell(x, sillY - 9, 6, 9), "#7f9db0", 0.9, 2, 0.4);
+      for (let i = 0; i < 5; i++) { const fx = x - 10 + i * 5, fy = sillY - 30 - R() * 10; edge(() => { g.moveTo(x, sillY - 16); g.lineTo(fx, fy); }, "#5f7f4a", 0.7, 1); wash(ell(fx, fy, 3.2, 3.2), ["#f2b84b", "#e9857a", "#ffffff"][i % 3], 0.95, 1, 0.3); }
+    };
+
+    // 왼쪽 탁자(등불·찻잔·책) — 필요할 때만
+    const needLamp = D === "love" || has("love");
+    const needCups = D === "love";
+    const needBook = D === "calm";
+    if (needLamp || needCups || needBook) {
+      table(72);
+      if (needLamp) lamp(56);
+      if (needCups) { cup(88, 268); if (!fig) cup(102, 268, "#efd9cf"); }
+      if (needBook) book(80, 268);
+    }
+    // 창턱 위 사물
+    if (D === "joy") vase(x0 + 22);
+    if (D === "hope" && !fig) pot(x0 + ww * 0.62, 2, "#7fae6a");
+    if (has("calm")) pot(x1 - 14, 5);
+    // 빈 의자(그리움 기본: 창 아래)
+    if (D === "long") chair(x0 + ww * 0.68, 292, -1, 0.75, "#6f5f67");
+    // 흩어진 종이(분노·인물 없음)
+    if (D === "anger" && !fig) for (let i = 0; i < 5; i++) { g.save(); g.translate(150 + R() * 260, 312 + R() * 36); g.rotate((R() - 0.5) * 1.4); g.fillStyle = "rgba(250,246,238,.95)"; g.fillRect(-9, -6, 18, 12); g.strokeStyle = rgba(ink, 0.35); g.strokeRect(-9, -6, 18, 12); g.restore(); }
+
+    // ---------------------------------------------------------- 인물 또는 빈 의자
+    if (fig) person(POSES[sp.figure.pose], P.cloth);
+    else if (D === "void") chair(110, 292, 1, 0.55, "#9b8f80");
+    else if (D !== "long") chair(208, 292, 1, 0.9);
+
+    function person(ps, cloth) {
+      const S = 1.28;                                     // 인물 크기
+      g.save(); g.translate(214, 338); g.scale(S, S); g.translate(-214, -338);
+      const hip = { x: 206, y: 290 };
+      chair(hip.x - 4, 292, 1, 0.9);
+      const L = 50;
+      const sh = { x: hip.x + Math.sin(ps.lean) * L, y: hip.y - Math.cos(ps.lean) * L + ps.drop };
+      const hc = { x: sh.x + 5 + ps.head * 12, y: sh.y - 20 + ps.head * 9 };
+      const skin = "#edd3b7", hair = "#3a2f2a";
+      // 바닥 그림자
+      wash(ell(hip.x + 16, 337, 40, 4), "#000000", 0.1, 1, 1);
+      // 다리
+      let knee, foot;
+      if (ps.legs === "hug") { knee = { x: hip.x + 24, y: hip.y - 24 }; foot = { x: hip.x + 30, y: hip.y + 1 }; }
+      else { knee = { x: hip.x + 38, y: hip.y + 2 }; foot = { x: knee.x + 5, y: 333 }; }
+      const limb = (a, b, w, col, al = 0.9) => {
+        for (let i = 0; i < 3; i++) { g.save(); g.globalAlpha = al * (0.6 + 0.4 * R()); g.strokeStyle = col; g.lineWidth = w + (R() - 0.5); g.lineCap = "round"; g.beginPath(); g.moveTo(a.x + (R() - 0.5), a.y + (R() - 0.5)); g.lineTo(b.x, b.y); g.stroke(); g.restore(); }
+      };
+      const trousers = mix(cloth, "#2c2522", 0.45);
+      limb(hip, knee, 13, trousers); limb(knee, foot, 10, trousers);
+      wash(ell(foot.x + 5, foot.y + (ps.legs === "hug" ? 0 : 2), 7, 3), "#3a2f2a", 0.9, 1, 0.3);
+      // 몸통
+      limb(hip, sh, 24, cloth, 0.95);
+      edge(() => { g.moveTo(hip.x + 12 * Math.cos(ps.lean), hip.y + 3); g.lineTo(sh.x + 11 * Math.cos(ps.lean), sh.y + 2); }, ink, 0.28, 0.8);
+      // 목
+      limb({ x: sh.x + 2, y: sh.y - 4 }, { x: hc.x - 1, y: hc.y + 10 }, 7, skin, 0.95);
+      // 팔(보는 쪽 팔만)
+      let elbow, hand;
+      switch (ps.hand) {
+        case "chin": elbow = { x: knee.x - 4, y: knee.y - 6 }; hand = { x: hc.x + 9, y: hc.y + 13 }; break;
+        case "knees": elbow = { x: sh.x + 10, y: sh.y + 22 }; hand = { x: knee.x + 6, y: knee.y + 8 }; break;
+        case "cup": elbow = { x: sh.x + 4, y: sh.y + 26 }; hand = { x: sh.x + 24, y: sh.y + 20 }; break;
+        case "fist": elbow = { x: sh.x + 6, y: sh.y + 27 }; hand = { x: knee.x - 6, y: knee.y - 5 }; break;
+        case "knee": elbow = { x: sh.x + 8, y: sh.y + 26 }; hand = { x: knee.x - 2, y: knee.y - 5 }; break;
+        default: elbow = { x: sh.x + 5, y: sh.y + 27 }; hand = { x: hip.x + 24, y: hip.y - 6 };
+      }
+      limb({ x: sh.x + 2, y: sh.y + 4 }, elbow, 9, mix(cloth, "#ffffff", 0.08)); limb(elbow, hand, 8, mix(cloth, "#ffffff", 0.08));
+      if (ps.hand === "cup") cup(hand.x + 4, hand.y + 3, "#f6eadc");
+      wash(ell(hand.x, hand.y, ps.hand === "fist" ? 4.6 : 4, ps.hand === "fist" ? 4.2 : 3.4), ps.hand === "fist" ? mix(skin, "#c08060", 0.35) : skin, 0.95, 2, 0.3);
+      if (ps.hand === "fist") edge(ell(hand.x, hand.y, 4.6, 4.2), ink, 0.45, 0.8);
+      // 머리(옆얼굴, 창 쪽 = 오른쪽)
+      g.save(); g.translate(hc.x, hc.y); g.rotate(ps.head * 0.6);
+      wash(ell(0, 0, 12.5, 14), skin, 0.97, 2, 0.4);
+      edge(() => { g.moveTo(12.2, -6); g.quadraticCurveTo(13, -1, 15, 2.5); g.lineTo(12.4, 4.2); g.quadraticCurveTo(13, 8, 11, 12); g.quadraticCurveTo(6, 15, 0, 14); }, ink, 0.55, 0.9);
+      // 머리카락: 앞이마 위에서 정수리·뒤통수를 덮는다
+      wash(() => { g.moveTo(9, -10); g.arc(0, -1, 14, -1.0, 2.2, true); g.quadraticCurveTo(-3, 4, -2, -3); g.quadraticCurveTo(3, -7, 9, -10); g.closePath(); }, hair, 0.95, 2, 0.5);
+      wash(ell(-1.5, 2, 2.6, 3.6), mix(skin, "#c89a7a", 0.3), 0.95, 1, 0.2);    // 귀
+      // 눈썹
+      g.strokeStyle = rgba(hair, 0.95); g.lineWidth = 1.5; g.lineCap = "round";
+      g.beginPath(); g.moveTo(3.5, -6 + (ps.brow > 0 ? -0.5 : 0.6)); g.lineTo(10, -6 + ps.brow * 0.9 * (ps.brow > 0 ? 1 : 1)); g.stroke();
+      // 눈
+      g.lineWidth = 1.2; g.strokeStyle = rgba(ink, 0.95); g.fillStyle = ink;
+      const ex = 7, ey = -1.5;
+      if (ps.eye === "down") { g.beginPath(); g.arc(ex, ey - 0.6, 2.4, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); }
+      else if (ps.eye === "half") { g.beginPath(); g.moveTo(ex - 2.4, ey); g.lineTo(ex + 2.4, ey + 0.4); g.stroke(); g.beginPath(); g.arc(ex + 0.6, ey + 1.1, 0.9, 0, 7); g.fill(); }
+      else if (ps.eye === "soft") { g.beginPath(); g.arc(ex, ey + 1.2, 2.4, 1.15 * Math.PI, 1.85 * Math.PI); g.stroke(); }
+      else {
+        const r = ps.eye === "wide" ? 1.6 : 1.3, up = ps.eye === "far" ? -0.6 : 0;
+        g.beginPath(); g.arc(ex + 0.8, ey + up, r, 0, 7); g.fill();
+        g.beginPath(); g.moveTo(ex - 2.2, ey - (ps.eye === "wide" ? 2.4 : 1.8)); g.quadraticCurveTo(ex, ey - (ps.eye === "wide" ? 3.4 : 2.6), ex + 2.6, ey - (ps.eye === "wide" ? 2 : 1.4)); g.stroke();
+      }
+      // 입(옆얼굴에서 입꼬리는 뒤쪽 끝)
+      g.lineWidth = 1.2; g.strokeStyle = rgba("#8a4c40", 0.9);
+      g.beginPath(); g.moveTo(12, 7.6); g.quadraticCurveTo(10, 7.8 + ps.mouth * 0.4, 7.8, 7.6 - ps.mouth * 1.3); g.stroke();
+      if (ps.blush) glow(6, 4, 5, "#e88a8a", 0.45);
+      g.restore();
+      g.restore();
+    }
+
+    // ---------------------------------------------------------- 종이 질감·가장자리
+    for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(110,90,60,${0.025 + 0.035 * R()})`; g.fillRect(R() * LW, R() * LH, 1 + R() * 1.6, 0.8); }
+    for (let i = 0; i < 6; i++) glow(R() * LW, R() * LH, 40 + R() * 60, "#fffaf0", 0.12);
+    const vg = g.createRadialGradient(LW / 2, LH / 2, LH * 0.45, LW / 2, LH / 2, LW * 0.62);
+    vg.addColorStop(0, "rgba(60,45,30,0)"); vg.addColorStop(1, "rgba(60,45,30,.16)");
+    g.fillStyle = vg; g.fillRect(0, 0, LW, LH);
+    // 제목·시인(PNG 저장용 표지)
+    if (opt.title) {
+      g.font = "12px 'Gowun Batang', 'Noto Serif KR', serif"; g.textAlign = "left";
+      g.fillStyle = "rgba(255,252,244,.7)"; const tw = g.measureText(opt.title).width;
+      g.fillRect(10, LH - 26, tw + 14, 18);
+      g.fillStyle = "rgba(42,37,33,.85)"; g.fillText(opt.title, 17, LH - 13);
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    return true;
+  }
+
+  window.PoemScene = { SCENE_RULES, FIGURE_RULE, POSES, SECONDARY_MIN, SECONDARY_MAX, pickSecondary, figureFor, spec, describe, prompt, draw };
+})();
+</script>
 <script>/* js/app.js */
 /*
  * 시의 결 — 화면 로직
@@ -3173,6 +3857,8 @@ window.POEM_DATA = [
     renderMethod();
     selectPoem(initial.id, { fromLoad: true });
     if (initial.fixed) updateUrl(false);
+    // 웹 글꼴이 늦게 오면 그림 아래쪽 제목을 같은 장면으로 한 번 다시 그린다(장면은 같은 seed라 바뀌지 않음)
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (S.sel) renderImage(); }); } catch (e) { /* 무시 */ }
     if (new URLSearchParams(location.search).get("check") === "1") { window.__selfCheck = runSelfCheck(); goTo("selfcheck"); }
   }
 
@@ -3296,14 +3982,16 @@ window.POEM_DATA = [
     bindToc();
     for (const a of document.querySelectorAll("a[data-goto]")) a.addEventListener("click", (e) => { e.preventDefault(); goTo(a.dataset.goto); });
     bindWide();
+    bindZoom();
     let rz = 0;
-    window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (S.sel) { renderFlow(); updateFlowSel(); } }, 150); });
+    window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (S.sel) { renderFlow(); updateFlowSel(); renderDiagram(); renderPCA(); if (S.zoom) renderZoomBody(); } }, 150); });
     $("goMine").addEventListener("click", (e) => { e.preventDefault(); goTo("mine"); $("mineText").focus({ preventScroll: true }); });
     $("imgSave").addEventListener("click", () => {
       try {
-        const a = el("a", { href: $("emoCanvas").toDataURL("image/png"), download: `sigyeol-${S.sel}.png` });
+        const a = el("a", { href: $("emoCanvas").toDataURL("image/png"), download: `sigyeol-${S.sel}-w${Math.round(S.w * 100)}.png` });
         document.body.appendChild(a); a.click(); a.remove();
-      } catch (e) { $("imgCopyMsg").textContent = "이 브라우저에서는 저장할 수 없습니다."; }
+        $("imgSaveMsg").textContent = "현재 장면을 PNG로 저장했습니다(그림 아래쪽에 제목·시인 표시).";
+      } catch (e) { $("imgSaveMsg").textContent = "이 브라우저에서는 저장할 수 없습니다."; }
     });
     $("imgCopy").addEventListener("click", async () => {
       const ta = $("imgPrompt");
@@ -4139,76 +4827,121 @@ window.POEM_DATA = [
   }
 
   // ---------------------------------------------------------------- F-08 시어 → 감정 → 주제
-  function renderDiagram() {
+  // 시어 → 감정 → 주제. 그림은 실제 px 크기로 그린다(확대·축소 변환 없음).
+  //  - 너비 = 담는 칸의 너비를 560~960px로 제한, 글자 크기는 너비와 무관하게 고정
+  //  - 기본 보기: 많이 감지된 시어 DIA_TOP종 + 나머지는 ‘그 밖의 시어’ 한 줄로 묶어 같은 감정에 연결
+  //  - 전체 보기(확대 창): 모든 시어
+  const DIA_TOP = 10;
+  function diaWords(lx) {
+    const words = new Map();
+    let firstIdx = 0;
+    for (const l of lx.lines) for (const h of l.hits) {
+      const o = words.get(h.w) || { w: h.w, shown: h.shown, k: h.k, n: 0, first: firstIdx++ };
+      o.n++; words.set(h.w, o);
+    }
+    return [...words.values()];
+  }
+  function buildDiagram(opt) {
     const p = S.byId.get(S.sel);
     const lx = S.lex.get(p.id);
     const fp = pct(finOf(p.id));
-    const box = clear($("dia"));
-    // 시어 노드: 실제 감지된 시어(정규형 기준)만
-    const words = new Map();
-    for (const l of lx.lines) for (const h of l.hits) {
-      const o = words.get(h.w) || { w: h.w, shown: h.shown, k: h.k, n: 0 };
-      o.n++; words.set(h.w, o);
+    const all = diaWords(lx);
+    const byCat = (a, b) => S.K.indexOf(a.k) - S.K.indexOf(b.k) || b.n - a.n || a.first - b.first;
+    let wl = all.slice().sort(byCat), rest = [];
+    if (!opt.full && all.length > DIA_TOP) {
+      const top = all.slice().sort((a, b) => b.n - a.n || S.K.indexOf(a.k) - S.K.indexOf(b.k) || a.first - b.first).slice(0, DIA_TOP);
+      const keep = new Set(top.map((o) => o.w));
+      wl = top.sort(byCat); rest = all.filter((o) => !keep.has(o.w));
     }
-    let wl = [...words.values()].sort((a, b) => S.K.indexOf(a.k) - S.K.indexOf(b.k) || b.n - a.n);
-    const MAXW = 14;
-    const hidden = wl.length > MAXW ? wl.length - MAXW : 0;
-    if (hidden) wl = wl.slice().sort((a, b) => b.n - a.n).slice(0, MAXW).sort((a, b) => S.K.indexOf(a.k) - S.K.indexOf(b.k) || b.n - a.n);
+    const restKs = S.K.filter((k) => rest.some((o) => o.k === k));
     const themes = p.themeLinks || [];
-    const emoSet = new Set([...words.values()].map((o) => o.k));
+    const emoSet = new Set(all.map((o) => o.k));
     themes.forEach((t) => t.emos.forEach((k) => emoSet.add(k)));
     const emos = S.K.filter((k) => emoSet.has(k));
-    const rowH = 30;
-    const rows = Math.max(wl.length, emos.length, themes.length * 2, 3);
-    const W = 760, H = 46 + rows * rowH;
-    const colW = { x: 10, r: 170 }, colE = { x: 290, w: 150 }, colT = { x: 548, w: 205 };
-    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, style: "width:100%;min-width:560px", "aria-label": "시어, 감정, 주제 연결 다이어그램" });
-    const head = (x, t, a) => svg.appendChild(sv("text", { x, y: 16, "font-size": 12, "font-weight": 700, "text-anchor": a, text: t }));
+    const fs = opt.fs || 13, rowH = opt.rowH || 30, top = 40;
+    const W = Math.round(Math.max(560, Math.min(opt.maxW || 960, opt.avail || 760)));
+    const nW = wl.length + (rest.length ? 1 : 0);
+    const rows = Math.max(nW, emos.length, themes.length * 2, 3);
+    const H = top + rows * rowH + 8;
+    const colW = { x: 8, r: Math.round(Math.max(130, W * 0.22)) };
+    const colE = { x: Math.round(W * 0.36), w: Math.round(Math.min(176, Math.max(128, W * 0.19))) };
+    const colT = { x: Math.round(colE.x + colE.w + Math.max(70, W * 0.1)) }; colT.w = W - colT.x - 8;
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, class: "dia-svg", "aria-label": `시어, 감정, 주제 연결 다이어그램${opt.full ? "(전체)" : ""}` });
+    const head = (x, t, a) => svg.appendChild(sv("text", { x, y: 18, "font-size": fs - 0.5, "font-weight": 700, "text-anchor": a, text: t }));
     head(colW.r, "감지 시어(계산)", "end"); head(colE.x + colE.w / 2, "감정", "middle"); head(colT.x, "주제(해석)", "start");
-    const yW = (i) => 40 + i * ((H - 50) / Math.max(wl.length, 1)) + ((H - 50) / Math.max(wl.length, 1)) / 2;
-    const yE = (i) => 40 + i * ((H - 50) / Math.max(emos.length, 1)) + ((H - 50) / Math.max(emos.length, 1)) / 2;
-    const yT = (i) => 40 + i * ((H - 50) / Math.max(themes.length, 1)) + ((H - 50) / Math.max(themes.length, 1)) / 2;
+    const yAt = (i, n) => top + (i + 0.5) * ((H - top - 8) / Math.max(n, 1));
+    const yW = (i) => yAt(i, nW), yE = (i) => yAt(i, emos.length), yT = (i) => yAt(i, themes.length);
     const curve = (x1, y1, x2, y2) => `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
-    // 연결선 먼저
+    // 연결선: 시어→감정(실선, 계산)
     wl.forEach((o, i) => {
       const e = S.emo.get(o.k);
-      svg.appendChild(sv("path", { d: curve(colW.r + 6, yW(i), colE.x, yE(emos.indexOf(o.k))), fill: "none", stroke: e.color, "stroke-opacity": 0.75, "stroke-width": Math.min(1.2 + o.n * 0.9, 7) }));
+      svg.appendChild(sv("path", { class: "dia-link calc", "data-w": o.w, "data-k": o.k, d: curve(colW.r + 6, yW(i), colE.x, yE(emos.indexOf(o.k))), fill: "none", stroke: e.color, "stroke-opacity": 0.75, "stroke-width": Math.min(1.2 + o.n * 0.9, 7) }));
     });
+    if (rest.length) restKs.forEach((k) => {
+      const n = rest.filter((o) => o.k === k).reduce((a, o) => a + o.n, 0);
+      svg.appendChild(sv("path", { class: "dia-link calc rest", "data-w": "__rest", "data-k": k, d: curve(colW.r + 6, yW(wl.length), colE.x, yE(emos.indexOf(k))), fill: "none", stroke: S.emo.get(k).color, "stroke-opacity": 0.55, "stroke-width": Math.min(1 + n * 0.5, 5) }));
+    });
+    // 감정→주제(점선, 해석)
     themes.forEach((t, ti) => t.emos.forEach((k) => {
-      svg.appendChild(sv("path", { d: curve(colE.x + colE.w, yE(emos.indexOf(k)), colT.x - 6, yT(ti)), fill: "none", stroke: "#8a8072", "stroke-width": 1.4, "stroke-dasharray": "5 4" }));
+      svg.appendChild(sv("path", { class: "dia-link interp", "data-k": k, "data-t": String(ti), d: curve(colE.x + colE.w, yE(emos.indexOf(k)), colT.x - 6, yT(ti)), fill: "none", stroke: "#8a8072", "stroke-width": 1.4, "stroke-dasharray": "5 4" }));
     }));
     // 시어 노드
     wl.forEach((o, i) => {
-      const g = sv("g", { class: "dia-node" });
+      const g = sv("g", { class: "dia-node word", "data-w": o.w, "data-key": "w:" + o.w });
       const on = S.focus && S.focus.type === "word" && S.focus.w === o.w;
       g.appendChild(sv("rect", { x: colW.x, y: yW(i) - 11, width: colW.r - colW.x + 4, height: 22, rx: 4, fill: on ? "#f0e2d6" : "transparent", stroke: "none" }));
-      g.appendChild(sv("text", { x: colW.r, y: yW(i) + 4, "text-anchor": "end", "font-size": 13, text: `${o.shown}${o.n > 1 ? " ×" + o.n : ""}` }));
-      pressable(g, `시어 ${o.shown}, ${o.n}회, ${S.emo.get(o.k).name}. 누르면 이 시어가 나온 행을 강조`, () => setFocus({ type: "word", w: o.w, label: o.shown }));
+      g.appendChild(sv("text", { x: colW.r, y: yW(i) + 4, "text-anchor": "end", "font-size": fs, text: `${o.shown}${o.n > 1 ? " ×" + o.n : ""}` }));
+      if (opt.interactive) pressable(g, `시어 ${o.shown}, ${o.n}회, ${S.emo.get(o.k).name}. 누르면 이 시어가 나온 행을 강조`, () => setFocus({ type: "word", w: o.w, label: o.shown }));
+      else g.setAttribute("aria-label", `시어 ${o.shown}, ${o.n}회, ${S.emo.get(o.k).name}`);
       svg.appendChild(g);
     });
-    if (!wl.length) svg.appendChild(sv("text", { x: colW.r, y: 50, "text-anchor": "end", "font-size": 12.5, fill: "#6b6359", text: "사전 감지 시어 없음" }));
+    if (rest.length) {
+      const n = rest.reduce((a, o) => a + o.n, 0);
+      const g = sv("g", { class: "dia-rest" });
+      g.appendChild(sv("text", { x: colW.r, y: yW(wl.length) + 4, "text-anchor": "end", "font-size": fs - 1, fill: "#6b6359", text: `그 밖의 시어 ${rest.length}종 (${n}회)` }));
+      svg.appendChild(g);
+    }
+    if (!all.length) svg.appendChild(sv("text", { x: colW.r, y: top + 14, "text-anchor": "end", "font-size": fs - 0.5, fill: "#6b6359", text: "사전 감지 시어 없음" }));
     // 감정 노드
     emos.forEach((k, i) => {
       const e = S.emo.get(k), j = S.K.indexOf(k);
       const on = S.focus && S.focus.type === "emo" && S.focus.k === k;
-      const g = sv("g", { class: "dia-node" });
+      const g = sv("g", { class: "dia-node emo", "data-k": k, "data-key": "e:" + k, "data-cy": String(yE(i)) });
       g.appendChild(sv("rect", { x: colE.x, y: yE(i) - 13, width: colE.w, height: 26, rx: 13, fill: on ? "#f0e2d6" : "#fffdf8", stroke: e.color, "stroke-width": 2 }));
       const lexN = lx.totals[j];
-      g.appendChild(sv("text", { x: colE.x + colE.w / 2, y: yE(i) + 4.5, "text-anchor": "middle", "font-size": 12.5, text: `${e.name} ${isZero(finOf(p.id)) ? "—" : fmt(fp[j]) + "%"}` }));
-      pressable(g, `${e.name}: 사전 감지 ${lexN}개, 최종 ${fmt(fp[j])}%. 누르면 해당 행 강조`, () => setFocus({ type: "emo", k }));
+      g.appendChild(sv("text", { x: colE.x + colE.w / 2, y: yE(i) + 4.5, "text-anchor": "middle", "font-size": fs - 0.5, text: `${e.name} ${isZero(finOf(p.id)) ? "—" : fmt(fp[j]) + "%"}` }));
+      if (opt.interactive) pressable(g, `${e.name}: 사전 감지 ${lexN}개, 최종 ${fmt(fp[j])}%. 누르면 해당 행 강조`, () => setFocus({ type: "emo", k }));
+      else g.setAttribute("aria-label", `${e.name}: 사전 감지 ${lexN}개, 최종 ${fmt(fp[j])}%`);
       svg.appendChild(g);
     });
     // 주제 노드(해석, 누를 수 없음)
+    const perLine = Math.max(8, Math.floor((colT.w - 20) / (fs * 0.98)));
     themes.forEach((t, ti) => {
-      const lines = wrap(t.label, 13);
-      const g = sv("g");
+      const lines = wrap(t.label, perLine);
+      const g = sv("g", { class: "dia-theme", "data-t": String(ti), "data-cy": String(yT(ti)) });
       g.appendChild(sv("rect", { x: colT.x, y: yT(ti) - 9 - lines.length * 8, width: colT.w, height: 18 + lines.length * 16, rx: 6, fill: "#f4eee3", stroke: "#cfc4b0", "stroke-dasharray": "4 3" }));
-      lines.forEach((ln, li) => g.appendChild(sv("text", { x: colT.x + 10, y: yT(ti) + 4 - (lines.length - 1) * 8 + li * 16, "font-size": 12.5, text: ln })));
+      lines.forEach((ln, li) => g.appendChild(sv("text", { x: colT.x + 10, y: yT(ti) + 4 - (lines.length - 1) * 8 + li * 16, "font-size": fs - 0.5, text: ln })));
       svg.appendChild(g);
     });
-    box.appendChild(svg);
-    if (hidden) box.appendChild(el("p", { class: "small muted", text: `감지 시어 ${words.size}종 가운데 많이 나온 ${MAXW}종만 그렸습니다(${hidden}종 생략). 감정 비율 계산에는 모두 들어갑니다.` }));
-    if (!themes.length) box.appendChild(el("p", { class: "small muted", text: "이 작품에는 감정–주제 연결(해석)이 없습니다." }));
+    return { svg, total: all.length, shown: wl.length, rest, themes, W, H };
+  }
+  function renderDiagram() {
+    const ae = document.activeElement;
+    const key = ae && ae.closest && ae.closest("#dia") && ae.dataset ? ae.dataset.key : null;
+    const box = clear($("dia"));
+    const avail = (box.clientWidth || 760) - 2;
+    const d = buildDiagram({ avail, maxW: 960, interactive: true });
+    const wrapBox = el("div", { class: "dia-wrap" }); wrapBox.appendChild(d.svg); box.appendChild(wrapBox);
+    const foot = el("div", { class: "dia-foot small" });
+    const restN = d.rest.reduce((a, o) => a + o.n, 0);
+    foot.appendChild(el("span", { id: "diaCount", class: "muted",
+      text: d.rest.length ? `전체 ${d.total}종 중 ${d.shown}종 표시 · 나머지 ${d.rest.length}종(${restN}회)은 ‘그 밖의 시어’로 묶어 같은 감정에 연결했습니다. 감정 비율과 감지 횟수는 그대로입니다.`
+        : d.total ? `감지 시어 ${d.total}종을 모두 표시했습니다.` : "사전이 감지한 시어가 없습니다." }));
+    if (d.W > avail + 1) foot.appendChild(el("span", { class: "muted", id: "diaSwipe", text: "좁은 화면에서는 그림을 옆으로 밀어 볼 수 있습니다." }));
+    foot.appendChild(el("button", { type: "button", class: "tbtn", id: "diaZoom", onclick: (e) => openZoom("dia", e.currentTarget) }, d.rest.length ? "전체 보기" : "확대 보기"));
+    box.appendChild(foot);
+    if (!d.themes.length) box.appendChild(el("p", { class: "small muted", text: "이 작품에는 감정–주제 연결(해석)이 없습니다." }));
+    if (key) { const n = box.querySelector(`[data-key="${CSS.escape(key)}"]`); if (n) n.focus({ preventScroll: true }); }
   }
   function wrap(s, n) {
     if (s.length <= n) return [s];
@@ -4217,13 +4950,8 @@ window.POEM_DATA = [
     return [s.slice(0, i).trim(), s.slice(i).trim()];
   }
 
-  // ---------------------------------------------------------------- F-13 감정 이미지(Canvas, 외부 호출 없음)
-  // 최종 감정 비율만큼 그 감정 색의 ‘결’(물결 붓질)을 겹쳐 그린다. 같은 시·같은 비율이면 항상 같은 그림이 나오도록 시 id로 난수를 고정한다.
-  function seeded(str) {
-    let h = 2166136261;
-    for (const c of str) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); }
-    return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; };
-  }
+  // ---------------------------------------------------------------- F-13 감정 이미지(창가와 풍경, Canvas, 외부 호출 없음)
+  // 장면 규칙·그리기는 js/scene.js(window.PoemScene)에 따로 있다. 여기서는 현재 최종 벡터를 넘기고 결과를 보여 준다.
   function hexA(hex, a) {
     const n = parseInt(hex.slice(1), 16);
     return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
@@ -4231,66 +4959,31 @@ window.POEM_DATA = [
   function renderImage() {
     const p = S.byId.get(S.sel);
     const vec = finOf(p.id), ps = pct(vec);
-    const cv = $("emoCanvas");
-    const g = cv.getContext && cv.getContext("2d");
-    const lg = clear($("imgLegend"));
-    if (!g) { lg.appendChild(el("li", { text: "이 브라우저는 Canvas를 지원하지 않아 그림을 그리지 못합니다." })); return; }
-    const W = cv.width, H = cv.height;
-    g.clearRect(0, 0, W, H);
-    g.fillStyle = "#f8f3e8"; g.fillRect(0, 0, W, H);
-    const rnd = seeded(p.id + Math.round(S.w * 100));
-    // 한지 결
-    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(120,100,70,${0.03 * rnd()})`; g.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 3, 1); }
-    const order = S.K.map((k, j) => [vec[j], k]).filter((x) => x[0] > 0).sort((a, b) => b[0] - a[0]);
-    if (!order.length) {
-      g.fillStyle = "#6b6359"; g.font = "15px sans-serif"; g.textAlign = "center";
-      g.fillText("그릴 감정 값이 없습니다(사전 감지 0건, 사전 100%)", W / 2, H / 2);
-      lg.appendChild(el("li", { text: "감정 값이 없어 빈 화면으로 둡니다. 가중치를 낮추면 해석 프로필로 그립니다." }));
+    const cv = $("emoCanvas"), lg = clear($("imgLegend")), empty = $("imgEmpty");
+    const SC = window.PoemScene;
+    const sp = SC && SC.spec({ vec, pct: ps, K: S.K, emos: S.EMOS, dominant: dominantOf(vec),
+      profileOnly: S.lex.get(p.id).total === 0 && !!S.phat.get(p.id) && S.w < 1 });
+    S.scene = sp || null;
+    cv.dataset.scene = sp ? JSON.stringify({ dominant: sp.dominant, mods: sp.mods, figure: sp.figure.present, pose: sp.figure.pose || null }) : "";
+    if (!sp) {
+      cv.hidden = true; $("imgNote").hidden = true; $("imgSave").hidden = true;
+      empty.hidden = false;
+      empty.textContent = "사전 감지 0건이고 사전 100%라 최종 감정 값이 모두 0입니다. 임의의 감정 장면을 만들지 않습니다. 가중치를 낮추면 해석 프로필로 장면을 그립니다.";
       $("imgPrompt").value = "";
       return;
     }
-    // 비중이 큰 감정일수록 화면에서 넓은 띠(높이)와 많은 붓질을 차지한다
-    let y0 = H * 0.08;
-    const usable = H * 0.84;
-    order.forEach(([v, k]) => {
-      const e = S.emo.get(k);
-      const band = usable * v;
-      const strokes = Math.max(3, Math.round(60 * v));
-      for (let s = 0; s < strokes; s++) {
-        const yc = y0 + band * rnd();
-        const amp = 6 + 26 * rnd() * (k === "calm" ? 0.4 : k === "fear" || k === "anger" ? 1.6 : 1);
-        const freq = (k === "fear" || k === "anger" ? 3.2 : 1.4) + rnd() * 1.6;
-        const ph = rnd() * Math.PI * 2;
-        g.beginPath();
-        for (let x = -10; x <= W + 10; x += 8) {
-          const y = yc + Math.sin((x / W) * Math.PI * freq + ph) * amp + (rnd() - 0.5) * 2;
-          if (x === -10) g.moveTo(x, y); else g.lineTo(x, y);
-        }
-        g.strokeStyle = hexA(e.color, 0.12 + 0.25 * rnd());
-        g.lineWidth = 1 + 9 * rnd() * Math.sqrt(v);
-        g.lineCap = "round";
-        g.stroke();
-      }
-      y0 += band;
+    cv.hidden = false; $("imgNote").hidden = false; $("imgSave").hidden = false; empty.hidden = true;
+    const ok = SC.draw(cv, sp, { seed: `${p.id}|${Math.round(S.w * 100)}`, title: `「${p.title}」 ${p.poet}` });
+    if (!ok) { lg.appendChild(el("li", { text: "이 브라우저는 Canvas를 지원하지 않아 그림을 그리지 못합니다." })); }
+    const lines = SC.describe(sp);
+    lines.forEach((t, i) => {
+      const it = sp.items[i];
+      lg.appendChild(el("li", it ? { style: `--c:${S.emo.get(it.k).color}`, "data-k": it.k, "data-role": it.role, text: t } : { class: "rule", text: t }));
     });
-    // 지배 정서 먹 점
-    const d = S.emo.get(order[0][1]);
-    g.beginPath(); g.arc(W * (0.72 + 0.1 * rnd()), H * (0.22 + 0.1 * rnd()), 18 + 30 * order[0][0], 0, Math.PI * 2);
-    g.fillStyle = hexA(d.color, 0.55); g.fill();
-    g.fillStyle = "rgba(42,37,33,.75)"; g.font = "13px serif"; g.textAlign = "left";
-    g.fillText(`「${p.title}」 ${p.poet}`, 16, H - 14);
-    cv.setAttribute("aria-label", `「${p.title}」 감정 이미지: ${order.map(([v, k]) => `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`).join(", ")}의 비율로 색 띠를 그렸습니다.`);
-    order.forEach(([, k]) => lg.appendChild(el("li", null, el("span", { class: "sw", style: `--c:${S.emo.get(k).color}`, "aria-hidden": "true" }), `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`)));
-    lg.appendChild(el("li", { class: "muted", text: "띠의 높이 = 비율, 물결의 세기 = 감정의 성격(평온은 잔잔, 불안·분노는 거칠게)" }));
-    // AI 이미지용 프롬프트(복사해서 외부 서비스에 직접 붙여 넣는 용도)
-    const top = order.slice(0, 4).map(([, k]) => `${S.emo.get(k).name} ${fmt(ps[S.K.indexOf(k)])}%`).join(", ");
-    $("imgPrompt").value = [
-      `한국 근대시 「${p.title}」(${p.poet}, ${yearInfo(p)})의 정서를 표현한 그림을 그려 주세요.`,
-      `핵심 구절: ${(p.key || []).join(" / ")}`,
-      `주제: ${p.theme}`,
-      `정서 비율(${methodLabel(p)}): ${top}. 가장 큰 정서는 ${d.name}입니다.`,
-      `화풍: 한지 위 수묵 담채, 넉넉한 여백, 절제된 색. 그림 안에 글자나 실존 인물은 넣지 않습니다.`,
-    ].join("\n");
+    if (sp.profileOnly) lg.appendChild(el("li", { class: "rule", text: "사전 감지 시어가 없어 해석 프로필만 반영한 장면입니다." }));
+    lg.appendChild(el("li", { class: "rule", text: "감정 비율은 장면의 분위기와 요소를 고르는 데 쓰였고, 그림 속 면적과 정확히 비례하지는 않습니다." }));
+    cv.setAttribute("aria-label", `「${p.title}」 감정 이미지. ${lines.join(". ")}`);
+    $("imgPrompt").value = SC.prompt(sp, p.title);
   }
 
   // ---------------------------------------------------------------- F-09 추천
@@ -4364,92 +5057,213 @@ window.POEM_DATA = [
   }
 
   // ---------------------------------------------------------------- F-12 감성 지도(PCA)
-  function renderPCA() {
-    const box = clear($("pca"));
-    const axesP = clear($("pcaAxes"));
+  // 감성 지도. PCA 계산·좌표는 그대로 두고, 그리는 크기만 정한다.
+  //  - 실제 px로 그림(변환 없음). 기본 보기 너비 = 칸 너비를 300~640px로 제한, 높이 ≈ 너비×9/16(최소 300)
+  //  - 축 이름은 위·아래 여백 줄에만, 작품 이름표는 안쪽 그림 영역에만 → 서로 겹치지 않음
+  //  - 이름표가 겹치면 선택한 작품을 먼저, 나머지는 점을 누르거나 초점을 주면 이름이 뜬다
+  let measureCtx = null;
+  function textW(t, fs, bold) {
+    try {
+      measureCtx = measureCtx || document.createElement("canvas").getContext("2d");
+      measureCtx.font = `${bold ? 700 : 400} ${fs}px ${getComputedStyle(document.body).fontFamily}`;
+      return measureCtx.measureText(t).width * 1.04 + 2;
+    } catch (e) { return t.length * fs * 0.98 + 2; }
+  }
+  function pcaData() {
     const pts = S.poems.filter((p) => !isZero(finOf(p.id)));
     const skipped = S.poems.filter((p) => isZero(finOf(p.id)));
-    clear($("pcaSummary"));
-    if (pts.length < 3) { box.appendChild(el("p", { class: "notice small", text: "감정 벡터가 있는 작품이 3편 미만이라 지도를 그리지 않습니다." })); return; }
-    const res = window.PoemEngine.pca2(pts.map((p) => finOf(p.id)));
-    const W = 560, H = 420, pad = 40;
-    const xs = res.coords.map((c) => c[0]), ys = res.coords.map((c) => c[1]);
-    const ext = (a) => { const m = Math.max(...a.map(Math.abs), 1e-6); return m * 1.12; };
-    const ex = ext(xs), ey = ext(ys);
-    const X = (v) => W / 2 + (v / ex) * (W / 2 - pad);
-    const Y = (v) => H / 2 - (v / ey) * (H / 2 - pad);
-    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, style: "width:100%;min-width:480px", "aria-label": "감성 지도(주성분분석 2차원)" });
-    svg.appendChild(sv("rect", { x: 0, y: 0, width: W, height: H, fill: "#fffdf8", rx: 8 }));
-    svg.appendChild(sv("line", { x1: pad / 2, x2: W - pad / 2, y1: H / 2, y2: H / 2, stroke: "#d8cfbe" }));
-    svg.appendChild(sv("line", { y1: pad / 2, y2: H - pad / 2, x1: W / 2, x2: W / 2, stroke: "#d8cfbe" }));
-    const axisName = (comp, sign) => {
-      const idx = comp.map((v, j) => [v * sign, j]).filter((x) => x[0] > 0.15).sort((a, b) => b[0] - a[0]).slice(0, 2);
-      return idx.length ? idx.map((x) => S.EMOS[x[1]].name).join(", ") : "뚜렷한 감정 없음";
-    };
+    if (pts.length < 3) return { pts, skipped, res: null };
+    return { pts, skipped, res: window.PoemEngine.pca2(pts.map((p) => finOf(p.id))) };
+  }
+  function pcaAxisName(comp, sign) {
+    const idx = comp.map((v, j) => [v * sign, j]).filter((x) => x[0] > 0.15).sort((a, b) => b[0] - a[0]).slice(0, 2);
+    return idx.length ? idx.map((x) => S.EMOS[x[1]].name).join(", ") : "뚜렷한 감정 없음";
+  }
+  function buildPCA(data, opt) {
+    const { pts, res } = data;
+    const fsA = opt.fs || 12, fsL = opt.fs || 12, rP = opt.big ? 6 : 5;
+    const W = Math.round(Math.max(300, Math.min(opt.maxW, opt.avail)));
     const c1 = res.comps[0], c2 = res.comps[1];
-    const lab = (x, y, t, a) => svg.appendChild(sv("text", { x, y, "text-anchor": a, "font-size": 13, fill: "#7c3b2a", text: t }));
-    lab(W - 8, H / 2 - 6, `${axisName(c1, 1)} →`, "end");
-    lab(8, H / 2 - 6, `← ${axisName(c1, -1)}`, "start");
-    lab(W / 2 + 6, 16, `↑ ${axisName(c2, 1)}`, "start");
-    lab(W / 2 + 6, H - 8, `↓ ${axisName(c2, -1)}`, "start");
-    // 점을 먼저 모두 그리고, 이름표는 겹치지 않는 자리(오른쪽·왼쪽·위·아래)에만 붙인다.
+    // 축 이름 배치(위 한 줄 + 아래 줄들, 겹치면 다음 줄로)
+    const up = `↑ ${pcaAxisName(c2, 1)}`, down = `↓ ${pcaAxisName(c2, -1)}`, left = `← ${pcaAxisName(c1, -1)}`, right = `${pcaAxisName(c1, 1)} →`;
+    const rowsB = [];
+    const place = (t, align) => {
+      const w = textW(t, fsA);
+      const span = align === "start" ? [8, 8 + w] : align === "end" ? [W - 8 - w, W - 8] : [W / 2 - w / 2, W / 2 + w / 2];
+      let r = 0;
+      while (rowsB[r] && rowsB[r].some((q) => !(span[1] + 10 < q[0] || span[0] > q[1] + 10))) r++;
+      (rowsB[r] = rowsB[r] || []).push(span);
+      return { t, align, r };
+    };
+    const bl = [place(left, "start"), place(right, "end"), place(down, "middle")];
+    const padT = fsA + 14, padB = rowsB.length * (fsA + 5) + 10, padX = 10;
+    const H = Math.round(Math.max(300, W * 9 / 16, padT + padB + 200));
+    const area = { x1: padX, x2: W - padX, y1: padT, y2: H - padB };
+    const xs = res.coords.map((c) => c[0]), ys = res.coords.map((c) => c[1]);
+    const ext = (a) => Math.max(...a.map(Math.abs), 1e-6) * 1.08;
+    const ex = ext(xs), ey = ext(ys);
+    const cx = (area.x1 + area.x2) / 2, cy = (area.y1 + area.y2) / 2;
+    const hw = (area.x2 - area.x1) / 2 - rP - 4, hh = (area.y2 - area.y1) / 2 - rP - 4;
+    const X = (v) => cx + (v / ex) * hw, Y = (v) => cy - (v / ey) * hh;
+    const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, class: "pca-svg", "aria-label": "감성 지도(주성분분석 2차원)" });
+    svg.appendChild(sv("rect", { x: 0, y: 0, width: W, height: H, fill: "#fffdf8", rx: 8 }));
+    svg.appendChild(sv("rect", { x: area.x1, y: area.y1, width: area.x2 - area.x1, height: area.y2 - area.y1, fill: "none", stroke: "#eee6d8", rx: 4 }));
+    svg.appendChild(sv("line", { x1: area.x1, x2: area.x2, y1: cy, y2: cy, stroke: "#d8cfbe" }));
+    svg.appendChild(sv("line", { y1: area.y1, y2: area.y2, x1: cx, x2: cx, stroke: "#d8cfbe" }));
+    const axisT = (x, y, t, a, cls) => svg.appendChild(sv("text", { x, y, "text-anchor": a, "font-size": fsA, fill: "#7c3b2a", class: "pca-axis " + cls, text: t }));
+    axisT(W / 2, fsA + 4, up, "middle", "up");
+    bl.forEach((b, i) => axisT(b.align === "start" ? 8 : b.align === "end" ? W - 8 : W / 2, H - padB + 8 + (b.r + 1) * (fsA + 5) - 2, b.t, b.align, ["left", "right", "down"][i]));
+    // 점 위치
     const P = pts.map((p, i) => ({ p, x: X(res.coords[i][0]), y: Y(res.coords[i][1]), d: dominantOf(finOf(p.id)) }));
-    const boxes = P.map((q) => ({ x1: q.x - 6, y1: q.y - 6, x2: q.x + 6, y2: q.y + 6 }));
-    const overlaps = (b) => boxes.some((o) => !(b.x2 < o.x1 || b.x1 > o.x2 || b.y2 < o.y1 || b.y1 > o.y2)) || b.x1 < 2 || b.x2 > W - 2 || b.y1 < 2 || b.y2 > H - 2;
+    // 이름표: 그림 영역 안, 점·다른 이름표와 겹치지 않는 자리만
+    const boxes = P.map((q) => ({ x1: q.x - rP - 1, y1: q.y - rP - 1, x2: q.x + rP + 1, y2: q.y + rP + 1, pt: q.p.id }));
+    const inside = (b) => b.x1 >= area.x1 + 2 && b.x2 <= area.x2 - 2 && b.y1 >= area.y1 + 2 && b.y2 <= area.y2 - 2;
+    const hit = (b, self) => boxes.some((o) => o.pt !== self && !(b.x2 < o.x1 || b.x1 > o.x2 || b.y2 < o.y1 || b.y1 > o.y2));
     const omitted = [];
-    const labelLayer = sv("g");
+    const labelLayer = sv("g", { class: "pca-labels" });
     const order = P.slice().sort((a, b) => (b.p.id === S.sel) - (a.p.id === S.sel));
     for (const q of order) {
       const sel = q.p.id === S.sel;
-      const fs = sel ? 14 : 12.5;
-      const tw = q.p.title.length * fs * 0.98 + 2, th = fs + 2;
+      const fs = sel ? fsL + 1 : fsL;
+      const tw = textW(q.p.title, fs, sel), gap = rP + 3;
+      // 글자 상자는 실제 렌더링 상자(기준선 위 1.1em, 아래 0.4em)에 맞춘다
+      const bx = (x1, x2, base) => ({ x1, x2, y1: base - fs * 1.1, y2: base + fs * 0.4 });
+      const midBase = q.y + fs * 0.35, upBase = q.y - gap - fs * 0.4, downBase = q.y + gap + fs * 1.1;
       const cand = [
-        { x: q.x + 9, y: q.y + 4, a: "start", b: { x1: q.x + 8, y1: q.y - th / 2, x2: q.x + 9 + tw, y2: q.y + th / 2 } },
-        { x: q.x - 9, y: q.y + 4, a: "end", b: { x1: q.x - 9 - tw, y1: q.y - th / 2, x2: q.x - 8, y2: q.y + th / 2 } },
-        { x: q.x, y: q.y - 10, a: "middle", b: { x1: q.x - tw / 2, y1: q.y - 10 - th, x2: q.x + tw / 2, y2: q.y - 8 } },
-        { x: q.x, y: q.y + 19, a: "middle", b: { x1: q.x - tw / 2, y1: q.y + 8, x2: q.x + tw / 2, y2: q.y + 10 + th } },
+        { x: q.x + gap, y: midBase, a: "start", b: bx(q.x + gap - 1, q.x + gap + tw, midBase) },
+        { x: q.x - gap, y: midBase, a: "end", b: bx(q.x - gap - tw, q.x - gap + 1, midBase) },
+        { x: q.x, y: upBase, a: "middle", b: bx(q.x - tw / 2, q.x + tw / 2, upBase) },
+        { x: q.x, y: downBase, a: "middle", b: bx(q.x - tw / 2, q.x + tw / 2, downBase) },
       ];
-      const c = cand.find((k) => !overlaps(k.b)) || (sel ? cand[0] : null);
+      let c = cand.find((k) => inside(k.b) && !hit(k.b, q.p.id));
+      if (!c && sel) c = cand.find((k) => inside(k.b)) || cand[0];
       if (!c) { omitted.push(q.p.title); continue; }
-      boxes.push(c.b);
-      if (sel) labelLayer.appendChild(sv("rect", { x: c.b.x1 - 2, y: c.b.y1 - 1, width: c.b.x2 - c.b.x1 + 4, height: c.b.y2 - c.b.y1 + 3, fill: "#fffdf8", "fill-opacity": 0.9, rx: 3 }));
-      labelLayer.appendChild(sv("text", { x: c.x, y: c.y, "text-anchor": c.a, "font-size": fs, "font-weight": sel ? 700 : 400, "pointer-events": "none", text: q.p.title }));
+      boxes.push({ ...c.b, pt: "__label" });
+      const g = sv("g", { class: "pca-label" + (sel ? " sel" : ""), "data-id": q.p.id });
+      if (sel) g.appendChild(sv("rect", { x: c.b.x1 - 2, y: c.b.y1 - 1, width: c.b.x2 - c.b.x1 + 4, height: c.b.y2 - c.b.y1 + 3, fill: "#fffdf8", "fill-opacity": 0.92, rx: 3 }));
+      g.appendChild(sv("text", { x: c.x, y: c.y, "text-anchor": c.a, "font-size": fs, "font-weight": sel ? 700 : 400, "pointer-events": "none", text: q.p.title }));
+      labelLayer.appendChild(g);
     }
     P.forEach((q) => {
       const sel = q.p.id === S.sel;
-      const g = sv("g", { class: "pca-pt", "data-id": q.p.id });
+      const g = sv("g", { class: "pca-pt" + (sel ? " cur" : ""), "data-id": q.p.id });
       g.appendChild(sv("title", { text: q.p.title }));
-      g.appendChild(sv("circle", { cx: q.x, cy: q.y, r: sel ? 8 : 5.5, fill: S.emo.get(q.d).color, stroke: sel ? "#2a2521" : "#fffdf8", "stroke-width": sel ? 2.5 : 1.5 }));
-      // 터치·클릭·키보드: 먼저 이름과 지배 정서를 알려 주고, 이동은 따로 누른다(휴대폰에서 이름 확인용)
-      pressable(g, `${q.p.title}, 지배 정서 ${S.emo.get(q.d).name}. 누르면 아래에 이름이 표시됨`, () => pcaPick(q.p.id));
+      if (sel) g.appendChild(sv("circle", { cx: q.x, cy: q.y, r: rP + 5, fill: "none", stroke: "#2a2521", "stroke-width": 1.5 }));
+      g.appendChild(sv("circle", { class: "dot", cx: q.x, cy: q.y, r: sel ? rP + 2 : rP, fill: S.emo.get(q.d).color, stroke: sel ? "#2a2521" : "#fffdf8", "stroke-width": sel ? 2 : 1.5 }));
+      g.appendChild(sv("circle", { cx: q.x, cy: q.y, r: rP + 4, fill: "transparent" }));   // 누르기 쉬운 범위
+      pressable(g, `${q.p.title}, 지배 정서 ${S.emo.get(q.d).name}${sel ? ", 지금 보고 있는 시" : ""}. 누르면 이름 표시`, () => pcaPick(q.p.id));
+      g.addEventListener("focus", () => pcaPick(q.p.id, true));
       svg.appendChild(g);
     });
     svg.appendChild(labelLayer);
-    box.appendChild(svg);
+    svg.appendChild(sv("g", { class: "pca-flag" }));
+    svg.__pts = P; svg.__area = area; svg.__fs = fsL;
+    return { svg, omitted, W, H };
+  }
+  function renderPCA() {
+    const box = clear($("pca"));
+    const axesP = clear($("pcaAxes"));
+    clear($("pcaSummary"));
+    const data = pcaData();
+    S.pcaData = data;
+    $("pcaZoom").hidden = !data.res;
+    if (!data.res) { box.appendChild(el("p", { class: "notice small", text: "감정 벡터가 있는 작품이 3편 미만이라 지도를 그리지 않습니다." })); return; }
+    const { res, pts, skipped } = data;
+    const avail = (box.clientWidth || 640) - 2;
+    const m = buildPCA(data, { avail, maxW: 640 });
+    box.appendChild(m.svg);
     const e1 = (res.explained[0] * 100).toFixed(1), e2 = (res.explained[1] * 100).toFixed(1);
     const cum = Math.min(100, (res.explained[0] + res.explained[1]) * 100);
     $("pcaSummary").textContent = `두 축은 전체 감정 벡터 분산의 약 ${cum.toFixed(1)}%를 보여 줍니다. 나머지 ${(100 - cum).toFixed(1)}%는 지도에서 보이지 않으므로, 지도에서 가까워도 원래 감정 구성이 모두 비슷한 것은 아닙니다.`;
     if (S.pcaPick && !pts.some((q) => q.id === S.pcaPick)) S.pcaPick = null;
     pcaPick(S.pcaPick, true);
+    const c1 = res.comps[0], c2 = res.comps[1];
     append(axesP, [
-      el("strong", { text: "가로축" }), ` (분산의 ${e1}%): 오른쪽일수록 ${axisName(c1, 1)}, 왼쪽일수록 ${axisName(c1, -1)} 비중이 큽니다. `,
-      el("strong", { text: "세로축" }), ` (분산의 ${e2}%): 위일수록 ${axisName(c2, 1)}, 아래일수록 ${axisName(c2, -1)}. `,
-      "점 색은 각 작품의 지배 정서입니다.",
-      omitted.length ? ` 이름표가 겹쳐 생략한 점: ${omitted.join(", ")}(점을 누르면 이름이 나옵니다).` : "",
+      el("strong", { text: "가로축" }), ` (분산의 ${e1}%): 오른쪽일수록 ${pcaAxisName(c1, 1)}, 왼쪽일수록 ${pcaAxisName(c1, -1)} 비중이 큽니다. `,
+      el("strong", { text: "세로축" }), ` (분산의 ${e2}%): 위일수록 ${pcaAxisName(c2, 1)}, 아래일수록 ${pcaAxisName(c2, -1)}. `,
+      "점 색은 각 작품의 지배 정서이고, 지금 보고 있는 시는 큰 점과 검은 테두리로 표시합니다.",
+      m.omitted.length ? ` 이름표가 겹쳐 생략한 점 ${m.omitted.length}개(${m.omitted.join(", ")})는 점을 누르거나 키보드로 초점을 옮기면 이름이 나옵니다.` : "",
       skipped.length ? ` 최종 벡터가 0인 작품(${skipped.map((p) => p.title).join(", ")})은 지도에서 뺐습니다.` : "",
       " 가중치를 바꾸면 축의 뜻도 달라질 수 있습니다.",
     ]);
+    if (S.zoom === "map") renderZoomBody();
   }
 
+  // 고른 점: 지도 안에 이름 깃발을 띄우고, 아래 줄에 이름·지배 정서를 적는다(모든 지도에 같이 적용)
   function pcaPick(id, quiet) {
     S.pcaPick = id;
-    const box = clear($("pcaPick"));
-    for (const g of $("pca").querySelectorAll(".pca-pt")) g.classList.toggle("picked", g.dataset.id === id);
-    if (!id) { box.textContent = "점을 누르면(휴대폰은 터치) 작품 이름과 지배 정서가 여기에 나옵니다."; return; }
-    const q = S.byId.get(id), d = dominantOf(finOf(id));
-    append(box, [el("strong", { text: `「${q.title}」` }), ` ${q.poet} · 결합 기준 지배 정서 ${d ? S.emo.get(d).name : "없음"}`,
-      id === S.sel ? " (지금 보고 있는 시)" : el("button", { type: "button", class: "tbtn", onclick: () => selectPoem(id, { scrollTop: true }) }, "이 시 보기")]);
-    if (!quiet) box.setAttribute("tabindex", "-1");
+    for (const svg of document.querySelectorAll("svg.pca-svg")) {
+      for (const g of svg.querySelectorAll(".pca-pt")) g.classList.toggle("picked", g.dataset.id === id);
+      const flag = svg.querySelector(".pca-flag");
+      while (flag.firstChild) flag.removeChild(flag.firstChild);
+      const q = id && (svg.__pts || []).find((t) => t.p.id === id);
+      const labeled = id && svg.querySelector(`.pca-label[data-id="${id}"]`);
+      if (!q || labeled) continue;
+      const a = svg.__area, fs = svg.__fs, tw = textW(q.p.title, fs, true), th = fs + 6;
+      let x = q.x + 9, y = q.y - th - 4;
+      if (x + tw + 8 > a.x2) x = q.x - 9 - tw - 8;
+      if (y < a.y1) y = q.y + 8;
+      x = Math.max(a.x1 + 2, x);
+      flag.appendChild(sv("rect", { x, y, width: tw + 8, height: th, rx: 4, fill: "#2a2521", "fill-opacity": 0.88 }));
+      flag.appendChild(sv("text", { x: x + 4, y: y + th - 5, "font-size": fs, "font-weight": 700, fill: "#fffdf8", "pointer-events": "none", text: q.p.title }));
+    }
+    for (const box of [$("pcaPick"), $("zoomPick")]) {
+      if (!box) continue;
+      clear(box);
+      if (!id) { box.textContent = "점을 누르면(휴대폰은 터치, 키보드는 초점) 작품 이름과 지배 정서가 여기와 지도 안에 나옵니다."; continue; }
+      const q = S.byId.get(id), d = dominantOf(finOf(id));
+      append(box, [el("strong", { text: `「${q.title}」` }), ` ${q.poet} · 결합 기준 지배 정서 ${d ? S.emo.get(d).name : "없음"}`,
+        id === S.sel ? " (지금 보고 있는 시)" : box.id === "pcaPick" ? el("button", { type: "button", class: "tbtn", onclick: () => selectPoem(id, { scrollTop: true }) }, "이 시 보기") : ""]);
+    }
+    if (!quiet) $("pcaPick").setAttribute("tabindex", "-1");
+  }
+
+  // ---------------------------------------------------------------- 확대 보기(시어 연결·감성 지도 공용 대화상자)
+  function renderZoomBody() {
+    const body = clear($("zoomBody"));
+    const avail = Math.max(300, body.clientWidth - 4);
+    if (S.zoom === "dia") {
+      const d = buildDiagram({ full: true, avail, maxW: 1100, fs: 14, rowH: 32, interactive: false });
+      body.appendChild(d.svg);
+      $("zoomNote").textContent = `감지 시어 ${d.total}종 전체를 표시합니다. 실선은 사전이 실제로 감지한 연결(계산), 점선은 해석 연결입니다. 긴 그림은 이 창 안에서 스크롤됩니다.`;
+      $("zoomPick").hidden = true;
+    } else if (S.zoom === "map" && S.pcaData && S.pcaData.res) {
+      const m = buildPCA(S.pcaData, { avail: Math.max(600, avail), maxW: 960, fs: 13, big: true });
+      body.appendChild(m.svg);
+      $("zoomNote").textContent = m.omitted.length ? `이름표가 겹쳐 생략한 점 ${m.omitted.length}개는 점을 누르거나 Tab으로 초점을 옮기면 이름이 나옵니다.` : "모든 작품의 이름을 표시했습니다.";
+      $("zoomPick").hidden = false;
+      pcaPick(S.pcaPick, true);
+    }
+  }
+  function openZoom(kind, opener) {
+    const dlg = $("zoomDlg");
+    S.zoom = kind; S.zoomOpener = opener || null;
+    $("zoomTitle").textContent = kind === "dia" ? `시어 → 감정 → 주제 · 「${S.byId.get(S.sel).title}」` : "감성 지도 · 확대 보기";
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+    renderZoomBody();
+    $("zoomClose").focus();
+  }
+  function bindZoom() {
+    const dlg = $("zoomDlg");
+    const close = () => { if (typeof dlg.close === "function") dlg.close(); else { dlg.removeAttribute("open"); dlg.dispatchEvent(new Event("close")); } };
+    $("zoomClose").addEventListener("click", close);
+    $("pcaZoom").addEventListener("click", (e) => openZoom("map", e.currentTarget));
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); });
+    dlg.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { e.preventDefault(); close(); }
+      if (e.key === "Tab") {
+        const f = [...dlg.querySelectorAll('button, [tabindex="0"]')].filter((n) => !n.closest("[hidden]"));
+        const i = f.indexOf(document.activeElement);
+        e.preventDefault();
+        f[(i < 0 ? 0 : i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+      }
+    });
+    dlg.addEventListener("close", () => {
+      S.zoom = null; clear($("zoomBody"));
+      const o = S.zoomOpener;
+      const back = o && document.contains(o) ? o : S.zoomOpener && S.zoomOpener.id ? $(S.zoomOpener.id) : null;
+      (back || $("pcaZoom")).focus();
+    });
   }
 
   // ---------------------------------------------------------------- F-11 내 시 분석
