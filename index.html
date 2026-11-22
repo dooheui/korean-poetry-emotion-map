@@ -609,6 +609,47 @@ main { gap:12px; }
 .zoom-pick { padding: 0 14px 10px; margin: 0; }
 #zoomNote { margin: 2px 0 0; }
 @media (max-width: 768px) { .zoom-dlg { width: 96vw; max-height: 94vh; } #pcaZoom, #diaZoom, #zoomClose { min-height: 44px; } }
+
+/* ---------- 마무리 손질(2026-11-22) ---------- */
+/* 숫자 정렬: 비율·행 번호·표 숫자 */
+.ratios .v, .ln .no, .ln .cnt, .heat, .heat-card .v, .cmp, table, .emotion-pct, .tri-emo .b, .ev-line, .heat-detail { font-variant-numeric: tabular-nums; }
+/* 짧은 시에서 본문 칸이 비어 보이지 않게: 본문 상자는 내용만큼, 넘칠 때만 스크롤 */
+@media (min-width:1180px) and (min-height:650px) { .poem-box { flex:0 1 auto; } }
+/* 감정 선택 안내(감정 비율 아래·연결도 아래 공통) */
+.emo-note .emo-note-sub { font-size:12.5px; color: var(--hint); }
+.emo-note .prof-note .lab { color: var(--ink-2); font-weight: 600; }
+.dia-note { margin-top: 0.5rem; max-width: 960px; font-size: 13px; }
+/* 전체 비교: 표 + 선택한 시 요약 */
+#heat { container-type: inline-size; }
+.heat-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 22px; align-items: start; }
+@container (min-width: 900px) { .heat-layout { grid-template-columns: minmax(0, max-content) minmax(220px, 280px); } }
+.heat-main { min-width: 0; }
+.heat-box { overflow-x: auto; max-width: 100%; }
+.heat td.hc { cursor: pointer; }
+.heat td.hc:focus { outline: none; }
+.heat td.hc.cur { box-shadow: inset 0 0 0 2px var(--ink); }
+.heat td.hc:focus-visible { box-shadow: inset 0 0 0 3px var(--focus); }
+.heat-detail { min-height: 1.6em; margin: 6px 0 4px; color: var(--ink-2); font-size: 13.5px; }
+.heat-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 2px 0 6px; font-size: 12.5px; }
+.heat-legend .lab { color: var(--ink-2); margin-right: 2px; }
+.heat-legend .sw-cell { display: inline-block; min-width: 2.4em; text-align: center; padding: 1px 3px; border-radius: 3px; border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.heat-legend .muted { margin-left: 4px; }
+.heat-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fffdf8; font-size: 13.5px; line-height: 1.55; }
+.heat-card p { margin: 0; }
+.heat-card .lab { font-size: 12px; letter-spacing: .05em; color: var(--muted); }
+.heat-card .ttl { margin-top: 2px; font-family: var(--f-poem); font-size: 15.5px; }
+.heat-card .wt { margin-top: 4px; color: var(--ink-2); font-size: 12.5px; }
+.heat-card .none { margin-top: 8px; color: var(--ink-2); }
+.heat-card .top { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; }
+.heat-card .top li { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 6px; }
+.heat-card .top .sw { width: 9px; height: 9px; border-radius: 2px; background: var(--c); }
+.heat-card .top .v { color: var(--ink-2); }
+.heat-card .hint { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--hint); font-size: 12.5px; }
+/* 감정 이미지 기준(접기) */
+.img-rule { max-width: 640px; margin: 0 0 0.5rem; }
+.img-rule summary { cursor: pointer; color: var(--ink-2); }
+.img-rule ul { margin: 6px 0 0; padding-left: 1.1rem; color: var(--ink-2); line-height: 1.55; }
+.img-legend li.rule { display: none; }
 </style>
 </head>
 <body>
@@ -697,7 +738,7 @@ main { gap:12px; }
         <aside id="evidenceSummary" class="evidence-summary" aria-label="사전 분석 근거"></aside>
         <div class="ratio-head">
           <h3 class="ratio-title">결합 결과의 감정 비율 <span id="ratioMethod" class="ratio-method"></span></h3>
-          <p class="ratio-hint" id="ratioHint">감정 이름을 누르면 시의 근거 구절을 볼 수 있어요.</p>
+          <p class="ratio-hint" id="ratioHint">감정 이름을 누르면 감지 시어와 해석 근거를 확인할 수 있어요.</p>
         </div>
         <ul id="ratios" class="ratios" aria-label="결합 결과의 감정 비율" aria-describedby="ratioHint"></ul>
         <div id="emoNote" class="emo-note" aria-live="polite" hidden></div>
@@ -745,6 +786,7 @@ main { gap:12px; }
       <div class="sec-head"><h2 id="diaTitle" class="sec-title">시어 → 감정 → 주제</h2>
       <span class="small muted"><span class="key-solid"></span> 계산(실제 감지) <span class="key-dash"></span> 해석</span></div>
       <div id="dia" class="chart-box dia-box"></div>
+      <div id="diaNote" class="emo-note dia-note" aria-live="polite" hidden></div>
     </section>
 
     <!-- 4단: F-09 -->
@@ -758,7 +800,15 @@ main { gap:12px; }
     <section class="pair">
       <section id="heat" class="panel" aria-labelledby="heatTitle">
         <div class="sec-head"><h2 id="heatTitle" class="sec-title">전체 비교</h2><span class="small muted">작품 × 정서 결합 비율(%)</span></div>
-        <div id="heatBox" class="scroll-x heat-box"></div>
+        <div class="heat-layout">
+          <div class="heat-main">
+            <div id="heatBox" class="heat-box"></div>
+            <p id="heatDetail" class="heat-detail small" aria-live="polite"></p>
+            <div id="heatLegend" class="heat-legend small"></div>
+            <div id="heatNotes"></div>
+          </div>
+          <aside id="heatCard" class="heat-card" aria-labelledby="heatCardTitle"></aside>
+        </div>
       </section>
       <section id="map" class="panel" aria-labelledby="mapTitle">
         <div class="sec-head"><h2 id="mapTitle" class="sec-title">감성 지도</h2><span class="small muted">주성분분석(PCA) 2차원</span></div>
@@ -778,6 +828,7 @@ main { gap:12px; }
           <p id="imgEmpty" class="notice small" hidden></p>
           <p id="imgNote" class="img-note small">감정 비율을 풍경·빛·색감과 선택적인 인물로 옮긴 상징적 장면입니다. 시에 실제로 등장하는 장면과 다를 수 있습니다.</p>
           <ul id="imgLegend" class="img-legend small" aria-label="이 그림에 적용한 감정과 표현 요소"></ul>
+          <details id="imgRule" class="img-rule small"><summary>그림이 만들어진 기준 <span id="imgRuleSum" class="muted"></span></summary><ul id="imgRuleList"></ul></details>
           <div class="row-btns"><button type="button" id="imgSave" class="tbtn">PNG로 저장</button><span id="imgSaveMsg" class="small muted" aria-live="polite"></span></div>
         </div>
         <div>
@@ -2902,11 +2953,14 @@ window.POEM_DATA = [
   // 차단어: 감정 시어를 품고 있지만 그 감정이 아닌 더 긴 낱말. 일치해도 세지 않는다.
   // 버전 기록: v1(첫 실행)에는 없었고, 검증 사례 5의 실행 결과를 보고 v2에서 넣었다.
   const BLOCK = ["바라보", "바라다보"];
+  // 낱말 첫머리 조건: 이 시어는 어절 첫머리(줄 처음, 공백·문장부호 뒤)에서만 센다.
+  // ‘고요’는 인용·연결 어미 ‘-라고요/-다고요/-고요’ 속에서 자주 잘못 일치하므로 넣었다(v4).
+  const WORD_START = ["고요"];
 
   // v3: 예시 사전과 비교하다가 기본형 ‘슬픔’, ‘기쁘(다)’, ‘괴로(움)’이 빠진 것을 찾아 넣었다(수록 20편의 결과는 바뀌지 않음 — README 사전 변경 기록).
-  const LEX_VERSION = "v3 (2026-11-21)";
+  const LEX_VERSION = "v4 (2026-11-22)";
 
-  const api = { EMOS, LEX, BLOCK, BOUNDARIES, LEX_VERSION };
+  const api = { EMOS, LEX, BLOCK, WORD_START, BOUNDARIES, LEX_VERSION };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.LEXICON = api;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -2959,7 +3013,11 @@ window.POEM_DATA = [
   // ---------------------------------------------------------------- 매처(5.2)
   const escapeRe = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  function buildMatcher(EMOS, LEX, BLOCK) {
+  // WORD_START: 낱말 첫머리에서만 세는 시어. 바로 앞 글자가 글자·숫자(같은 어절 안)이면 세지 않는다.
+  // 예: ‘고요’는 ‘고요한 밤’, ‘고요히’에서는 세고, ‘그림자라고요’·‘좋고요’의 어미 ‘-고요’에서는 세지 않는다.
+  // 영문 \b는 한글에 맞지 않으므로 쓰지 않고, 앞 글자를 유니코드 글자 속성(\p{L}\p{N})으로 직접 본다.
+  const WORD_CHAR = /[\p{L}\p{N}]/u;
+  function buildMatcher(EMOS, LEX, BLOCK, WORD_START) {
     const lookup = new Map();
     for (const e of EMOS) for (const w of LEX[e.k] || []) {
       if (lookup.has(w) && lookup.get(w) !== e.k) throw new Error(`시어 중복: ${w}`);
@@ -2968,7 +3026,8 @@ window.POEM_DATA = [
     for (const w of BLOCK || []) lookup.set(w, null);
     const words = [...lookup.keys()].sort((x, y) => y.length - x.length || (x < y ? -1 : x > y ? 1 : 0));
     const re = new RegExp(words.map(escapeRe).join("|"), "gu");
-    return { re, lookup, words };
+    const startOnly = new Set((WORD_START || []).filter((w) => lookup.has(w) && lookup.get(w) != null));
+    return { re, lookup, words, startOnly };
   }
 
   // ---------------------------------------------------------------- 시 한 편 분석(5.1~5.3)
@@ -2995,6 +3054,12 @@ window.POEM_DATA = [
         const start = map[m.index][0];
         const end = map[m.index + w.length - 1][1];
         if (k == null) { blocked.push({ no, w, start, end }); continue; }
+        if (matcher.startOnly && matcher.startOnly.has(w) && m.index > 0 && WORD_CHAR.test(a[m.index - 1])) {
+          // 어절 중간의 일치는 세지 않고, 한 글자 뒤부터 다시 찾는다(그 자리의 다른 시어를 놓치지 않게)
+          blocked.push({ no, w, start, end, rule: "word-start" });
+          matcher.re.lastIndex = m.index + 1;
+          continue;
+        }
         counts[K.indexOf(k)]++;
         hits.push({ w, k, start, end, shown: line.slice(start, end) });
       }
@@ -3128,74 +3193,84 @@ window.POEM_DATA = [
   // mod : 15% 이상인 보조 감정(최대 2개)이 더하는 요소 하나(빛·날씨·소품·색조)
   const SCENE_RULES = {
     sad: {
+      short: "비와 흐린 하늘",
       caption: "창밖의 비와 낮은 구름, 창에 맺힌 빗방울",
       outside: "낮게 깔린 구름과 내리는 비, 흐린 언덕",
       inside: () => "창유리에 맺힌 빗방울과 흐린 빛",
       tone: "푸른 회색의 낮은 채도",
-      mod: { caption: "창유리에 맺힌 빗방울", inside: "창유리에 맺힌 빗방울" },
+      mod: { short: "창에 맺힌 빗방울", caption: "창유리에 맺힌 빗방울", inside: "창유리에 맺힌 빗방울" },
     },
     joy: {
+      short: "밝은 햇살과 열린 들판",
       caption: "밝은 햇살과 열린 들판, 바닥까지 드는 햇빛",
       outside: "맑은 하늘의 밝은 햇살과 멀리 열린 들판",
       inside: () => "바닥까지 드는 햇빛과 창턱의 꽃병, 빈 의자",
       tone: "따뜻한 노랑·살구빛의 밝은 채도",
-      mod: { caption: "바닥에 드는 따뜻한 햇빛", inside: "바닥에 드는 따뜻한 햇빛" },
+      mod: { short: "바닥에 드는 햇빛", caption: "바닥에 드는 따뜻한 햇빛", inside: "바닥에 드는 따뜻한 햇빛" },
     },
     calm: {
+      short: "잔잔한 호수와 고른 빛",
       caption: "잔잔한 호수와 부드러운 언덕, 고른 빛",
       outside: "바람 없이 잔잔한 호수와 부드러운 언덕",
       inside: () => "살짝 드리운 커튼과 고른 빛, 작은 탁자 위의 책",
       tone: "연한 초록·크림빛의 부드러운 채도",
-      mod: { caption: "창턱의 작은 화분", inside: "창턱의 작은 화분" },
+      mod: { short: "창턱의 작은 화분", caption: "창턱의 작은 화분", inside: "창턱의 작은 화분" },
     },
     hope: {
+      short: "구름 사이의 빛과 밝아지는 수평선",
       caption: "구름 사이로 내려오는 빛과 밝아지는 수평선",
       outside: "구름 사이로 내려오는 빛과 밝아지는 바다 수평선",
       inside: (fig) => (fig ? "창으로 번지는 금빛" : "창을 향해 놓인 빈 의자와 창턱의 새싹 화분, 창으로 번지는 금빛"),
       tone: "청록과 금빛",
-      mod: { caption: "구름 틈으로 내려오는 빛줄기", outside: "구름 틈으로 내려오는 빛줄기" },
+      mod: { short: "구름 틈의 빛줄기", caption: "구름 틈으로 내려오는 빛줄기", outside: "구름 틈으로 내려오는 빛줄기" },
     },
     love: {
+      short: "따뜻한 등불과 노을빛 지붕",
       caption: "따뜻한 등불과 찻잔, 노을빛 지붕",
       outside: "노을 진 하늘 아래 불 켜진 낮은 지붕들",
       inside: (fig) => (fig ? "따뜻한 등불과 탁자 위의 찻잔" : "따뜻한 등불과 탁자 위의 찻잔 두 개"),
       tone: "부드러운 분홍·호박빛",
-      mod: { caption: "따뜻한 실내 조명", inside: "탁자 위의 따뜻한 등불" },
+      mod: { short: "따뜻한 실내 조명", caption: "따뜻한 실내 조명", inside: "탁자 위의 따뜻한 등불" },
     },
     shame: {
+      short: "창에 겹친 반사와 조용한 그림자",
       caption: "유리창에 겹친 실내 반사와 조용한 그림자",
       outside: "해 질 녘의 조용한 나무들",
       inside: () => "유리창에 겹쳐 비친 실내와 조용한 그림자",
       tone: "가라앉은 남회색과 옅은 살구빛",
-      mod: { caption: "유리창에 은은히 비친 실내 반사", inside: "유리창에 은은히 비친 실내 반사" },
+      mod: { short: "창에 비친 실내 반사", caption: "유리창에 은은히 비친 실내 반사", inside: "유리창에 은은히 비친 실내 반사" },
     },
     long: {
+      short: "먼 불빛과 비어 있는 의자",
       caption: "먼 지평선까지 이어진 길과 작은 불빛, 비어 있는 의자",
       outside: "먼 지평선까지 이어진 길과 작은 불빛들",
       inside: () => "창 아래 비어 있는 의자 하나",
       tone: "빛바랜 보라·남청빛",
-      mod: { caption: "먼 지평선의 작은 불빛들", outside: "먼 지평선의 작은 불빛들" },
+      mod: { short: "먼 지평선의 불빛", caption: "먼 지평선의 작은 불빛들", outside: "먼 지평선의 작은 불빛들" },
     },
     anger: {
+      short: "거센 바람과 날카로운 그림자",
       caption: "거센 바람에 휘는 나무와 날카로운 그림자",
       outside: "거센 바람에 휘는 나무와 흩날리는 잎, 빠르게 흐르는 구름",
       inside: (fig) => (fig ? "벽과 바닥에 비스듬히 꺾인 날카로운 그림자" : "벽과 바닥에 비스듬히 꺾인 날카로운 그림자와 흩어진 종이"),
       tone: "적갈색을 절제해 쓴 거친 색조",
-      mod: { caption: "바람에 흩날리는 나뭇잎", outside: "바람에 흩날리는 나뭇잎" },
+      mod: { short: "바람에 흩날리는 잎", caption: "바람에 흩날리는 나뭇잎", outside: "바람에 흩날리는 나뭇잎" },
     },
     fear: {
+      short: "짙은 안개와 흐린 시야",
       caption: "짙은 안개와 흐릿한 시야, 차가운 빛",
       outside: "짙은 안개에 가려 흐릿한 나무 윤곽",
       inside: () => "어둑한 방과 차가운 빛",
       tone: "차가운 보랏빛의 낮은 명도",
-      mod: { caption: "창밖에 낮게 깔린 안개", outside: "낮게 깔린 안개" },
+      mod: { short: "낮게 깔린 안개", caption: "창밖에 낮게 깔린 안개", outside: "낮게 깔린 안개" },
     },
     void: {
+      short: "옅어진 지평선과 빈자리",
       caption: "옅어진 지평선과 넓은 빈자리",
       outside: "옅어진 지평선과 텅 빈 들판",
       inside: () => "넓게 비운 방과 의자 하나",
       tone: "낮은 채도의 바랜 색",
-      mod: { caption: "옅어진 지평선", outside: "옅게 바랜 지평선" },
+      mod: { short: "옅어진 지평선", caption: "옅어진 지평선", outside: "옅게 바랜 지평선" },
     },
   };
 
@@ -3259,11 +3334,11 @@ window.POEM_DATA = [
     fig.why = fig.why.replace(/\b(sad|joy|calm|hope|love|shame|long|anger|fear|void)\b/g, (m) => nameOf(m));
     if (fig.present) fig.pose = dominant;
     const base = SCENE_RULES[dominant];
-    const items = [{ k: dominant, name: name(dominant), pct: pct[di], role: "base", caption: base.caption,
+    const items = [{ k: dominant, name: name(dominant), pct: pct[di], role: "base", short: base.short, caption: base.caption,
       outside: base.outside, inside: base.inside(fig.present) }];
     secondary.forEach((s) => {
       const m = SCENE_RULES[s.k].mod;
-      items.push({ k: s.k, name: s.name, pct: s.pct, role: "mod", caption: m.caption, outside: m.outside || "", inside: m.inside || "" });
+      items.push({ k: s.k, name: s.name, pct: s.pct, role: "mod", short: m.short, caption: m.caption, outside: m.outside || "", inside: m.inside || "" });
     });
     return {
       dominant, secondary, figure: fig, items, tone: base.tone,
@@ -3274,10 +3349,15 @@ window.POEM_DATA = [
 
   const fmt = (x) => (Math.round(x * 10) / 10).toFixed(1);
 
-  // 그림 아래 설명 줄(실제로 그린 요소만)
+  // 그림 아래 짧은 목록(실제로 적용한 감정과 표현 요소만)
+  function summary(sp) {
+    return sp.items.map((it) => ({ k: it.k, role: it.role, text: `${it.name} ${fmt(it.pct)}% · ${it.short}` }));
+  }
+  // ‘그림이 만들어진 기준’(접기 영역) — 역할·인물 조건·자세·표정
   function describe(sp) {
-    const lines = sp.items.map((it) => `${it.name} ${fmt(it.pct)}% → ${it.caption}${it.role === "base" ? " (기본 분위기)" : ""}`);
-    if (!sp.secondary.length) lines.push("15% 이상인 보조 감정 없음 → 보조 요소를 더하지 않음");
+    const lines = sp.items.map((it) => `${it.name} ${fmt(it.pct)}% → ${it.caption}${it.role === "base" ? " (가장 높은 감정: 기본 분위기)" : " (보조 감정)"}`);
+    if (!sp.secondary.length) lines.push(`${SECONDARY_MIN}% 이상인 보조 감정 없음 → 보조 요소를 더하지 않음`);
+    else lines.push(`보조 감정은 ${SECONDARY_MIN}% 이상인 감정을 큰 순서로 최대 ${SECONDARY_MAX}개까지, 요소 하나씩만 더합니다.`);
     if (sp.figure.present) lines.push(`인물 있는 장면 → 창밖을 향해 비스듬히 앉은 옆모습: ${POSES[sp.figure.pose].text} (${sp.figure.why})`);
     else lines.push(`인물 없는 장면 → 빈 창가와 풍경으로 표현 (${sp.figure.why})`);
     return lines;
@@ -3747,7 +3827,7 @@ window.POEM_DATA = [
     return true;
   }
 
-  window.PoemScene = { SCENE_RULES, FIGURE_RULE, POSES, SECONDARY_MIN, SECONDARY_MAX, pickSecondary, figureFor, spec, describe, prompt, draw };
+  window.PoemScene = { SCENE_RULES, FIGURE_RULE, POSES, SECONDARY_MIN, SECONDARY_MAX, pickSecondary, figureFor, spec, summary, describe, prompt, draw };
 })();
 </script>
 <script>/* js/app.js */
@@ -3840,7 +3920,7 @@ window.POEM_DATA = [
     try {
       S.EMOS = L.EMOS; S.K = L.EMOS.map((e) => e.k);
       S.EMOS.forEach((e) => S.emo.set(e.k, e));
-      S.matcher = E.buildMatcher(L.EMOS, L.LEX, L.BLOCK);
+      S.matcher = E.buildMatcher(L.EMOS, L.LEX, L.BLOCK, L.WORD_START);
       S.poems = poems.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       for (const p of S.poems) {
         S.byId.set(p.id, p);
@@ -4296,42 +4376,50 @@ window.POEM_DATA = [
     return word + (t && t !== 8 ? "으로" : "로");
   }
   // 감정 버튼을 누른 결과를 감정 목록 바로 아래에서 설명한다(사전 근거와 해석 프로필 값을 구분)
-  function renderEmoNote() {
-    const box = clear($("emoNote"));
-    if (!S.focus || S.focus.type !== "emo") { box.hidden = true; return; }
+  // 감정 선택 안내: 감정 비율 버튼·지배 정서·연결도의 감정 노드가 모두 같은 내용을 보인다.
+  //  ① 사전 감지 있음: 실제 시어·감지 횟수·행  ② 사전 감지 없음 + 해석 프로필 값: 해석 프로필에서 반영했다는 사실과 작품의 프로필 근거
+  //  ③ 둘 다 없음: 계산·해석 값이 없다는 안내. 일반 해설을 그 감정의 사전 근거처럼 보이지 않는다.
+  function emoNoteState(k) {
     const p = S.byId.get(S.sel), lx = S.lex.get(p.id);
-    const k = S.focus.k, e = S.emo.get(k), j = S.K.indexOf(k);
-    const fv = finOf(p.id), ph = S.phat.get(p.id);
-    const fp = isZero(fv) ? 0 : pct(fv)[j];
-    const pv = ph ? pct(ph)[j] : 0;
-    const wp = Math.round(S.w * 100);
+    const j = S.K.indexOf(k), fv = finOf(p.id), ph = S.phat.get(p.id);
     const lines = lx.lines.filter((l) => l.counts[j] > 0);
+    return { p, lx, j, e: S.emo.get(k), lines, fp: isZero(fv) ? 0 : pct(fv)[j], pv: ph ? pct(ph)[j] : 0, ph, wp: Math.round(S.w * 100), n: lx.totals[j] };
+  }
+  function fillEmoNote(box, place) {
+    clear(box);
+    if (!S.focus || S.focus.type !== "emo") { box.hidden = true; return; }
+    const k = S.focus.k;
+    const { p, e, lines, fp, pv, ph, wp, n } = emoNoteState(k);
     box.style.setProperty("--c", e.color);
+    box.dataset.state = lines.length ? "lex" : pv > 0 ? "profile" : "none";
     const acts = el("div", { class: "emo-note-acts" });
     if (lines.length) {
       const words = new Map();
       for (const l of lines) for (const h of l.hits) if (h.k === k) words.set(h.shown, (words.get(h.shown) || 0) + 1);
       const wl = [...words.entries()].sort((a, b) => b[1] - a[1]);
-      box.appendChild(el("p", { class: "emo-note-main", text: `${josaRo(e.name)} 감지된 시어가 있는 ${lines.length}개 행을 강조했어요.` }));
-      box.appendChild(el("p", { class: "emo-note-sub", text: `감지 시어: ${wl.slice(0, 6).map(([w, n]) => (n > 1 ? `${w} ×${n}` : w)).join(" · ")}${wl.length > 6 ? ` 외 ${wl.length - 6}종` : ""} (${lines.map((l) => l.no).slice(0, 8).join("·")}${lines.length > 8 ? "…" : ""}행)` }));
+      box.appendChild(el("p", { class: "emo-note-main", text: `${josaRo(e.name)} 감지된 시어 ${wl.length}종, ${n}회 · ${lines.length}개 행을 강조했어요.` }));
+      box.appendChild(el("p", { class: "emo-note-sub", text: `감지 시어: ${wl.slice(0, 6).map(([w, c]) => (c > 1 ? `${w} ×${c}` : w)).join(" · ")}${wl.length > 6 ? ` 외 ${wl.length - 6}종` : ""} (${lines.map((l) => l.no).slice(0, 8).join("·")}${lines.length > 8 ? "…" : ""}행)` }));
       if (wp === 0) box.appendChild(el("p", { class: "emo-note-sub", text: "지금 가중치(사전 0%)에서는 이 사전 값이 결합 비율에 반영되지 않아요." }));
       else if (ph && pv > 0 && wp < 100) box.appendChild(el("p", { class: "emo-note-sub", text: `결합 비율 ${fmt(fp)}%에는 사전 값과 해석 프로필 값(${fmt(pv)}%)이 함께 반영되어 있어요.` }));
-      acts.appendChild(el("button", { type: "button", class: "tbtn only-stacked", onclick: () => {
+      if (place !== "dia") acts.appendChild(el("button", { type: "button", class: "tbtn only-stacked", onclick: () => {
         $("poemBox").scrollIntoView({ behavior: smooth(), block: "start" });
         scrollLineIntoBox(lines[0].no);
       } }, "본문에서 보기"));
-    } else if (fp > 0) {
-      box.appendChild(el("p", { class: "emo-note-main", text: "이 감정은 사전에서 감지된 시어가 없어요. 표시된 비율은 해석 프로필에서 반영된 값이에요." }));
-      if (p.profileNote) box.appendChild(el("p", { class: "emo-note-sub", text: `해석 프로필 근거: ${p.profileNote}` }));
-      acts.appendChild(el("button", { type: "button", class: "tbtn", onclick: () => { goTo("lab"); } }, "상세 비교에서 보기"));
-    } else if (pv > 0 && wp >= 100) {
-      box.appendChild(el("p", { class: "emo-note-main", text: `이 감정은 사전에서 감지된 시어가 없어요. 해석 프로필 값(${fmt(pv)}%)은 있지만 지금 가중치(사전 100%)에서는 반영되지 않아 0%예요.` }));
+      else acts.appendChild(el("button", { type: "button", class: "tbtn", onclick: () => { goTo("reading"); scrollLineIntoBox(lines[0].no); } }, "본문에서 보기"));
+    } else if (pv > 0) {
+      box.appendChild(el("p", { class: "emo-note-main", text: "이 감정은 사전에서 직접 감지한 값이 아니라 해석 프로필에서 반영한 값입니다." }));
+      box.appendChild(el("p", { class: "emo-note-sub", text: wp >= 100 ? `해석 프로필 값은 ${fmt(pv)}%이지만, 지금 가중치(사전 100%)에서는 결합 비율에 반영되지 않아 0%예요.` : `해석 프로필 값 ${fmt(pv)}% → 지금 결합 비율 ${fmt(fp)}%. 본문에서 강조할 감지 시어는 없어요.` }));
+      if (p.profileNote) box.appendChild(el("p", { class: "emo-note-sub prof-note" }, el("span", { class: "lab", text: "해석 프로필을 정한 근거(작품 전체에 대한 메모): " }), p.profileNote));
     } else {
-      box.appendChild(el("p", { class: "emo-note-main", text: "이 감정은 사전에서 감지된 시어도, 해석 프로필 값도 없어서 0%예요. 본문에서 강조할 행이 없어요." }));
+      box.appendChild(el("p", { class: "emo-note-main", text: `이 작품에는 ${e.name}에 대한 사전 계산 값도 해석 프로필 값도 없어요(0%). 강조할 행이 없습니다.` }));
     }
     acts.appendChild(el("button", { type: "button", class: "tbtn", onclick: () => setFocus(null) }, "강조 해제"));
     box.appendChild(acts);
     box.hidden = false;
+  }
+  function renderEmoNote() {
+    fillEmoNote($("emoNote"), "main");
+    if ($("diaNote")) fillEmoNote($("diaNote"), "dia");
   }
 
   function updateFocusNote() {
@@ -4379,7 +4467,9 @@ window.POEM_DATA = [
       box.appendChild(ul);
     }
     const bl = lx.blocked.filter((b) => b.no === l.no);
-    if (bl.length) box.appendChild(el("p", { class: "small muted", text: `차단어 일치: ${bl.map((b) => `‘${b.w}’`).join(", ")} — 부분 문자열 오탐을 막으려고 감정으로 세지 않았습니다.` }));
+    const blk = bl.filter((b) => !b.rule), ws = bl.filter((b) => b.rule === "word-start");
+    if (blk.length) box.appendChild(el("p", { class: "small muted", text: `차단어 일치: ${blk.map((b) => `‘${b.w}’`).join(", ")} — 부분 문자열 오탐을 막으려고 감정으로 세지 않았습니다.` }));
+    if (ws.length) box.appendChild(el("p", { class: "small muted", text: `낱말 첫머리 조건: ${ws.map((b) => `‘${l.text.slice(Math.max(0, b.start - 2), b.end)}’의 ‘${b.w}’`).join(", ")} — 어절 중간(어미 등)이라 감정으로 세지 않았습니다.` }));
   }
 
   // ---------------------------------------------------------------- 서지(본문 출처와 판본)
@@ -4855,14 +4945,19 @@ window.POEM_DATA = [
     }
     const restKs = S.K.filter((k) => rest.some((o) => o.k === k));
     const themes = p.themeLinks || [];
+    // 감정 노드: ① 사전에서 감지된 감정 ② 최종 벡터에서 값이 있는 감정 ③ 주제 연결(themeLinks)이 가리키는 감정
+    const fv = finOf(p.id);
     const emoSet = new Set(all.map((o) => o.k));
+    S.K.forEach((k, j) => { if (fv[j] > 0) emoSet.add(k); });
     themes.forEach((t) => t.emos.forEach((k) => emoSet.add(k)));
     const emos = S.K.filter((k) => emoSet.has(k));
+    const lexHas = (k) => lx.totals[S.K.indexOf(k)] > 0;
     const fs = opt.fs || 13, rowH = opt.rowH || 30, top = 40;
     const W = Math.round(Math.max(560, Math.min(opt.maxW || 960, opt.avail || 760)));
     const nW = wl.length + (rest.length ? 1 : 0);
     const rows = Math.max(nW, emos.length, themes.length * 2, 3);
-    const H = top + rows * rowH + 8;
+    const anyProf = emos.some((k) => !lexHas(k) && fv[S.K.indexOf(k)] > 0);
+    const H = Math.max(top + rows * rowH + 8, top + emos.length * (anyProf ? 38 : rowH) + 8);
     const colW = { x: 8, r: Math.round(Math.max(130, W * 0.22)) };
     const colE = { x: Math.round(W * 0.36), w: Math.round(Math.min(176, Math.max(128, W * 0.19))) };
     const colT = { x: Math.round(colE.x + colE.w + Math.max(70, W * 0.1)) }; colT.w = W - colT.x - 8;
@@ -4907,11 +5002,17 @@ window.POEM_DATA = [
       const e = S.emo.get(k), j = S.K.indexOf(k);
       const on = S.focus && S.focus.type === "emo" && S.focus.k === k;
       const g = sv("g", { class: "dia-node emo", "data-k": k, "data-key": "e:" + k, "data-cy": String(yE(i)) });
-      g.appendChild(sv("rect", { x: colE.x, y: yE(i) - 13, width: colE.w, height: 26, rx: 13, fill: on ? "#f0e2d6" : "#fffdf8", stroke: e.color, "stroke-width": 2 }));
       const lexN = lx.totals[j];
-      g.appendChild(sv("text", { x: colE.x + colE.w / 2, y: yE(i) + 4.5, "text-anchor": "middle", "font-size": fs - 0.5, text: `${e.name} ${isZero(finOf(p.id)) ? "—" : fmt(fp[j]) + "%"}` }));
-      if (opt.interactive) pressable(g, `${e.name}: 사전 감지 ${lexN}개, 최종 ${fmt(fp[j])}%. 누르면 해당 행 강조`, () => setFocus({ type: "emo", k }));
-      else g.setAttribute("aria-label", `${e.name}: 사전 감지 ${lexN}개, 최종 ${fmt(fp[j])}%`);
+      const profOnly = !lexHas(k) && fv[j] > 0;
+      // 사전 감지 없이 해석 프로필에서만 온 감정: 시어 연결선은 만들지 않고, 점선 테두리와 ‘해석 프로필 반영’ 표시만 붙인다
+      if (profOnly) { g.classList.add("prof-only"); g.dataset.prof = "1"; }
+      const nh = profOnly ? 34 : 26;
+      g.appendChild(sv("rect", { x: colE.x, y: yE(i) - nh / 2, width: colE.w, height: nh, rx: 13, fill: on ? "#f0e2d6" : "#fffdf8", stroke: e.color, "stroke-width": 2, "stroke-dasharray": profOnly ? "4 3" : null }));
+      g.appendChild(sv("text", { x: colE.x + colE.w / 2, y: yE(i) + (profOnly ? 0 : 4.5), "text-anchor": "middle", "font-size": fs - 0.5, text: `${e.name} ${isZero(fv) ? "—" : fmt(fp[j]) + "%"}` }));
+      if (profOnly) g.appendChild(sv("text", { x: colE.x + colE.w / 2, y: yE(i) + 12, "text-anchor": "middle", "font-size": fs - 3, fill: "#5f574d", class: "prof-tag", text: "해석 프로필 반영" }));
+      const lab = `${e.name}: ${profOnly ? "사전 감지 없음, 해석 프로필 반영" : `사전 감지 ${lexN}회`}, 최종 ${isZero(fv) ? "없음" : fmt(fp[j]) + "%"}`;
+      if (opt.interactive) pressable(g, `${lab}. 누르면 근거 안내`, () => setFocus({ type: "emo", k }));
+      else g.setAttribute("aria-label", lab);
       svg.appendChild(g);
     });
     // 주제 노드(해석, 누를 수 없음)
@@ -4966,7 +5067,7 @@ window.POEM_DATA = [
     S.scene = sp || null;
     cv.dataset.scene = sp ? JSON.stringify({ dominant: sp.dominant, mods: sp.mods, figure: sp.figure.present, pose: sp.figure.pose || null }) : "";
     if (!sp) {
-      cv.hidden = true; $("imgNote").hidden = true; $("imgSave").hidden = true;
+      cv.hidden = true; $("imgNote").hidden = true; $("imgSave").hidden = true; $("imgRule").hidden = true;
       empty.hidden = false;
       empty.textContent = "사전 감지 0건이고 사전 100%라 최종 감정 값이 모두 0입니다. 임의의 감정 장면을 만들지 않습니다. 가중치를 낮추면 해석 프로필로 장면을 그립니다.";
       $("imgPrompt").value = "";
@@ -4975,14 +5076,15 @@ window.POEM_DATA = [
     cv.hidden = false; $("imgNote").hidden = false; $("imgSave").hidden = false; empty.hidden = true;
     const ok = SC.draw(cv, sp, { seed: `${p.id}|${Math.round(S.w * 100)}`, title: `「${p.title}」 ${p.poet}` });
     if (!ok) { lg.appendChild(el("li", { text: "이 브라우저는 Canvas를 지원하지 않아 그림을 그리지 못합니다." })); }
+    SC.summary(sp).forEach((it) => lg.appendChild(el("li", { style: `--c:${S.emo.get(it.k).color}`, "data-k": it.k, "data-role": it.role, text: it.text })));
+    const rl = clear($("imgRuleList"));
     const lines = SC.describe(sp);
-    lines.forEach((t, i) => {
-      const it = sp.items[i];
-      lg.appendChild(el("li", it ? { style: `--c:${S.emo.get(it.k).color}`, "data-k": it.k, "data-role": it.role, text: t } : { class: "rule", text: t }));
-    });
-    if (sp.profileOnly) lg.appendChild(el("li", { class: "rule", text: "사전 감지 시어가 없어 해석 프로필만 반영한 장면입니다." }));
-    lg.appendChild(el("li", { class: "rule", text: "감정 비율은 장면의 분위기와 요소를 고르는 데 쓰였고, 그림 속 면적과 정확히 비례하지는 않습니다." }));
-    cv.setAttribute("aria-label", `「${p.title}」 감정 이미지. ${lines.join(". ")}`);
+    lines.forEach((t) => rl.appendChild(el("li", { text: t })));
+    if (sp.profileOnly) rl.appendChild(el("li", { text: "사전 감지 시어가 없어 해석 프로필만 반영한 장면입니다." }));
+    rl.appendChild(el("li", { text: "감정 비율은 장면의 분위기와 요소를 고르는 데 쓰였고, 그림 속 면적과 정확히 비례하지는 않습니다." }));
+    $("imgRuleSum").textContent = `(${sp.figure.present ? "인물 있는 장면" : "인물 없는 장면"}${sp.profileOnly ? " · 해석 프로필만 반영" : ""})`;
+    $("imgRule").hidden = false;
+    cv.setAttribute("aria-label", `「${p.title}」 감정 이미지. ${SC.summary(sp).map((x) => x.text).join(", ")}. ${sp.figure.present ? "인물 있는 장면" : "인물 없는 장면"}.`);
     $("imgPrompt").value = SC.prompt(sp, p.title);
   }
 
@@ -5033,28 +5135,94 @@ window.POEM_DATA = [
   }
 
   // ---------------------------------------------------------------- F-10 히트맵
+  // 전체 비교(히트맵). 색 농도: 0%에서 0, HEAT_SAT% 이상은 가장 진한 색(같은 진하기)으로 선형 매핑.
+  // 칸의 정확한 값: 칸을 누르거나(터치) 표 안에서 방향키로 옮기면 ‘작품 · 감정 · 소수 첫째 자리’가 아래에 나온다.
+  // 칸은 하나만 Tab 정지점(로빙 tabindex)이라 200칸을 모두 Tab으로 지나지 않는다.
+  const HEAT_SAT = 60, HEAT_MAXA = 0.85;
+  const heatAlpha = (x) => Math.min(1, x / HEAT_SAT) * HEAT_MAXA;
+  function heatCellStyle(x, z) {
+    const a = z ? 0 : heatAlpha(x);
+    return `background:rgba(124,59,42,${a.toFixed(3)});color:${a / HEAT_MAXA > 0.55 ? "#fbf8f1" : "#2a2521"}`;
+  }
   function renderHeat() {
     const box = clear($("heatBox"));
-    const t = el("table", { class: "heat" });
-    t.appendChild(el("caption", { class: "sr-label", text: `작품별 최종 감정 비율(%), 가중치 ${Math.round(S.w * 100)}%` }));
+    const t = el("table", { class: "heat", id: "heatTable" });
+    t.appendChild(el("caption", { class: "sr-label", text: `작품별 최종 감정 비율(%), 가중치 ${Math.round(S.w * 100)}%. 칸에서 방향키로 이동하면 정확한 값이 표 아래에 나옵니다.` }));
     t.appendChild(el("thead", null, el("tr", null, el("th", { class: "row", scope: "col", text: "작품" }), S.EMOS.map((e) => el("th", { scope: "col", title: e.def, text: e.name })))));
     const tb = el("tbody");
-    for (const p of S.poems) {
+    let off = 0, maxDev = 0;
+    const cur = S.heatCur && S.byId.has(S.heatCur.id) ? S.heatCur : { id: S.sel, j: 0 };
+    S.poems.forEach((p, ri) => {
       const v = finOf(p.id), z = isZero(v), ps = pct(v);
       const tr = el("tr", { class: p.id === S.sel ? "sel" : null });
       tr.appendChild(el("th", { class: "row", scope: "row" }, el("button", { type: "button", onclick: () => selectPoem(p.id, { scrollTop: true }), "aria-label": `${p.title} 보기` }, p.title)));
-      ps.forEach((x) => {
-        const a = z ? 0 : Math.min(1, x / 60);
-        tr.appendChild(el("td", { style: `background:rgba(124,59,42,${(a * 0.85).toFixed(3)});color:${a > 0.55 ? "#fbf8f1" : "#2a2521"}`, text: z ? "—" : x.toFixed(0) }));
+      if (!z) { const sum = ps.reduce((a, x) => a + Math.round(x), 0); if (sum !== 100) { off++; maxDev = Math.max(maxDev, Math.abs(sum - 100)); } }
+      ps.forEach((x, j) => {
+        const td = el("td", { class: "hc", style: heatCellStyle(x, z), text: z ? "—" : String(Math.round(x)), "data-id": p.id, "data-j": String(j), "data-r": String(ri),
+          tabindex: p.id === cur.id && j === cur.j ? "0" : "-1", "aria-label": z ? `${p.title} · ${S.EMOS[j].name} · 값 없음` : `${p.title} · ${S.EMOS[j].name} · ${fmt(x)}%` });
+        tr.appendChild(td);
       });
       tb.appendChild(tr);
-    }
+    });
     t.appendChild(tb);
     box.appendChild(t);
+    const show = (td, move) => {
+      if (!td) return;
+      for (const c of tb.querySelectorAll("td.hc.cur")) c.classList.remove("cur");
+      for (const c of tb.querySelectorAll('td.hc[tabindex="0"]')) c.setAttribute("tabindex", "-1");
+      td.classList.add("cur"); td.setAttribute("tabindex", "0");
+      S.heatCur = { id: td.dataset.id, j: +td.dataset.j };
+      const q = S.byId.get(td.dataset.id), j = +td.dataset.j, v = finOf(q.id);
+      $("heatDetail").textContent = isZero(v) ? `「${q.title}」 · ${S.EMOS[j].name} · 최종 벡터가 0이라 값 없음` : `「${q.title}」 · ${S.EMOS[j].name} · ${fmt(pct(v)[j])}%`;
+      if (move) td.focus();
+    };
+    tb.addEventListener("click", (e) => { const td = e.target.closest("td.hc"); if (td) show(td, true); });
+    tb.addEventListener("mouseover", (e) => { const td = e.target.closest("td.hc"); if (td) show(td, false); });
+    tb.addEventListener("focusin", (e) => { const td = e.target.closest("td.hc"); if (td) show(td, false); });
+    tb.addEventListener("keydown", (e) => {
+      const td = e.target.closest("td.hc"); if (!td) return;
+      let r = +td.dataset.r, j = +td.dataset.j;
+      const R = S.poems.length - 1, J = S.K.length - 1;
+      if (e.key === "ArrowRight") j = Math.min(J, j + 1); else if (e.key === "ArrowLeft") j = Math.max(0, j - 1);
+      else if (e.key === "ArrowDown") r = Math.min(R, r + 1); else if (e.key === "ArrowUp") r = Math.max(0, r - 1);
+      else if (e.key === "Home") j = 0; else if (e.key === "End") j = J;
+      else return;
+      e.preventDefault();
+      show(tb.querySelector(`td.hc[data-r="${r}"][data-j="${j}"]`), true);
+    });
+    const startTd = tb.querySelector('td.hc[tabindex="0"]');
+    if (S.heatCur && startTd) show(startTd, false);
+    else $("heatDetail").textContent = "칸을 누르거나(휴대폰은 터치) 표 안에서 방향키로 옮기면 ‘작품 · 감정 · 정확한 비율’이 여기에 나옵니다.";
+    // 농도 범례: 실제 매핑과 같은 함수로 칠한다
+    const lg = clear($("heatLegend"));
+    lg.appendChild(el("span", { class: "lab", text: "색 농도" }));
+    [0, 15, 30, 45, HEAT_SAT].forEach((x) => lg.appendChild(el("span", { class: "sw-cell", style: heatCellStyle(x, false), text: x === HEAT_SAT ? `${x}%↑` : `${x}` })));
+    lg.appendChild(el("span", { class: "muted", text: `색이 진할수록 비율이 높고, ${HEAT_SAT}% 이상은 같은 진하기입니다.` }));
+    const notes = clear($("heatNotes"));
     const zeros = S.poems.filter((p) => isZero(finOf(p.id)));
-    if (zeros.length) box.appendChild(el("p", { class: "small muted", text: `‘—’: 최종 벡터가 0인 작품(${zeros.map((p) => p.title).join(", ")}). 사전 감지가 0건이고 사전 100%로 볼 때 생깁니다.` }));
-    box.appendChild(el("p", { class: "small muted", text: "칸 숫자는 반올림한 정수라 한 행 합계가 99~101이 될 수 있습니다. 정확한 값은 아래 ‘상세 비교·메모’ 표에 있습니다." }));
+    if (zeros.length) notes.appendChild(el("p", { class: "small muted", text: `‘—’: 최종 벡터가 0인 작품(${zeros.map((p) => p.title).join(", ")}). 사전 감지가 0건이고 사전 100%로 볼 때 생깁니다.` }));
+    notes.appendChild(el("p", { class: "small muted", id: "heatRound", text: (off
+      ? `칸 숫자는 소수 첫째 자리 비율을 반올림한 정수라 한 행의 합이 100과 다를 수 있습니다. 지금 가중치에서는 ${off}편이 100에서 최대 ${maxDev}만큼 벗어납니다.`
+      : "칸 숫자는 소수 첫째 자리 비율을 반올림한 정수입니다. 지금 가중치에서는 모든 행의 합이 100입니다.")
+      + " 아래 ‘상세 비교·메모’ 표는 지금 선택한 작품 한 편의 사전·해석·결합 값만 보여 줍니다." }));
+    renderHeatCard();
   }
+  // 선택한 시 요약(히트맵 옆): 모두 현재 계산 결과에서 가져온다
+  function renderHeatCard() {
+    const c = clear($("heatCard"));
+    const p = S.byId.get(S.sel), v = finOf(p.id);
+    c.appendChild(el("p", { class: "lab", id: "heatCardTitle", text: "선택한 시" }));
+    c.appendChild(el("p", { class: "ttl" }, el("strong", { text: `「${p.title}」` }), ` ${p.poet}`));
+    c.appendChild(el("p", { class: "wt", text: `가중치: ${methodLabel(p)}` }));
+    if (isZero(v)) c.appendChild(el("p", { class: "none", text: "사전 감지가 없고 사전 100%라 최종 벡터가 0입니다. 상위 감정을 만들지 않습니다." }));
+    else {
+      const ps = pct(v);
+      const top = S.K.map((k, j) => [k, j, v[j], ps[j]]).filter((x) => x[2] > 0).sort((a, b) => b[2] - a[2] || a[1] - b[1]).slice(0, 3);
+      c.appendChild(el("ol", { class: "top" }, top.map(([k, j, , x]) => el("li", { style: `--c:${S.emo.get(k).color}`, "data-k": k }, el("span", { class: "sw", "aria-hidden": "true" }), el("span", { class: "nm", text: S.emo.get(k).name }), el("span", { class: "v", text: `${fmt(x)}%` })))));
+    }
+    c.appendChild(el("p", { class: "hint", text: "표에서 색이 진할수록 비율이 높습니다. 왼쪽 작품명을 누르면 그 시로 이동합니다." }));
+  }
+
 
   // ---------------------------------------------------------------- F-12 감성 지도(PCA)
   // 감성 지도. PCA 계산·좌표는 그대로 두고, 그리는 크기만 정한다.
@@ -5329,6 +5497,7 @@ window.POEM_DATA = [
     t("빈 줄은 연 구분에만 쓰고 분석 행에서 제외", () => { const r = run("가\n\n나\n다"); return (r.lines.length === 3 && r.lines[2].stanza === 2) || "다름"; });
     t("감지 0건: 영벡터, 지배 정서 없음(균등 비율을 만들지 않음)", () => { const r = run("오늘은 버스를 탔다"); return (r.total === 0 && r.vec.every((x) => x === 0) && r.dominant === null) || "다름"; });
     t("차단어: ‘바라보고’는 세지 않고 ‘바라는’은 셈", () => (run("하늘을 바라보고").total === 0 && run("내가 바라는 손님").totals[j("hope")] === 1) || "다름");
+    t("낱말 첫머리 조건: ‘그림자라고요’의 ‘고요’는 세지 않고 ‘고요한 밤’·‘고요히’는 셈", () => (run("모가지 없는 그림자라고요.").total === 0 && run("고요한 밤").totals[j("calm")] === 1 && run("내마음 고요히").totals[j("calm")] === 1) || "다름");
     t("옛 표기: ‘ᄯᅥᆯ며’를 ‘떨며’로 감지하고 화면 표기는 그대로", () => { const h = run("가슴이 ᄯᅥᆯ며").lines[0].hits[0]; return (h && h.w === "떨며" && h.shown === "ᄯᅥᆯ며") || "다름"; });
     const bad = [], ws = [0, 0.5, 1];
     for (const p of S.poems) {
@@ -5394,6 +5563,8 @@ window.POEM_DATA = [
     b.appendChild(el("ul", { class: "small" }, L.BOUNDARIES.map((t) => el("li", { text: t }))));
     b.appendChild(el("h3", { class: "mini-title", text: "차단어" }));
     b.appendChild(el("p", { class: "small", text: `${L.BLOCK.map((w) => `‘${w}’`).join(", ")} — ‘바라(희망)’가 ‘바라보다’ 속에서 잘못 잡히는 것을 막으려고 넣은 말입니다. 차단어가 일치한 자리는 어떤 감정으로도 세지 않습니다.` }));
+    b.appendChild(el("h3", { class: "mini-title", text: "낱말 첫머리 조건" }));
+    b.appendChild(el("p", { class: "small", text: `${(L.WORD_START || []).map((w) => `‘${w}’`).join(", ")} — 어절 첫머리(줄 처음, 공백·문장부호 뒤)에서만 셉니다. ‘고요한 밤’, ‘고요히’는 세고, ‘그림자라고요’, ‘좋고요’처럼 어미 속에 든 ‘고요’는 세지 않습니다. 앞 글자가 한글·글자·숫자인지로 판단하며 영문 단어 경계(\\b)는 쓰지 않습니다.` }));
     b.appendChild(el("h3", { class: "mini-title", text: "계산식" }));
     b.appendChild(el("ul", { class: "small" },
       el("li", { text: "사전 벡터 v_lex(e) = Σ 행별 감지 수 c(l, e) ÷ 전체 감지 수. 감지가 0이면 모두 0으로 두고 지배 정서를 정하지 않습니다." }),
