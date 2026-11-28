@@ -1,8 +1,8 @@
 {
   "generatedOn": "2026-11-29",
   "method": "OpenAI image generation tool",
-  "weight": 50,
-  "scope": "20 pre-generated symbolic illustrations; other weights retain Canvas",
+  "weight": "all (baseline inspiration: 50)",
+  "scope": "20 fixed representative illustrations, shown for all weights; scene inspiration uses 50% baseline",
   "constraints": [
     "No indoor trees or branches",
     "Natural seated anatomy",

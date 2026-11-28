@@ -1,14 +1,29 @@
 {
-  "generatedImages": 20,
-  "otherWeightCases": 40,
+  "poems": 20,
+  "weights": [
+    0,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+    100
+  ],
+  "fixedImageCases": 220,
+  "pixelEquality": "all weights identical per poem",
   "selfCheck": {
     "pass": 14,
     "total": 14
   },
-  "download": "PNG valid",
-  "fallback": "passed",
-  "rapidSwitch": "passed",
-  "mobile390": "no overflow",
-  "pageErrors": [],
-  "dataEngineSceneScripts": "byte-identical"
+  "zeroDetection": "representative image shown; analysis not fabricated",
+  "pngDownload": "passed",
+  "loadFailure": "error shown; no old Canvas image",
+  "mobile390": "no horizontal overflow",
+  "scripts": "data, dictionary, engine and scene unchanged",
+  "readme": "no new column or version history",
+  "pageErrors": []
 }
