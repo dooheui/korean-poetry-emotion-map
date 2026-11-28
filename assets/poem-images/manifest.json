@@ -1,0 +1,258 @@
+{
+  "generatedOn": "2026-11-29",
+  "method": "OpenAI image generation tool",
+  "weight": 50,
+  "scope": "20 pre-generated symbolic illustrations; other weights retain Canvas",
+  "constraints": [
+    "No indoor trees or branches",
+    "Natural seated anatomy",
+    "Original scene rules for people and emotion palette"
+  ],
+  "images": [
+    {
+      "id": "wang",
+      "title": "나는 왕이로소이다",
+      "weight": 50,
+      "path": "wang-w50.webp",
+      "dominant": "sad",
+      "secondary": [
+        "love"
+      ],
+      "person": true,
+      "bytes": 271680
+    },
+    {
+      "id": "jeopdong",
+      "title": "접동새",
+      "weight": 50,
+      "path": "jeopdong-w50.webp",
+      "dominant": "sad",
+      "secondary": [
+        "long",
+        "anger"
+      ],
+      "person": true,
+      "bytes": 356908
+    },
+    {
+      "id": "geunal",
+      "title": "그날이 오면",
+      "weight": 50,
+      "path": "geunal-w50.webp",
+      "dominant": "joy",
+      "secondary": [
+        "hope"
+      ],
+      "person": false,
+      "bytes": 269236
+    },
+    {
+      "id": "doldam",
+      "title": "돌담에 속삭이는 햇발",
+      "weight": 50,
+      "path": "doldam-w50.webp",
+      "dominant": "calm",
+      "secondary": [
+        "joy",
+        "shame"
+      ],
+      "person": false,
+      "bytes": 269082
+    },
+    {
+      "id": "nameuro",
+      "title": "남으로 창을 내겠소",
+      "weight": 50,
+      "path": "nameuro-w50.webp",
+      "dominant": "joy",
+      "secondary": [
+        "calm"
+      ],
+      "person": false,
+      "bytes": 272118
+    },
+    {
+      "id": "goyangi",
+      "title": "봄은 고양이로다",
+      "weight": 50,
+      "path": "goyangi-w50.webp",
+      "dominant": "calm",
+      "secondary": [
+        "joy"
+      ],
+      "person": false,
+      "bytes": 203818
+    },
+    {
+      "id": "jeoljeong",
+      "title": "절정",
+      "weight": 50,
+      "path": "jeoljeong-w50.webp",
+      "dominant": "hope",
+      "secondary": [
+        "fear",
+        "sad"
+      ],
+      "person": true,
+      "bytes": 410476
+    },
+    {
+      "id": "cheongpodo",
+      "title": "청포도",
+      "weight": 50,
+      "path": "cheongpodo-w50.webp",
+      "dominant": "hope",
+      "secondary": [],
+      "person": false,
+      "bytes": 302688
+    },
+    {
+      "id": "chimsil",
+      "title": "나의 침실로",
+      "weight": 50,
+      "path": "chimsil-w50.webp",
+      "dominant": "fear",
+      "secondary": [
+        "love"
+      ],
+      "person": true,
+      "bytes": 165038
+    },
+    {
+      "id": "alsu",
+      "title": "알 수 없어요",
+      "weight": 50,
+      "path": "alsu-w50.webp",
+      "dominant": "calm",
+      "secondary": [
+        "fear",
+        "long"
+      ],
+      "person": false,
+      "bytes": 160592
+    },
+    {
+      "id": "swipge",
+      "title": "쉽게 씌어진 시",
+      "weight": 50,
+      "path": "swipge-w50.webp",
+      "dominant": "hope",
+      "secondary": [
+        "sad",
+        "shame"
+      ],
+      "person": true,
+      "bytes": 409146
+    },
+    {
+      "id": "chamhoe",
+      "title": "참회록",
+      "weight": 50,
+      "path": "chamhoe-w50.webp",
+      "dominant": "shame",
+      "secondary": [
+        "sad"
+      ],
+      "person": true,
+      "bytes": 337240
+    },
+    {
+      "id": "byeol",
+      "title": "별 헤는 밤",
+      "weight": 50,
+      "path": "byeol-w50.webp",
+      "dominant": "long",
+      "secondary": [
+        "sad",
+        "shame"
+      ],
+      "person": true,
+      "bytes": 322890
+    },
+    {
+      "id": "saseum",
+      "title": "사슴",
+      "weight": 50,
+      "path": "saseum-w50.webp",
+      "dominant": "sad",
+      "secondary": [
+        "long"
+      ],
+      "person": true,
+      "bytes": 299248
+    },
+    {
+      "id": "nongae",
+      "title": "논개",
+      "weight": 50,
+      "path": "nongae-w50.webp",
+      "dominant": "love",
+      "secondary": [
+        "anger"
+      ],
+      "person": false,
+      "bytes": 289838
+    },
+    {
+      "id": "ppaeat",
+      "title": "빼앗긴 들에도 봄은 오는가",
+      "weight": 50,
+      "path": "ppaeat-w50.webp",
+      "dominant": "joy",
+      "secondary": [
+        "sad"
+      ],
+      "person": false,
+      "bytes": 309506
+    },
+    {
+      "id": "ogamdo",
+      "title": "오감도 시제1호",
+      "weight": 50,
+      "path": "ogamdo-w50.webp",
+      "dominant": "fear",
+      "secondary": [
+        "void"
+      ],
+      "person": true,
+      "bytes": 147538
+    },
+    {
+      "id": "geoul",
+      "title": "거울",
+      "weight": 50,
+      "path": "geoul-w50.webp",
+      "dominant": "fear",
+      "secondary": [
+        "sad",
+        "calm"
+      ],
+      "person": true,
+      "bytes": 291072
+    },
+    {
+      "id": "mokma",
+      "title": "목마와 숙녀",
+      "weight": 50,
+      "path": "mokma-w50.webp",
+      "dominant": "sad",
+      "secondary": [
+        "void"
+      ],
+      "person": true,
+      "bytes": 320822
+    },
+    {
+      "id": "sewol",
+      "title": "세월이 가면",
+      "weight": 50,
+      "path": "sewol-w50.webp",
+      "dominant": "love",
+      "secondary": [
+        "long"
+      ],
+      "person": true,
+      "bytes": 313736
+    }
+  ]
+}

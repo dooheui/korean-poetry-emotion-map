@@ -6439,12 +6439,63 @@ window.PROFILE_COMPARE = [
     else if ($("imgCopyMsg").textContent === NO_PROMPT_MSG) $("imgCopyMsg").textContent = "";
     if (hasScene && !canvasOk) $("imgSaveMsg").textContent = "이 브라우저는 Canvas를 지원하지 않아 PNG로 저장할 수 없습니다(프롬프트는 쓸 수 있음).";
   }
+  // 기본 50%에서만 미리 제작한 AI 이미지를 표시한다. 다른 가중치는 기존 Canvas를 유지한다.
+  const GENERATED_50_IMAGES = new Set(["wang", "jeopdong", "geunal", "doldam", "nameuro", "goyangi", "jeoljeong", "cheongpodo", "chimsil", "alsu", "swipge", "chamhoe", "byeol", "saseum", "nongae", "ppaeat", "ogamdo", "geoul", "mokma", "sewol"]);
+  function loadGeneratedImage(p, sp, canvas, token) {
+    if (S.w !== 0.5 || !GENERATED_50_IMAGES.has(p.id)) return;
+    const current = () => S.imgRenderToken === token && S.sel === p.id && S.w === 0.5;
+    const img = new Image();
+    canvas.setAttribute("aria-busy", "true");
+    $("imgSave").disabled = true;
+    img.onload = () => {
+      if (!current()) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { canvas.removeAttribute("aria-busy"); return; }
+      try {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.dataset.imageSource = "generated-50";
+        canvas.removeAttribute("aria-busy");
+        $("imgNote").textContent = "기본 가중치 50%의 장면 규칙을 참고해 미리 제작한 AI 이미지입니다. 세부 표현은 상징이며, 다른 가중치에서는 기존 Canvas 그림을 표시합니다.";
+        const list = $("imgRuleList");
+        [...list.children].forEach((li) => {
+          if (li.textContent.startsWith("보조 감정에 따른 작은 자세 차이:")) li.remove();
+          else if (li.textContent.startsWith("인물 있는 장면 →")) li.textContent = "인물 있는 장면 → 자연스러운 비율로 의자에 앉아 창밖을 바라보는 인물. 세부 자세와 표정은 AI 이미지의 상징적 표현입니다.";
+        });
+        list.appendChild(el("li", { text: "현재 그림은 50%용 사전 제작 AI 이미지입니다. 창문·의자·인물 유무 등 장면 규칙을 참고했으며, 색 혼합량이나 세부 요소가 수치와 정확히 일치한다는 뜻은 아닙니다. 실내 나무와 나뭇가지는 제외했습니다." }));
+        canvas.setAttribute("aria-label", canvas.getAttribute("aria-label") + " 기본 50%용 사전 제작 AI 이미지.");
+        $("imgPrompt").value = [
+          `한국 시 「${p.title}」의 기본 가중치 50% 감정 장면을 참고한 가로형 수채화 일러스트.`,
+          ...sp.items.map((it) => `${it.role === "base" ? "주요 분위기" : "보조 요소"}: ${it.outside} / ${it.inside}`),
+          `의자는 ${sp.chair.tone}의 둥근 패브릭 안락의자.`,
+          sp.figure.present ? "자연스러운 비율의 성인이 의자에 앉아 창밖을 바라봄. 등과 목을 과하게 굽히지 않고 팔다리를 자연스럽게 연결." : "사람 없이 빈 의자와 풍경만 표현.",
+          "큰 창문으로 실내와 실외를 명확히 구분. 실내 나무·나뭇가지·큰 화분 없음. 글자·로고·워터마크 없음."
+        ].join("\n");
+        setImageControls(true, true);
+      } catch (e) { fallback(); }
+    };
+    const fallback = () => {
+      if (!current()) return;
+      canvas.removeAttribute("aria-busy");
+      window.PoemScene.draw(canvas, sp, { seed: `${p.id}|50`, title: `「${p.title}」 ${p.poet}` });
+      canvas.dataset.imageSource = "canvas-fallback";
+      $("imgNote").textContent = "사전 제작 이미지를 불러오지 못해 같은 감정 규칙의 Canvas 그림을 표시합니다.";
+      setImageControls(true, true);
+    };
+    img.onerror = fallback;
+    img.src = `assets/poem-images/${p.id}-w50.webp`;
+  }
   function renderImage() {
     const p = S.byId.get(S.sel);
     const vec = finOf(p.id), ps = pct(vec);
     const cv = $("emoCanvas"), lg = clear($("imgLegend")), empty = $("imgEmpty");
     const SC = window.PoemScene;
     resetImageMsgs();
+    const imageToken = S.imgRenderToken = (S.imgRenderToken || 0) + 1;
+    cv.removeAttribute("aria-busy");
+    cv.dataset.imageSource = "canvas";
+    $("imgNote").textContent = "감정 비율을 풍경·빛·색감과 선택적인 인물로 옮긴 상징적 장면입니다. 시에 실제로 등장하는 장면과 다를 수 있습니다.";
     const zero = !vec.some((x) => x > 0);
     const sp = !zero && SC ? SC.spec({ vec, pct: ps, K: S.K, emos: S.EMOS, dominant: dominantOf(vec),
       profileOnly: S.lex.get(p.id).total === 0 && !!S.phat.get(p.id) && S.w < 1 }) : null;
@@ -6477,6 +6528,7 @@ window.PROFILE_COMPARE = [
     cv.setAttribute("aria-label", `「${p.title}」 감정 이미지. ${SC.summary(sp).map((x) => x.text).join(", ")}. ${sp.figure.present ? "인물 있는 장면" : "인물 없는 장면"}.`);
     $("imgPrompt").value = SC.prompt(sp, p.title);
     setImageControls(true, S.canvasOk);
+    if (ok) loadGeneratedImage(p, sp, cv, imageToken);
   }
 
   // ---------------------------------------------------------------- F-09 추천
@@ -7032,3 +7084,4 @@ window.PROFILE_COMPARE = [
 </script>
 </body>
 </html>
+

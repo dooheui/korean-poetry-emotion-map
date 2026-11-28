@@ -1,0 +1,14 @@
+{
+  "generatedImages": 20,
+  "otherWeightCases": 40,
+  "selfCheck": {
+    "pass": 14,
+    "total": 14
+  },
+  "download": "PNG valid",
+  "fallback": "passed",
+  "rapidSwitch": "passed",
+  "mobile390": "no overflow",
+  "pageErrors": [],
+  "dataEngineSceneScripts": "byte-identical"
+}
